@@ -1,0 +1,49 @@
+// Imports
+const express = require("express");
+const router = express.Router();
+const Middleware = require("./middleware");
+const multer = require("multer");
+// const csrf = require("csurf");
+
+// Services
+const RoutesTestService = require("./services/routes-test.js"); // Test Routes Authenticated
+const UserService = require("./services/user_service.js");
+const AvatarService = require("./services/files/avatar_service.js");
+const config = require("./config");
+const { uploadAvatar } = require("./helpers/multer");
+const db = require("./services/db.js");
+
+router.post("/logout", UserService.logout);
+router.post("/login", UserService.login);
+router.post("/register", UserService.register);
+
+router.post("/db/show", db.showTables);
+
+router.post("/test/anonym", RoutesTestService.anonymous);
+
+// Set req.user to logged in user if user is logged in
+router.use(async (req, res, next) => {
+  await Middleware.getUserIfCookieExists(req, res, next);
+});
+
+router.post("/test/userIfCookie", RoutesTestService.userIfCookie);
+
+router.use(async (req, res, next) => {
+  await Middleware.authUser(req, res, next);
+});
+
+router.post(
+  "/files/avatar/upload",
+  uploadAvatar.single("avatar"),
+  AvatarService.uploadAvatar
+);
+router.post("/files/avatar/delete", AvatarService.deleteAvatar);
+router.post("/test/user", RoutesTestService.user);
+
+router.use(async (req, res, next) => {
+  await Middleware.authAdmin(req, res, next);
+});
+
+router.post("/test/admin", RoutesTestService.admin);
+
+module.exports = router;
