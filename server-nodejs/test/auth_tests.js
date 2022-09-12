@@ -24,6 +24,9 @@ describe("Login", () => {
           res.should.have.status(200);
           res.body.success.should.be.true;
           res.body.data.user.roleFk.should.be.equal(1);
+          res.body.data.user.email.should.be.equal(credentials.user.email);
+          res.body.data.user.should.have.property("id");
+          res.body.data.user.should.have.property("avatarPath");
           done();
         });
     });

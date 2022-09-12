@@ -1,5 +1,5 @@
 const mysql = require("mysql2/promise");
-const config = require("../config");
+const config = require("../config.json");
 
 // var retryCounter = 0;
 async function query(sql, params) {
@@ -45,7 +45,7 @@ module.exports = {
   query,
   showTables,
 };
-//  initDb();
+initDb();
 async function initDb() {
   // Create Tables
   const avatar =
@@ -63,45 +63,42 @@ async function initDb() {
     console.log("User Result: " + JSON.stringify(userResult));
   }
   if (
-    avatarResult.affectedRows == 0 &&
-    roleResult.affectedRows == 0 &&
-    userResult.affectedRows == 0
+    avatarResult.warningStatus == 1 &&
+    roleResult.warningStatus == 1 &&
+    userResult.warningStatus == 1
   ) {
     console.log("SQL Tables already exist - no need to create");
     return;
   }
+  console.log("Creating SQL Tables");
+  var commands = [];
 
-  // Create indices
-  const userPrimary = "ALTER TABLE `user` ADD PRIMARY KEY (`id`)";
-  const userMail = "ALTER TABLE `user` ADD UNIQUE KEY `email` (`email`)";
-  const userRole = "ALTER TABLE `user` ADD KEY `role_fk` (`roleFk`)";
-  const userRoleFk =
-    "ALTER TABLE `user` ADD CONSTRAINT `role_fk` FOREIGN KEY (`roleFk`) REFERENCES `role` (`id`)";
-  query(userPrimary, []);
-  query(userMail, []);
-  query(userRole, []);
-  query(userRoleFk, []);
-  const avatarPrimary = "ALTER TABLE `avatar` ADD PRIMARY KEY (`userFk`)";
-  const avatarUserFk =
-    "ALTER TABLE `avatar` ADD CONSTRAINT `user_fk` FOREIGN KEY (`userFk`) REFERENCES `user` (`id`)";
-  query(avatarPrimary, []);
-  query(avatarUserFk, []);
-
-  // Insert Roles
-  const roleUser = "INSERT INTO `role` (`id`, `title`) VALUES (1, 'user')";
-  const roleAdmin = "INSERT INTO `role` (`id`, `title`) VALUES (2, 'admin')";
-  query(roleUser, []);
-  query(roleAdmin, []);
-
-  // Insert Admin
-  const admin =
-    "INSERT INTO `user` (`id`, `email`, `password`, `roleFk`) VALUES (1, 'admin@example.de', '$2b$10$957SjQ2vLy8aBPIOn6aKduL/tMjzvKGSGK8N34idvLaf/PTjXG0ve', 2)";
-  query(admin, []);
-
-  // Insert User
-  const defaultUser =
-    "INSERT INTO `user` (`id`, `email`, `password`, `roleFk`) VALUES (2, 'test@example.de', '$2b$10$RZLpZn3IdVHfxn40HZdd8uZTjeRCgxkG2ZGTdzhqsTG6t/dK/BR7.', 1)";
-  query(defaultUser, []);
-
-  console.log("DB initialized");
+  commands.push("ALTER TABLE `user` ADD UNIQUE KEY `email` (`email`)");
+  commands.push(
+    "ALTER TABLE `avatar` ADD CONSTRAINT `user_fk` FOREIGN KEY (`userFk`) REFERENCES `user` (`id`)"
+  );
+  commands.push("INSERT INTO `role` (`id`, `title`) VALUES (1, 'user')");
+  commands.push("INSERT INTO `role` (`id`, `title`) VALUES (2, 'admin')");
+  commands.push(
+    "INSERT INTO `user` (`id`, `email`, `password`, `roleFk`) VALUES (1, 'admin@example.de', '$2b$10$957SjQ2vLy8aBPIOn6aKduL/tMjzvKGSGK8N34idvLaf/PTjXG0ve', 2)"
+  );
+  commands.push(
+    "INSERT INTO `user` (`id`, `email`, `password`, `roleFk`) VALUES (2, 'test@example.de', '$2b$10$RZLpZn3IdVHfxn40HZdd8uZTjeRCgxkG2ZGTdzhqsTG6t/dK/BR7.', 1)"
+  );
+  var promises = [];
+  for (let i = 0; i < commands.length; i++) {
+    promises.push(
+      new Promise((resolve, reject) => {
+        query(commands[i], []).then((result) => {
+          if (process.env.SQLDEBUG == "true") {
+            console.log("SQL Result: " + JSON.stringify(result));
+          }
+          resolve(result);
+        });
+      })
+    );
+  }
+  Promise.all(promises).then((results) => {
+    console.log("SQL Tables created");
+  });
 }

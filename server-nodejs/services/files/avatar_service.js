@@ -1,7 +1,7 @@
 // const fs = require("fs");
 const sendResponse = require("../../helpers/sendResponse");
 const db = require("../../services/db.js");
-const config = require("../../config");
+const config = require("../../config.json");
 const fs = require("fs");
 
 let AvatarService = {
@@ -23,6 +23,7 @@ let AvatarService = {
     ]);
     let result;
     if (avatarExists.length > 0) {
+      fs.unlinkSync(avatarExists[0].generatedPath);
       result = await db.query(
         "UPDATE avatar SET originalName = ?, generatedPath = ?, type = ? WHERE userFk = ?",
         [originalName, generatedPath, type, user.id]

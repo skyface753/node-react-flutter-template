@@ -1,5 +1,5 @@
 var jwt = require("jsonwebtoken");
-const config = require("../config");
+const config = require("../config.json");
 // jwt 30 Tage
 const jwtExpirySeconds = 60 * 60 * 24 * 30;
 const jwtKey = config.JWT_SECRET;

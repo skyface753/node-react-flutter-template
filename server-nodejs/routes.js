@@ -9,13 +9,22 @@ const multer = require("multer");
 const RoutesTestService = require("./services/routes-test.js"); // Test Routes Authenticated
 const UserService = require("./services/user_service.js");
 const AvatarService = require("./services/files/avatar_service.js");
-const config = require("./config");
 const { uploadAvatar } = require("./helpers/multer");
 const db = require("./services/db.js");
 
 router.post("/logout", UserService.logout);
 router.post("/login", UserService.login);
 router.post("/register", UserService.register);
+
+// Docs
+// const swaggerDocsObj = require("./swagger");
+var swaggerUi = require("swagger-ui-express");
+
+const yamljs = require("yamljs");
+const swaggerDocument = yamljs.load("./swagger.yaml");
+
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
+router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 router.post("/db/show", db.showTables);
 

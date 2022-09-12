@@ -1,6 +1,6 @@
 const db = require("./db");
 const tokenHelper = require("../helpers/token");
-const config = require("../config");
+const config = require("../config.json");
 const bycrypt = require("bcrypt");
 const sendResponse = require("../helpers/sendResponse");
 

@@ -7,7 +7,7 @@ var bodyParser = require("body-parser");
 var RateLimit = require("express-rate-limit");
 
 // Imports - INT
-const config = require("./config.js");
+const config = require("./config.json");
 
 // Variables
 var app = express();

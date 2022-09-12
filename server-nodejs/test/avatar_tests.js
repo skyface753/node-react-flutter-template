@@ -64,6 +64,14 @@ describe("Avatar", () => {
         throw new Error("Avatar does not exist");
       }
     });
+    after((done) => {
+      //Check if avatar exists
+      if (fs.existsSync(generatedAvatarPath)) {
+        throw new Error("Avatar still exists");
+      } else {
+        done();
+      }
+    });
     it("it should delete a avatar", (done) => {
       chai
         .request(server)
