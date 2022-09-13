@@ -1,13 +1,9 @@
 // Imports - EXT
-var express = require("express");
-var cors = require("cors");
-const csrf = require("csurf");
-var cookieParser = require("cookie-parser");
-var bodyParser = require("body-parser");
-var RateLimit = require("express-rate-limit");
-
-// Imports - INT
-const config = require("./config.json");
+var express = require('express');
+var cors = require('cors');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var RateLimit = require('express-rate-limit');
 
 // Variables
 var app = express();
@@ -19,7 +15,7 @@ app.use(
   // Production
   cors({
     origin: [
-      "http://localhost:3000",
+      'http://localhost:3000',
       // "http://localhost:19006",
     ],
     credentials: true,
@@ -40,11 +36,11 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Files
-app.use("/files/avatars", express.static("files/avatars"));
+app.use('/files/avatars', express.static('files/avatars'));
 
 // Routes
-const routes = require("./routes");
-app.use("/api/", routes);
+const routes = require('./routes');
+app.use('/api/', routes);
 
 // Start Server
 app.listen(port, () => {

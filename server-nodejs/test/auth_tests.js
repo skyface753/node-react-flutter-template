@@ -1,82 +1,83 @@
-let chai = require("chai");
-let chaiHttp = require("chai-http");
-const { describe } = require("mocha");
-let should = chai.should();
-let server = require("../index");
+let chai = require('chai');
+let chaiHttp = require('chai-http');
+const { describe } = require('mocha');
+let expect = chai.expect;
+// let should = chai.should();
+let server = require('../index');
 
 chai.use(chaiHttp);
 
-const credentials = require("./credentials.json");
+const credentials = require('./credentials.json');
 
-describe("Login", () => {
-  describe("/POST login-user-success", () => {
-    it("it should login a user with user role", (done) => {
+describe('Login', () => {
+  describe('/POST login-user-success', () => {
+    it('it should login a user with user role', (done) => {
       chai
         .request(server)
-        .post("/api/login")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/login')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.user.email,
           password: credentials.user.password,
         })
 
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          res.body.data.user.roleFk.should.be.equal(1);
-          res.body.data.user.email.should.be.equal(credentials.user.email);
-          res.body.data.user.should.have.property("id");
-          res.body.data.user.should.have.property("avatarPath");
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body.data.user.email).to.equal(credentials.user.email);
+          expect(res.body.data.user).to.have.property('id');
+          expect(res.body.data.user).to.have.property('avatarPath');
           done();
         });
     });
   });
-  describe("/POST login-user-fail", () => {
-    it("it should not login a user with wrong email", (done) => {
+  describe('/POST login-user-fail', () => {
+    it('it should not login a user with wrong email', (done) => {
       chai
         .request(server)
-        .post("/api/login")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/login')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
-          email: "notAMail@example.de",
+          email: 'notAMail@example.de',
           password: credentials.user.password,
         })
         .end((err, res) => {
-          res.should.have.status(400);
-          res.body.success.should.be.false;
+          expect(res).to.have.status(400);
+          expect(res.body.success).to.be.false;
           done();
         });
     });
-    it("it should not login a user with wrong password", (done) => {
+    it('it should not login a user with wrong password', (done) => {
       chai
         .request(server)
-        .post("/api/login")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/login')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.user.email,
-          password: "wrongPassword",
+          password: 'wrongPassword',
         })
         .end((err, res) => {
-          res.should.have.status(400);
-          res.body.success.should.be.false;
+          expect(res).to.have.status(400);
+          expect(res.body.success).to.be.false;
           done();
         });
     });
   });
-  describe("/POST login-admin-success", () => {
-    it("it should login a user with admin role", (done) => {
+  describe('/POST login-admin-success', () => {
+    it('it should login a user with admin role', (done) => {
       chai
         .request(server)
-        .post("/api/login")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/login')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.admin.email,
           password: credentials.admin.password,
         })
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          res.body.data.user.roleFk.should.be.equal(2);
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          expect(res.body.data.user.roleFk).to.equal(2);
           done();
         });
     });
@@ -85,146 +86,146 @@ describe("Login", () => {
 });
 
 // DB Service to delete registered user
-const db = require("../services/db");
+const db = require('../services/db');
 
-describe("Register", () => {
-  describe("/POST register-user-success", () => {
-    it("it should register a user with user role", (done) => {
+describe('Register', () => {
+  describe('/POST register-user-success', () => {
+    it('it should register a user with user role', (done) => {
       chai
         .request(server)
-        .put("/api/register")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .put('/api/register')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.newUser.email,
           password: credentials.newUser.password,
         })
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          res.body.data.user.roleFk.should.be.equal(1);
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          expect(res.body.data.user.roleFk).to.equal(1);
           done();
         });
     });
   });
-  describe("/POST register-user-fail", () => {
-    it("it should not register a user with existing email", (done) => {
+  describe('/POST register-user-fail', () => {
+    it('it should not register a user with existing email', (done) => {
       after(async () => {
-        await db.query("DELETE FROM user WHERE email = ?", [
+        await db.query('DELETE FROM user WHERE email = ?', [
           credentials.newUser.email,
         ]);
       });
       chai
         .request(server)
-        .put("/api/register")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .put('/api/register')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.newUser.email, // Existing email
           password: credentials.newUser.password,
         })
         .end((err, res) => {
-          res.should.have.status(400);
-          res.body.success.should.be.false;
+          expect(res).to.have.status(400);
+          expect(res.body.success).to.be.false;
           done();
         });
     });
   });
 });
 
-describe("Logout", () => {
-  describe("/POST logout-success", () => {
-    it("it should logout a user", (done) => {
+describe('Logout', () => {
+  describe('/POST logout-success', () => {
+    it('it should logout a user', (done) => {
       chai
         .request(server)
-        .post("/api/logout")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/logout')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send()
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
           done();
         });
     });
   });
 });
 
-describe("Status Check", () => {
-  describe("/GET status-check-success", () => {
+describe('Status Check', () => {
+  describe('/GET status-check-success-user', () => {
     var cookie;
     before((done) => {
       chai
         .request(server)
-        .post("/api/login")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/login')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.user.email,
           password: credentials.user.password,
         })
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          cookie = res.headers["set-cookie"];
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          cookie = res.headers['set-cookie'];
           done();
         });
     });
-    it("it should check the status of the server", (done) => {
+    it('it should check the status of the USER-login', (done) => {
       chai
         .request(server)
-        .get("/api/user/status")
-        .set("content-type", "application/x-www-form-urlencoded")
-        .set("Cookie", cookie)
+        .get('/api/user/status')
+        .set('content-type', 'application/x-www-form-urlencoded')
+        .set('Cookie', cookie)
         .send()
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          res.body.data.user.roleFk.should.be.equal(1);
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          expect(res.body.data.user.roleFk).to.equal(1);
           done();
         });
     });
   });
   // Admin Test
-  describe("/GET status-check-success-admin", () => {
+  describe('/GET status-check-success-admin', () => {
     var cookie;
     before((done) => {
       chai
         .request(server)
-        .post("/api/login")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .post('/api/login')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send({
           email: credentials.admin.email,
           password: credentials.admin.password,
         })
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          cookie = res.headers["set-cookie"];
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          cookie = res.headers['set-cookie'];
           done();
         });
     });
-    it("it should check the status of the server", (done) => {
+    it('it should check the status of the ADMIN-login', (done) => {
       chai
         .request(server)
-        .get("/api/user/status")
-        .set("content-type", "application/x-www-form-urlencoded")
-        .set("Cookie", cookie)
+        .get('/api/user/status')
+        .set('content-type', 'application/x-www-form-urlencoded')
+        .set('Cookie', cookie)
         .send()
         .end((err, res) => {
-          res.should.have.status(200);
-          res.body.success.should.be.true;
-          res.body.data.user.roleFk.should.be.equal(2);
+          expect(res).to.have.status(200);
+          expect(res.body.success).to.be.true;
+          expect(res.body.data.user.roleFk).to.equal(2);
           done();
         });
     });
   });
-  describe("/GET status-check-fail", () => {
-    it("it should not check the status of the server", (done) => {
+  describe('/GET status-check-fail', () => {
+    it('it should deny the status-check because no jwt cookie is present', (done) => {
       chai
         .request(server)
-        .get("/api/user/status")
-        .set("content-type", "application/x-www-form-urlencoded")
+        .get('/api/user/status')
+        .set('content-type', 'application/x-www-form-urlencoded')
         .send()
         .end((err, res) => {
-          res.should.have.status(401);
-          res.body.success.should.be.false;
+          expect(res).to.have.status(401);
+          expect(res.body.success).to.be.false;
           done();
         });
     });

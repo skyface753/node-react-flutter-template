@@ -1,9 +1,10 @@
-import { useState, useContext, useEffect } from "react";
-import { useLocation, Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "../App";
-import ApiService from "../services/apiService";
+import { useState, useContext, useEffect } from 'react';
+import { useLocation, Navigate, Outlet } from 'react-router-dom';
+import { AuthContext } from '../App';
+import ApiService from '../services/apiService';
+import React from 'react';
 
-const access = async (token) => {
+const access = async () => {
   const response = await ApiService.status();
   if (!response) return false;
   console.log(response);
@@ -19,7 +20,7 @@ const access = async (token) => {
   // );
 };
 
-export const UserProtectedRoute = ({}) => {
+export const UserProtectedRoute = () => {
   const location = useLocation();
   const [authorized, setAuthorized] = useState(); // initially undefined!
 
@@ -44,6 +45,6 @@ export const UserProtectedRoute = ({}) => {
   return authorized ? (
     <Outlet />
   ) : (
-    <Navigate to="/login" replace state={{ from: location }} />
+    <Navigate to='/login' replace state={{ from: location }} />
   );
 };
