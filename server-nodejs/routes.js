@@ -14,17 +14,17 @@ const db = require("./services/db.js");
 
 router.post("/logout", UserService.logout);
 router.post("/login", UserService.login);
-router.post("/register", UserService.register);
+router.put("/register", UserService.register);
 
 // Docs
-// const swaggerDocsObj = require("./swagger");
+const swaggerDocsObj = require("./swagger");
 var swaggerUi = require("swagger-ui-express");
 
 const yamljs = require("yamljs");
 const swaggerDocument = yamljs.load("./swagger.yaml");
 
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
-router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use("/docs", swaggerDocsObj.serve, swaggerDocsObj.setup);
+// router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 router.post("/db/show", db.showTables);
 
@@ -35,18 +35,20 @@ router.use(async (req, res, next) => {
   await Middleware.getUserIfCookieExists(req, res, next);
 });
 
+router.get("/user/status", UserService.status);
+
 router.post("/test/userIfCookie", RoutesTestService.userIfCookie);
 
 router.use(async (req, res, next) => {
   await Middleware.authUser(req, res, next);
 });
 
-router.post(
+router.put(
   "/files/avatar/upload",
   uploadAvatar.single("avatar"),
   AvatarService.uploadAvatar
 );
-router.post("/files/avatar/delete", AvatarService.deleteAvatar);
+router.delete("/files/avatar/delete", AvatarService.deleteAvatar);
 router.post("/test/user", RoutesTestService.user);
 
 router.use(async (req, res, next) => {

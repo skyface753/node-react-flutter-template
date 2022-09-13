@@ -92,7 +92,7 @@ describe("Register", () => {
     it("it should register a user with user role", (done) => {
       chai
         .request(server)
-        .post("/api/register")
+        .put("/api/register")
         .set("content-type", "application/x-www-form-urlencoded")
         .send({
           email: credentials.newUser.email,
@@ -115,7 +115,7 @@ describe("Register", () => {
       });
       chai
         .request(server)
-        .post("/api/register")
+        .put("/api/register")
         .set("content-type", "application/x-www-form-urlencoded")
         .send({
           email: credentials.newUser.email, // Existing email
@@ -141,6 +141,90 @@ describe("Logout", () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.success.should.be.true;
+          done();
+        });
+    });
+  });
+});
+
+describe("Status Check", () => {
+  describe("/GET status-check-success", () => {
+    var cookie;
+    before((done) => {
+      chai
+        .request(server)
+        .post("/api/login")
+        .set("content-type", "application/x-www-form-urlencoded")
+        .send({
+          email: credentials.user.email,
+          password: credentials.user.password,
+        })
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.success.should.be.true;
+          cookie = res.headers["set-cookie"];
+          done();
+        });
+    });
+    it("it should check the status of the server", (done) => {
+      chai
+        .request(server)
+        .get("/api/user/status")
+        .set("content-type", "application/x-www-form-urlencoded")
+        .set("Cookie", cookie)
+        .send()
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.success.should.be.true;
+          res.body.data.user.roleFk.should.be.equal(1);
+          done();
+        });
+    });
+  });
+  // Admin Test
+  describe("/GET status-check-success-admin", () => {
+    var cookie;
+    before((done) => {
+      chai
+        .request(server)
+        .post("/api/login")
+        .set("content-type", "application/x-www-form-urlencoded")
+        .send({
+          email: credentials.admin.email,
+          password: credentials.admin.password,
+        })
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.success.should.be.true;
+          cookie = res.headers["set-cookie"];
+          done();
+        });
+    });
+    it("it should check the status of the server", (done) => {
+      chai
+        .request(server)
+        .get("/api/user/status")
+        .set("content-type", "application/x-www-form-urlencoded")
+        .set("Cookie", cookie)
+        .send()
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.success.should.be.true;
+          res.body.data.user.roleFk.should.be.equal(2);
+          done();
+        });
+    });
+  });
+  describe("/GET status-check-fail", () => {
+    it("it should not check the status of the server", (done) => {
+      chai
+        .request(server)
+        .get("/api/user/status")
+        .set("content-type", "application/x-www-form-urlencoded")
+        .send()
+        .end((err, res) => {
+          res.should.have.status(401);
+          res.body.success.should.be.false;
           done();
         });
     });

@@ -43,7 +43,6 @@ let AvatarService = {
     sendResponse.success(res, {
       message: "Avatar uploaded",
       avatar: {
-        id: result.insertId,
         originalName: originalName,
         generatedPath: generatedPath,
         type: type,

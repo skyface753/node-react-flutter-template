@@ -1,44 +1,35 @@
 const swaggerJsdoc = require("swagger-jsdoc");
 var swaggerUi = require("swagger-ui-express");
 
-const DisableTryItOutPlugin = function () {
-  return {
-    statePlugins: {
-      spec: {
-        wrapSelectors: {
-          allowTryItOutFor: () => () => false,
-        },
-      },
-    },
-  };
-};
-
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "SkyManager API",
+      title: "Backend API",
       version: "1.0.0",
     },
+    servers: [
+      {
+        url: "http://localhost:5000/api",
+        description: "Development server",
+      },
+    ],
     components: {
       securitySchemes: {
-        bearerAuth: {
+        cookieAuth: {
           type: "apiKey",
-          in: "header",
-          name: "Authorization",
+          in: "cookie",
+          name: "jwt",
         },
       },
     },
     security: [
       {
-        bearerAuth: [],
+        cookieAuth: [],
       },
     ],
   },
-  swaggerOptions: {
-    plugins: [DisableTryItOutPlugin],
-  },
-  apis: ["./services/*.js"], // files containing annotations as above
+  apis: ["./doc-models/*.yaml"], // files containing annotations as above
 };
 const openapiSpecification = swaggerJsdoc(options);
 

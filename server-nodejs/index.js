@@ -14,16 +14,17 @@ var app = express();
 var port = 5000;
 
 // CORS TODO: Change for Production
-app.use(cors()); // Development
-// app.use( // Production
-//   cors({
-//     origin: [
-//       "http://localhost:3000",
-//       "http://localhost:19006",
-//     ],
-//     credentials: true,
-//   })
-// );
+// app.use(cors()); // Development
+app.use(
+  // Production
+  cors({
+    origin: [
+      "http://localhost:3000",
+      // "http://localhost:19006",
+    ],
+    credentials: true,
+  })
+);
 
 // set up rate limiter to prevent brute force attacks
 var limiter = RateLimit({

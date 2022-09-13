@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --exit",
-    "dev": "MODE=DEV nodemon index.js",
+    "test": "mocha",
+    "dev": "MODE=DEV nodemon -e js,yaml index.js",
     "start": "node index.js",
     "sqldebug": "SQLDEBUG=true nodemon index.js"
   },

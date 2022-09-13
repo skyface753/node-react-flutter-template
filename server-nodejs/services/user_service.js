@@ -78,6 +78,7 @@ let UserService = {
     });
 
     sendResponse.success(res, {
+      token: token,
       user: {
         id: user.id,
         email: user.email,
@@ -116,10 +117,32 @@ let UserService = {
       sameSite: "Strict",
     });
     sendResponse.success(res, {
+      token: token,
       user: {
         id: user.insertId,
         email: email,
         roleFk: 1,
+      },
+    });
+  },
+  status: async (req, res) => {
+    const userFromCookie = req.user;
+    if (!userFromCookie) {
+      sendResponse.authError(res, "Not logged in");
+      return;
+    }
+    const user = await db.query("SELECT * FROM user  WHERE user.id = ?", [
+      userFromCookie.id,
+    ]);
+    if (user.length === 0) {
+      sendResponse.authError(res, "User not found");
+      return;
+    }
+    sendResponse.success(res, {
+      user: {
+        id: user[0].id,
+        email: user[0].email,
+        roleFk: user[0].roleFk,
       },
     });
   },

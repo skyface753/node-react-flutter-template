@@ -10,6 +10,7 @@ const Middleware = {
     } else {
       var user = await db.query("SELECT * FROM user WHERE id = ?", [userId]);
       req.user = user[0];
+      console.log("User found in cookie: " + user[0].email);
       next();
     }
   },

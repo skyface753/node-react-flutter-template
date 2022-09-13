@@ -31,7 +31,7 @@ describe("Avatar", () => {
     it("it should upload a avatar", (done) => {
       chai
         .request(server)
-        .post("/api/files/avatar/upload")
+        .put("/api/files/avatar/upload")
         .attach("avatar", "./test/avatar.png")
         .set("Cookie", cookie)
         .end((err, res) => {
@@ -75,7 +75,7 @@ describe("Avatar", () => {
     it("it should delete a avatar", (done) => {
       chai
         .request(server)
-        .post("/api/files/avatar/delete")
+        .delete("/api/files/avatar/delete")
         .set("Cookie", cookie)
         .end((err, res) => {
           res.should.have.status(200);
