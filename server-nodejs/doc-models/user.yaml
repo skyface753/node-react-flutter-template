@@ -23,7 +23,7 @@ components:
           nullable: true
     User: # UserResponse + password
       allOf:
-        - $ref: "#/components/schemas/UserResponse"
+        - $ref: '#/components/schemas/UserResponse'
         - type: object
           required:
             - password
@@ -58,13 +58,13 @@ paths:
                 email:
                   type: string
                   description: User email (unique)
-                  example: "test@example.de"
+                  example: 'test@example.de'
                 password:
                   type: string
                   description: User password
-                  example: "User123"
+                  example: 'User123'
       responses:
-        "200":
+        '200':
           description: Login successful
           headers:
             Set-Cookie:
@@ -87,8 +87,8 @@ paths:
                         description: JWT token
                         example: secrecttoken
                       user: # UserResponse
-                        $ref: "#/components/schemas/UserResponse"
-        "401":
+                        $ref: '#/components/schemas/UserResponse'
+        '401':
           description: Login failed
   /register:
     put:
@@ -111,13 +111,13 @@ paths:
                 email:
                   type: string
                   description: User email (unique)
-                  example: "newUser@example.de"
+                  example: 'newUser@example.de'
                 password:
                   type: string
                   description: User password
-                  example: "User123"
+                  example: 'User123'
       responses:
-        "200":
+        '200':
           description: Register successful
           headers:
             Set-Cookie:
@@ -140,6 +140,50 @@ paths:
                         description: JWT token
                         example: secrecttoken
                       user: # UserResponse
-                        $ref: "#/components/schemas/UserResponse"
-        "400":
+                        $ref: '#/components/schemas/UserResponse'
+        '400':
           description: Register failed
+  /user/status:
+    get:
+      tags:
+        - Users
+      summary: Get user status
+      description: Get user status
+      operationId: getUserStatus
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: User status
+                  data:
+                    type: object
+                    properties:
+                      user: # UserResponse
+                        $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: User status failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: User status failed
+                    example: false
+                  message:
+                    type: string
+                    description: Error message
+                    example: 'Authentication Error'
+                  data:
+                    type: string
+                    description: Error data
+                    example: 'Not logged in'

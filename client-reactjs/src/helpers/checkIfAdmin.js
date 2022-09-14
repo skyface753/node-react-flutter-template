@@ -1,8 +1,8 @@
-import { useContext } from "react";
-import { AuthContext } from "../App";
+import { useContext } from 'react';
+import { AuthContext } from '../App';
 
 export default function CheckIfAdmin() {
-  const { state, dispatch } = useContext(AuthContext);
+  const { state } = useContext(AuthContext);
   const user = state.user;
   const isLoggedIn = state.isLoggedIn;
   if (isLoggedIn) {
