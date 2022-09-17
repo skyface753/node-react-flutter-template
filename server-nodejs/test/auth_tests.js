@@ -107,6 +107,23 @@ describe('Register', () => {
         });
     });
   });
+  describe('/POST register-user-fail unsecure password', () => {
+    it('it should NOPT register a user with unsecure password', (done) => {
+      chai
+        .request(server)
+        .put('/api/register')
+        .set('content-type', 'application/x-www-form-urlencoded')
+        .send({
+          email: credentials.newUser.email,
+          password: credentials.newUser.passwordNotSecure,
+        })
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.success).to.be.false;
+          done();
+        });
+    });
+  });
   describe('/POST register-user-fail', () => {
     it('it should not register a user with existing email', (done) => {
       after(async () => {
@@ -129,6 +146,78 @@ describe('Register', () => {
         });
     });
   });
+  describe('/POST register-user-fail short password', () => {
+    it('it should not register a user with short password', (done) => {
+      after(async () => {
+        await db.query('DELETE FROM user WHERE email = ?', [
+          credentials.newUser.email,
+        ]);
+      });
+      chai
+        .request(server)
+        .put('/api/register')
+        .set('content-type', 'application/x-www-form-urlencoded')
+        .send({
+          email: credentials.newUser.email, // Free email
+          password: credentials.newUserShortPw, // Short password - less than 8 characters
+        })
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.success).to.be.false;
+          done();
+        });
+    });
+  });
+  describe('/POST register-user-fail invalid email (regex)', () => {
+    it('it should not register a user with short password', (done) => {
+      after(async () => {
+        await db.query('DELETE FROM user WHERE email = ?', [
+          credentials.newUser.email,
+        ]);
+      });
+      chai
+        .request(server)
+        .put('/api/register')
+        .set('content-type', 'application/x-www-form-urlencoded')
+        .send({
+          email: credentials.newUser.email, // Free email
+          password: credentials.newUser.toShortPw, // Short password - less than 8 characters
+        })
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.success).to.be.false;
+          done();
+        });
+    });
+  });
+
+  for (let invalidMail of credentials.newUser.invalidMail) {
+    describe(
+      '/POST register-user-fail invalid email (regex) - ' + invalidMail,
+      () => {
+        it('it should not register a user with invalid email', (done) => {
+          after(async () => {
+            await db.query('DELETE FROM user WHERE email = ?', [
+              credentials.newUser.email,
+            ]);
+          });
+          chai
+            .request(server)
+            .put('/api/register')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({
+              email: invalidMail, // Invalid email
+              password: credentials.newUser.password, // Valid password
+            })
+            .end((err, res) => {
+              expect(res).to.have.status(400);
+              expect(res.body.success).to.be.false;
+              done();
+            });
+        });
+      }
+    );
+  }
 });
 
 describe('Logout', () => {

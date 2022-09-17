@@ -30,7 +30,7 @@ components:
           properties:
             password:
               type: string
-              description: User password
+              description: User password (hashed)
 tags:
   - name: Users
     description: User management

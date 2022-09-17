@@ -9,23 +9,18 @@ const RoutesTestService = require('./services/routes-test.js'); // Test Routes A
 const UserService = require('./services/user_service.js');
 const AvatarService = require('./services/files/avatar_service.js');
 const { uploadAvatar } = require('./helpers/multer');
-const db = require('./services/db.js');
 
 router.post('/logout', UserService.logout);
 router.post('/login', UserService.login);
 router.put('/register', UserService.register);
 
-// Docs
+// Api-Docs
 const swaggerDocsObj = require('./swagger');
-
 router.use('/docs', swaggerDocsObj.serve, swaggerDocsObj.setup);
-// router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-router.post('/db/show', db.showTables);
 
 router.post('/test/anonym', RoutesTestService.anonymous);
 
-// Set req.user to logged in user if user is logged in
+// Set req.user if user is logged in
 router.use(async (req, res, next) => {
   await Middleware.getUserIfCookieExists(req, res, next);
 });

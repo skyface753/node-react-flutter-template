@@ -46,11 +46,21 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <p>{error}</p>
+        <p
+          style={{
+            color: 'red',
+          }}
+        >
+          {error}
+        </p>
 
         <button
           className='sign-in-up-btn'
           onClick={() => {
+            if (!email || !password) {
+              setError('Please fill in all fields');
+              return;
+            }
             ApiService.login(email, password).then((res) => {
               if (!res) {
                 setError('Invalid email or password');

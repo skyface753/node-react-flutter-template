@@ -1,3 +1,29 @@
+# Server
+
+## First steps
+
+1. ./config.json
+
+```
+{
+  "SQLDB": {
+    "host": "localhost",
+    "user": "user",
+    "password": "password",
+    "database": "database"
+  },
+  "JWT_SECRET": "secret",
+  "BCRYPT_ROUNDS": 10,
+  "files": {
+    "avatarDir": "files/avatars/"
+  }
+}
+```
+
+2. Swagger.js -> ProjectName and infos
+
+```
+
 # Contribute
 
 ## Commands:
@@ -19,3 +45,4 @@ Admin123
 # TODO
 
 CSRF
+```

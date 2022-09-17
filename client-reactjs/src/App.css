@@ -39,6 +39,7 @@
 
 .main-div {
   width: 80%;
+  min-height: 100vh;
   margin: 0 auto;
   text-align: center;
   height: 100%;

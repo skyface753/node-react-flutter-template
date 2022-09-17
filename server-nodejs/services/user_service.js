@@ -3,6 +3,7 @@ const tokenHelper = require('../helpers/token');
 const config = require('../config.json');
 const bycrypt = require('bcrypt');
 const sendResponse = require('../helpers/sendResponse');
+const { validateEmail, validatePassword } = require('../helpers/validator');
 
 // Prevent brute force attacks
 const failures = {};
@@ -49,6 +50,10 @@ const UserService = {
     const { email, password } = req.body;
     if (!email || !password) {
       sendResponse.missingParams(res, 'email or password');
+      return;
+    }
+    if (!validateEmail(email)) {
+      sendResponse.error(res, 'email');
       return;
     }
     const remoteIp = req.ip;
@@ -104,6 +109,18 @@ const UserService = {
     let user = await db.query('SELECT * FROM user WHERE email = ?', [email]);
     if (user.length > 0) {
       sendResponse.error(res, 'User already exists');
+      return;
+    }
+    if (password.length < 8) {
+      sendResponse.error(res, 'Password must be at least 8 characters long');
+      return;
+    }
+    if (!validateEmail(email)) {
+      sendResponse.error(res, 'Invalid email');
+      return;
+    }
+    if (!validatePassword(password)) {
+      sendResponse.error(res, 'Invalid password');
       return;
     }
     // Hash password

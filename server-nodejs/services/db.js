@@ -1,7 +1,6 @@
 const mysql = require('mysql2/promise');
 const config = require('../config.json');
 
-// var retryCounter = 0;
 async function query(sql, params) {
   try {
     if (process.env.SQLDEBUG == 'true') {
@@ -19,31 +18,8 @@ async function query(sql, params) {
   }
 }
 
-async function showTables(req, res) {
-  try {
-    const connection = await mysql.createConnection(config.SQLDB);
-    const [results] = await connection.execute('SHOW TABLES');
-
-    // Show Create command
-    for (let i = 0; i < results.length; i++) {
-      const [table] = await connection.execute(
-        'SHOW CREATE TABLE ' + results[i].Tables_in_database
-      );
-      console.log(table[0]['Create Table']);
-    }
-    connection.end();
-    res.send({
-      message: 'Tables shown',
-    });
-  } catch (error) {
-    console.log('SQL ERROR: ' + error);
-    return false;
-  }
-}
-
 module.exports = {
   query,
-  showTables,
 };
 initDb();
 async function initDb() {

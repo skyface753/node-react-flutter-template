@@ -15,7 +15,7 @@ export default function Navbar() {
   return (
     <nav className='navigation'>
       <a href='/' className='brand-name'>
-        SkyBlog
+        SkyTemp
         {/* <Logo /> */}
       </a>
       <button
@@ -46,25 +46,6 @@ export default function Navbar() {
         <ul>
           <li>
             <a href='/home'>Home</a>
-          </li>
-
-          <li>
-            <a href='/blogs'>Blogs</a>
-          </li>
-          <li>
-            <a href='/projects'>Projects</a>
-          </li>
-          <li>
-            <a href='/Categories'>Categories</a>
-          </li>
-          <li>
-            <a href='/series'>Series</a>
-          </li>
-          <li>
-            <a href='/contact'>Contact</a>
-          </li>
-          <li>
-            <a href='/certificates'>Certificates</a>
           </li>
 
           {state.isLoggedIn ? (

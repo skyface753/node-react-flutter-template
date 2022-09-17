@@ -59,7 +59,13 @@ export default function Register() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
 
-          <p>{error}</p>
+          <p
+            style={{
+              color: 'red',
+            }}
+          >
+            {error}
+          </p>
 
           <p>
             By creating an account you agree to our{' '}
@@ -74,8 +80,17 @@ export default function Register() {
               type='submit'
               className='sign-in-up-btn'
               onClick={() => {
+                if (!email || !password || !confirmPassword) {
+                  setError('Please fill in all fields');
+                  return;
+                }
+
                 if (password !== confirmPassword) {
                   setError('Passwords do not match');
+                  return;
+                }
+                if (password.length < 8) {
+                  setError('Password must be at least 8 characters long');
                   return;
                 }
                 ApiService.register(email, password).then((res) => {

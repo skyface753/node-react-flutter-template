@@ -6,11 +6,16 @@ import React from 'react';
 
 const access = async () => {
   const response = await ApiService.status();
-  if (!response) return false;
+  if (!response) {
+    window.alert('You are not logged in');
+
+    return false;
+  }
   console.log(response);
   if (response.data.success) {
     return true;
   } else {
+    window.alert('You are not logged in');
     return false;
   }
   // return await axios.post(
