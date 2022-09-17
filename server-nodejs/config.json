@@ -10,5 +10,9 @@
   "BCRYPT_ROUNDS": 10,
   "files": {
     "avatarDir": "files/avatars/"
+  },
+  "REDIS": {
+    "host": "localhost",
+    "port": 6379
   }
 }

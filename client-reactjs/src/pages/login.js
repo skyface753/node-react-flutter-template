@@ -76,6 +76,8 @@ export default function Login() {
                   },
                 });
                 window.location.href = '/';
+              } else {
+                setError(res.data);
               }
             });
 

@@ -4,6 +4,11 @@ const config = require('../config.json');
 const bycrypt = require('bcrypt');
 const sendResponse = require('../helpers/sendResponse');
 const { validateEmail, validatePassword } = require('../helpers/validator');
+const {
+  removeTokenFromRedis,
+  addTokenToRedis,
+  checkTokenInRedis,
+} = require('../helpers/redis_helper');
 
 // Prevent brute force attacks
 const failures = {};
@@ -42,18 +47,21 @@ setInterval(function () {
 }, MINS30);
 
 const UserService = {
-  logout: (req, res) => {
+  logout: async (req, res) => {
+    const token = tokenHelper.get(req);
+    console.log('logout', token);
+    await removeTokenFromRedis(token);
     res.clearCookie('jwt');
     sendResponse.success(res, 'Logged out');
   },
   login: async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
-      sendResponse.missingParams(res, 'email or password');
+      sendResponse.missingParams(res, 'Email or password missing');
       return;
     }
     if (!validateEmail(email)) {
-      sendResponse.error(res, 'email');
+      sendResponse.error(res, 'Invalid email');
       return;
     }
     const remoteIp = req.ip;
@@ -78,11 +86,12 @@ const UserService = {
     const match = await bycrypt.compare(password, user.password);
     if (!match) {
       onLoginFail(remoteIp);
-      sendResponse.error(res, 'Wrong password');
+      sendResponse.error(res, 'Credentials do not match');
       return;
     }
     onLoginSuccess(remoteIp);
     const token = tokenHelper.sign(user.id);
+    addTokenToRedis(token, user.id);
     res.cookie('jwt', token, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -135,6 +144,7 @@ const UserService = {
       return;
     }
     const token = tokenHelper.sign(user.insertId);
+    addTokenToRedis(token, user.insertId);
     res.cookie('jwt', token, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,
@@ -151,6 +161,9 @@ const UserService = {
   },
   status: async (req, res) => {
     const userFromCookie = req.user;
+    const token = tokenHelper.get(req);
+    const userId = await checkTokenInRedis(token);
+    console.log('status', token, userId);
     if (!userFromCookie) {
       sendResponse.authError(res, 'Not logged in');
       return;

@@ -16,8 +16,10 @@
 ```
 {
   "BackendUrl": "http://localhost:5000/api",
+  "BackendFilesUrl": "http://localhost:5000/",
   "GATrackingID": ""
 }
+
 ```
 
 # Contribute

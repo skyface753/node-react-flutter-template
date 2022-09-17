@@ -84,6 +84,17 @@ export default function Register() {
                   setError('Please fill in all fields');
                   return;
                 }
+                // Check if password contains at least 8 characters, one uppercase, one lowercase, one number and one special character
+                if (
+                  !password.match(
+                    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm
+                  )
+                ) {
+                  setError(
+                    'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
+                  );
+                  return;
+                }
 
                 if (password !== confirmPassword) {
                   setError('Passwords do not match');
@@ -93,20 +104,27 @@ export default function Register() {
                   setError('Password must be at least 8 characters long');
                   return;
                 }
-                ApiService.register(email, password).then((res) => {
-                  if (res.data.success) {
-                    console.log(res.data.data.user);
-                    dispatch({
-                      type: 'LOGIN',
-                      payload: {
-                        user: res.data.data.user,
-                        isLoggedIn: true,
-                      },
-                    });
-                    window.alert('You have successfully registered!');
-                    window.location.href = lastPage;
-                  }
-                });
+                ApiService.register(email, password)
+                  .then((res) => {
+                    console.log(res);
+                    if (res.data.success) {
+                      console.log(res.data.data.user);
+                      dispatch({
+                        type: 'LOGIN',
+                        payload: {
+                          user: res.data.data.user,
+                          isLoggedIn: true,
+                        },
+                      });
+                      window.alert('You have successfully registered!');
+                      window.location.href = lastPage;
+                    } else {
+                      setError(res.data);
+                    }
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
               }}
             >
               Sign Up

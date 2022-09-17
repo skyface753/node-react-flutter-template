@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AuthContext } from '../../App';
 import ApiService from '../../services/apiService';
 import defaultImage from '../../img/default-profile-pic.png';
+import config from '../../config.json';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -47,7 +48,9 @@ export default function Navbar() {
           <li>
             <a href='/home'>Home</a>
           </li>
-
+          <li>
+            <a href='/profile'>Profile (User Route)</a>
+          </li>
           {state.isLoggedIn ? (
             state.user.role === 'admin' ? (
               <li>
@@ -86,10 +89,10 @@ export default function Navbar() {
                 }
               >
                 <div className='loggedInUserMenu-Button'>
-                  {state.user.picture ? (
+                  {state.user.avatarPath ? (
                     <img
                       className='profile-pic'
-                      src={state.user.picture}
+                      src={config.BackendFilesUrl + state.user.avatarPath}
                       alt='User'
                     />
                   ) : (
