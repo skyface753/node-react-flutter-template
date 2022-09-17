@@ -7,7 +7,6 @@ const { validateEmail, validatePassword } = require('../helpers/validator');
 const {
   removeTokenFromRedis,
   addTokenToRedis,
-  checkTokenInRedis,
 } = require('../helpers/redis_helper');
 
 // Prevent brute force attacks
@@ -161,9 +160,9 @@ const UserService = {
   },
   status: async (req, res) => {
     const userFromCookie = req.user;
-    const token = tokenHelper.get(req);
-    const userId = await checkTokenInRedis(token);
-    console.log('status', token, userId);
+    // const token = tokenHelper.get(req);
+    // const userId = await checkTokenInRedis(token, req.ip);
+    // console.log('status', token, userId);
     if (!userFromCookie) {
       sendResponse.authError(res, 'Not logged in');
       return;

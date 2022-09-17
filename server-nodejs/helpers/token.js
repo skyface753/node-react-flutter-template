@@ -1,13 +1,15 @@
-var jwt = require("jsonwebtoken");
-const config = require("../config.json");
+var jwt = require('jsonwebtoken');
+const config = require('../config.json');
 // jwt 30 Tage
 const jwtExpirySeconds = 60 * 60 * 24 * 30;
+// jwt 1 Sekunde - Test für redis
+// const jwtExpirySeconds = 1;
 const jwtKey = config.JWT_SECRET;
 
 let tokenHelper = {
   sign: (user_id) => {
     return jwt.sign({ user_id }, jwtKey, {
-      algorithm: "HS256",
+      algorithm: 'HS256',
       expiresIn: jwtExpirySeconds,
     });
   },
@@ -16,23 +18,7 @@ let tokenHelper = {
     if (!token) {
       return false;
     }
-    // console.log("Token: " + token);
     return token;
-    // var token = req.headers.authorization;
-    // if(token){
-    //     console.log("Token: " + token);
-    //     return token
-    // }
-    // if (!token) {
-    //   if (req.cookies.jwt) {
-    //     console.log("Token from cookie: " + req.cookies.jwt);
-    //     token = req.cookies.jwt;
-    //   } else {
-    //     return false;
-    //   }
-    // }
-    // console.log("Token from Header: " + token);
-    // return token;
   },
   verify: (req) => {
     const token = tokenHelper.get(req);
@@ -47,6 +33,20 @@ let tokenHelper = {
     }
     var userId = payload.user_id;
     // console.log("Token from request: " + token);
+    if (token) {
+      return userId;
+    } else {
+      return false;
+    }
+  },
+  verifyAToken: (token) => {
+    var payload;
+    try {
+      payload = jwt.verify(token, jwtKey);
+    } catch (e) {
+      return false;
+    }
+    var userId = payload.user_id;
     if (token) {
       return userId;
     } else {

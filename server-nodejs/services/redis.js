@@ -19,7 +19,7 @@ class RedisClient {
 
   async set(key, value) {
     if (!this.ready) return;
-    if (!key) return;
+    if (!key || !value) return;
     await this.client.set(key, value);
   }
 
@@ -27,6 +27,11 @@ class RedisClient {
     if (!this.ready) return;
     if (!key) return;
     return await this.client.get(key);
+  }
+
+  async getAllKeys() {
+    if (!this.ready) return;
+    return await this.client.keys('*');
   }
 
   async del(key) {

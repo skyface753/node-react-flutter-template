@@ -12,14 +12,8 @@ const Middleware = {
     } else {
       var user = await db.query('SELECT * FROM user WHERE id = ?', [userId]);
       let userIdFromRedis = await checkTokenInRedis(tokenHelper.get(req));
-      console.log('getUserIfCookieExistsREDIS', userIdFromRedis);
       if (user.length === 0 || !userIdFromRedis || userIdFromRedis != userId) {
-        console.log(
-          'getUserIfCookieExists',
-          user.length,
-          userIdFromRedis,
-          userId
-        );
+        console.log("User not found in Redis or Db or doesn't match");
         req.user = false;
         next();
       } else {
