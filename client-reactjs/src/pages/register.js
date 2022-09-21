@@ -16,7 +16,7 @@ export default function Register() {
     <div>
       <div className='sign-in-up-container'>
         <div>
-          <h1>Sign Up</h1>
+          <h1 className='site-title'>Sign Up</h1>
           <p>Please fill in this form to create an account.</p>
           <hr />
 

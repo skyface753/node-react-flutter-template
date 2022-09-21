@@ -4,10 +4,6 @@ const config = require('../config.json');
 const bycrypt = require('bcrypt');
 const sendResponse = require('../helpers/sendResponse');
 const { validateEmail, validatePassword } = require('../helpers/validator');
-const {
-  removeTokenFromRedis,
-  addTokenToRedis,
-} = require('../helpers/redis_helper');
 
 // Prevent brute force attacks
 const failures = {};
@@ -48,8 +44,8 @@ setInterval(function () {
 const UserService = {
   logout: async (req, res) => {
     const token = tokenHelper.get(req);
+    req.session = null;
     console.log('logout', token);
-    await removeTokenFromRedis(token);
     res.clearCookie('jwt');
     sendResponse.success(res, 'Logged out');
   },
@@ -90,13 +86,12 @@ const UserService = {
     }
     onLoginSuccess(remoteIp);
     const token = tokenHelper.sign(user.id);
-    addTokenToRedis(token, user.id);
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      sameSite: 'Strict',
-    });
-
+    // res.cookie('jwt', token, {
+    //   httpOnly: true,
+    //   maxAge: 1000 * 60 * 60 * 24 * 7,
+    //   sameSite: 'Strict',
+    // });
+    req.session.jwt = token;
     sendResponse.success(res, {
       token: token,
       user: {
@@ -143,12 +138,12 @@ const UserService = {
       return;
     }
     const token = tokenHelper.sign(user.insertId);
-    addTokenToRedis(token, user.insertId);
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      sameSite: 'Strict',
-    });
+    req.session.jwt = token;
+    // res.cookie('jwt', token, {
+    //   httpOnly: true,
+    //   maxAge: 1000 * 60 * 60 * 24 * 7,
+    //   sameSite: 'Strict',
+    // });
     sendResponse.success(res, {
       token: token,
       user: {

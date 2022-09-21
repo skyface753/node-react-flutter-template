@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const Middleware = require('./middleware');
+const csrf = require('csrf');
+var csrfProtect = csrf({ cookie: true });
 const swaggerDocsObj = require('./swagger'); // Swagger docs
 // const csrf = require("csurf");
 

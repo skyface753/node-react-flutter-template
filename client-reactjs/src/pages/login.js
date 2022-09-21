@@ -19,7 +19,7 @@ export default function Login() {
       {/* <GoogleLoginButton /> */}
       {/* <GitHubLoginButton /> */}
       <div className='container'>
-        <h1>Sign In</h1>
+        <h1 className='site-title'>Sign In</h1>
         <hr />
 
         <label htmlFor='email'>

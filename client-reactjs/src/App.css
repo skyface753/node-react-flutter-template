@@ -37,6 +37,11 @@
   }
 }
 
+body {
+  background: #2a2b2e;
+  color: #fff;
+}
+
 .main-div {
   width: 80%;
   min-height: 100vh;
@@ -47,4 +52,11 @@
   padding: 5%;
   padding-top: 2% !important;
   padding-bottom: 7rem;
+}
+
+.site-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1rem;
 }
