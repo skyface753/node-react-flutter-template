@@ -18,6 +18,7 @@ let tokenHelper = {
     if (!token) {
       return false;
     }
+    // console.log("Token: " + token);
     return token;
   },
   verify: (req) => {

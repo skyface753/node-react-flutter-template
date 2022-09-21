@@ -1,45 +1,78 @@
-const { checkTokenInRedis } = require('./helpers/redis_helper');
+// const { checkTokenInRedis } = require('./helpers/redis_helper');
 const sendResponse = require('./helpers/sendResponse');
-const tokenHelper = require('./helpers/token');
+// const tokenHelper = require('./helpers/token');
 const db = require('./services/db.js');
-
+const jwt = require('jsonwebtoken');
+const config = require('./config.json');
 const Middleware = {
-  getUserIfCookieExists: async (req, res, next) => {
-    var userId = tokenHelper.verify(req);
-    if (!userId) {
-      req.user = false;
-      next();
-    } else {
-      var user = await db.query('SELECT * FROM user WHERE id = ?', [userId]);
-      let userIdFromRedis = await checkTokenInRedis(tokenHelper.get(req));
-      if (user.length === 0 || !userIdFromRedis || userIdFromRedis != userId) {
-        console.log("User not found in Redis or Db or doesn't match");
-        req.user = false;
-        next();
-      } else {
-        req.user = user[0];
-        next();
-      }
-    }
-  },
   authUser: async (req, res, next) => {
-    if (!req.user) {
-      sendResponse.authError(res, 'Not logged in');
-      return;
+    var token = req.cookies.jwt;
+    if (!token) {
+      return sendResponse.authError(res, 'Not logged in');
     }
-    next();
+    try {
+      var payload = jwt.verify(token, config.JWT_SECRET);
+      if (!payload) {
+        return sendResponse.authError(res, 'Not logged in');
+      }
+      var user = await db.query('SELECT * FROM user WHERE id = ?', [
+        payload.id,
+      ]);
+      if (user.length === 0) {
+        return sendResponse.authError(res, 'User not found');
+      }
+      req.user = user[0];
+      next();
+    } catch (err) {
+      catchError(err, res);
+    }
   },
   authAdmin: async (req, res, next) => {
-    if (!req.user) {
-      sendResponse.authError(res, 'Not logged in');
-      return;
+    var token = req.cookies.jwt;
+    if (!token) {
+      return sendResponse.authError(res, 'Not logged in');
     }
-    if (req.user.roleFk !== 2) {
-      sendResponse.authAdminError(res, 'Not admin');
-      return;
+    try {
+      var payload = jwt.verify(token, config.JWT_SECRET);
+      if (!payload) {
+        return sendResponse.authError(res, 'Not logged in');
+      }
+      var user = await db.query('SELECT * FROM user WHERE id = ?', [
+        payload.id,
+      ]);
+      if (user.length === 0) {
+        return sendResponse.authError(res, 'User not found');
+      }
+      if (user[0].roleFk !== 2) {
+        return sendResponse.authError(res, 'Not an admin');
+      }
+      req.user = user[0];
+      next();
+    } catch (err) {
+      catchError(err, res);
     }
-    next();
   },
+  catchErrorExport: async (err, res) => {
+    catchError(err, res);
+  },
+};
+
+const catchError = (err, res) => {
+  if (err instanceof jwt.TokenExpiredError) {
+    return res.status(401).json({
+      error: 'jwt expired',
+    });
+  } else if (err instanceof jwt.JsonWebTokenError) {
+    return res.status(401).json({
+      error: 'Invalid token',
+    });
+  }
+  if (err instanceof jwt.JsonWebTokenError) {
+    sendResponse.authError(res, 'Token invalid');
+    return;
+  }
+  sendResponse.error(res, err);
+  return;
 };
 
 module.exports = Middleware;

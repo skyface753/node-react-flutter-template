@@ -1,21 +1,19 @@
 import { useState, useContext, useEffect } from 'react';
 import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../App';
-import ApiService from '../services/apiService';
 import React from 'react';
+import api from '../services/api';
 
 const access = async () => {
-  const response = await ApiService.status();
+  const response = await api.get('/auth/status');
+  console.log('After /auth/status');
   if (!response) {
-    window.alert('You are not logged in');
-
     return false;
   }
   console.log(response);
   if (response.data.success) {
     return true;
   } else {
-    window.alert('You are not logged in');
     return false;
   }
   // return await axios.post(

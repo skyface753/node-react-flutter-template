@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import '../styles/sign-up-and-in.css';
 import { AuthContext } from '../App';
-import ApiService from '../services/apiService';
+import api from '../services/api';
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 
 export default function Register() {
@@ -104,7 +104,11 @@ export default function Register() {
                   setError('Password must be at least 8 characters long');
                   return;
                 }
-                ApiService.register(email, password)
+                api
+                  .post('/auth/register', {
+                    email,
+                    password,
+                  })
                   .then((res) => {
                     console.log(res);
                     if (res.data.success) {

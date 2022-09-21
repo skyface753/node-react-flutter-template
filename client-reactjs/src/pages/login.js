@@ -6,7 +6,9 @@ import '../styles/sign-up-and-in.css';
 
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 import { AuthContext } from '../App';
-import ApiService from '../services/apiService';
+import { uninterceptedAxiosInstance } from '../services/api';
+// import api from '../services/api.js';
+// import ApiService from '../services/apiService';
 
 export default function Login() {
   const { dispatch } = useContext(AuthContext);
@@ -61,25 +63,48 @@ export default function Login() {
               setError('Please fill in all fields');
               return;
             }
-            ApiService.login(email, password).then((res) => {
-              if (!res) {
-                setError('Invalid email or password');
-                return;
-              }
-              if (res.data.success) {
-                console.log(res.data.data.user);
-                dispatch({
-                  type: 'LOGIN',
-                  payload: {
-                    user: res.data.data.user,
-                    isLoggedIn: true,
-                  },
-                });
-                window.location.href = '/';
-              } else {
-                setError(res.data);
-              }
-            });
+            uninterceptedAxiosInstance
+              .post('/auth/login', { email, password })
+              .then((res) => {
+                if (res.data.success) {
+                  localStorage.setItem(
+                    'token',
+                    JSON.stringify(res.data.data.accessToken)
+                  );
+                  dispatch({
+                    type: 'LOGIN',
+                    payload: {
+                      user: res.data.data.user,
+                      isLoggedIn: true,
+                      accessToken: res.data.data.accessToken,
+                      refreshToken: res.data.data.refreshToken,
+                    },
+                  });
+                  window.location.href = '/';
+                } else {
+                  setError(res.data.message);
+                }
+              });
+
+            // ApiService.login(email, password).then((res) => {
+            //   if (!res) {
+            //     setError('Invalid email or password');
+            //     return;
+            //   }
+            //   if (res.data.success) {
+            //     console.log(res.data.data.user);
+            //     dispatch({
+            //       type: 'LOGIN',
+            //       payload: {
+            //         user: res.data.data.user,
+            //         isLoggedIn: true,
+            //       },
+            //     });
+            //     window.location.href = '/';
+            //   } else {
+            //     setError(res.data);
+            //   }
+            // });
 
             // apiService("login/manuelly", {
             //   username: email,

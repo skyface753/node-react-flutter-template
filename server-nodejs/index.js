@@ -62,7 +62,7 @@ app.use(morgan('combined'));
 app.use('/files/avatars', express.static('files/avatars'));
 
 // Routes
-const routes = require('./routes');
+const routes = require('./routes/index');
 app.use('/api/', routes);
 
 // Start Server

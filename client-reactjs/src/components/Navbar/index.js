@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import '../../styles/navbar.css';
 import { useState } from 'react';
 import { AuthContext } from '../../App';
-import ApiService from '../../services/apiService';
 import defaultImage from '../../img/default-profile-pic.png';
 import config from '../../config.json';
+import api from '../../services/api';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -115,7 +115,7 @@ export default function Navbar() {
                   <a
                     href='#'
                     onClick={() => {
-                      ApiService.logout().then((res) => {
+                      api.post('/auth/logout').then((res) => {
                         if (res.data.success) {
                           dispatch({ type: 'LOGOUT' });
                           window.location.href = '/';
