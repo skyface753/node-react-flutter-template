@@ -55,6 +55,36 @@ const Middleware = {
   catchErrorExport: async (err, res) => {
     catchError(err, res);
   },
+  csrfValidation: async (req, res, next) => {
+    const csrfTokenInHeader = req.headers['x-csrf-token'];
+    try {
+      if (!csrfTokenInHeader) {
+        return sendResponse.authError(res, 'CSRF token missing');
+      }
+      var payload = jwt.verify(csrfTokenInHeader, config.JWT_SECRET);
+      if (!payload) {
+        return sendResponse.authError(res, 'CSRF token invalid');
+      }
+
+      next();
+    } catch (err) {
+      if (err instanceof jwt.TokenExpiredError) {
+        return sendResponse.authError(res, 'CSRF token expired');
+      } else if (err instanceof jwt.JsonWebTokenError) {
+        return sendResponse.authError(res, 'CSRF token invalid');
+      }
+      return res.status(500).json({
+        message: 'Internal server error - csrfValidation',
+      });
+    }
+    // const csrfTokenInSession = req.session.csrf;
+    // // console.log(csrfTokenInHeader);
+    // // console.log(csrfTokenInSession);
+    // if (csrfTokenInHeader !== csrfTokenInSession) {
+    //   return sendResponse.authError(res, 'CSRF token mismatch');
+    // }
+    // next();
+  },
 };
 
 const catchError = (err, res) => {

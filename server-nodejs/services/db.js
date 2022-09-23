@@ -29,7 +29,7 @@ async function initDb() {
   const role =
     'CREATE TABLE IF NOT EXISTS `role` ( `id` int(11) NOT NULL AUTO_INCREMENT, `title` varchar(50) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4';
   const user =
-    'CREATE TABLE IF NOT EXISTS `user` (`id` int(11) NOT NULL AUTO_INCREMENT,`email` varchar(100) NOT NULL,`password` varchar(250) NOT NULL,`roleFk` int(11) NOT NULL DEFAULT 1, PRIMARY KEY (`id`), KEY `role_fk` (`roleFk`), CONSTRAINT `role_fk` FOREIGN KEY (`roleFk`) REFERENCES `role` (`id`) ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4';
+    'CREATE TABLE IF NOT EXISTS `user` (`id` int(11) NOT NULL AUTO_INCREMENT,`username` varchar(100) NOT NULL, `email` varchar(100) NOT NULL,`password` varchar(250) NOT NULL,`roleFk` int(11) NOT NULL DEFAULT 1, PRIMARY KEY (`id`), KEY `role_fk` (`roleFk`), CONSTRAINT `role_fk` FOREIGN KEY (`roleFk`) REFERENCES `role` (`id`) ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4';
   var avatarResult = await query(avatar, []);
   var roleResult = await query(role, []);
   var userResult = await query(user, []);
@@ -50,16 +50,17 @@ async function initDb() {
   var commands = [];
 
   commands.push('ALTER TABLE `user` ADD UNIQUE KEY `email` (`email`)');
+  commands.push('ALTER TABLE `user` ADD UNIQUE KEY `username` (`username`)');
   commands.push(
     'ALTER TABLE `avatar` ADD CONSTRAINT `user_fk` FOREIGN KEY (`userFk`) REFERENCES `user` (`id`)'
   );
   commands.push("INSERT INTO `role` (`id`, `title`) VALUES (1, 'user')");
   commands.push("INSERT INTO `role` (`id`, `title`) VALUES (2, 'admin')");
   commands.push(
-    "INSERT INTO `user` (`id`, `email`, `password`, `roleFk`) VALUES (1, 'admin@example.de', '$2b$10$957SjQ2vLy8aBPIOn6aKduL/tMjzvKGSGK8N34idvLaf/PTjXG0ve', 2)"
+    "INSERT INTO `user` (`id`, `username`, `email`, `password`, `roleFk`) VALUES (1, 'skyface', 'admin@example.de', '$2b$10$957SjQ2vLy8aBPIOn6aKduL/tMjzvKGSGK8N34idvLaf/PTjXG0ve', 2)"
   );
   commands.push(
-    "INSERT INTO `user` (`id`, `email`, `password`, `roleFk`) VALUES (2, 'test@example.de', '$2b$10$RZLpZn3IdVHfxn40HZdd8uZTjeRCgxkG2ZGTdzhqsTG6t/dK/BR7.', 1)"
+    "INSERT INTO `user` (`id`, `username`, `email`, `password`, `roleFk`) VALUES (2, 'justANormalUser', 'test@example.de', '$2b$10$RZLpZn3IdVHfxn40HZdd8uZTjeRCgxkG2ZGTdzhqsTG6t/dK/BR7.', 1)"
   );
   var promises = [];
   for (let i = 0; i < commands.length; i++) {

@@ -3,8 +3,10 @@ import axios from 'axios';
 import config from '../config.json';
 const API_URL = config.BackendUrl;
 const onRequest = (config) => {
-  const token = JSON.parse(localStorage.getItem('accessToken'));
-  config.headers['Authorization'] = `Bearer ${token}`;
+  const token = JSON.parse(localStorage.getItem('csrfToken'));
+  if (token) {
+    config.headers['X-CSRF-Token'] = token;
+  }
 
   return config;
 };
@@ -34,15 +36,17 @@ const onResponseError = async (error) => {
           refreshToken: oldRefreshToken,
         });
 
-        const { refreshToken, accessToken, user } = rs.data.data;
+        const { refreshToken, accessToken, csrfToken, user } = rs.data.data;
 
         localStorage.setItem('accessToken', JSON.stringify(accessToken));
         localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
+        localStorage.setItem('csrfToken', JSON.stringify(csrfToken));
         console.log('newRefreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(user));
 
         return axios(error.config);
       } catch (_error) {
+        console.log('onResponseError2', _error);
         return Promise.reject(_error);
       }
     }

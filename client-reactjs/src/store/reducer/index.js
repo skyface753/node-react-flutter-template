@@ -12,6 +12,7 @@ export const initialState = {
   user: tryParse(localStorage.getItem('user')) || null,
   accessToken: tryParse(localStorage.getItem('accessToken')) || null,
   refreshToken: tryParse(localStorage.getItem('refreshToken')) || null,
+  csrfToken: tryParse(localStorage.getItem('csrfToken')) || null,
   // user: JSON.parse(localStorage.getItem("user")) || null,
   // client_id: process.env.REACT_APP_CLIENT_ID,
   // redirect_uri: process.env.REACT_APP_REDIRECT_URI,
@@ -35,7 +36,10 @@ export const reducer = (state, action) => {
         'refreshToken',
         JSON.stringify(action.payload.refreshToken)
       );
-
+      localStorage.setItem(
+        'csrfToken',
+        JSON.stringify(action.payload.csrfToken)
+      );
       return {
         ...state,
         isLoggedIn: action.payload.isLoggedIn,

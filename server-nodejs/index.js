@@ -10,6 +10,7 @@ var cookieSession = require('cookie-session');
 // Variables
 var app = express();
 var port = 5000;
+const config = require('./config.json');
 
 // Reduce Fingerprinting
 app.disable('x-powered-by');
@@ -44,17 +45,17 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // set up the cookie for the session
-app.use(
-  cookieSession({
-    name: 'session', // name of the cookie
-    secret: 'MAKE_THIS_SECRET_SECURE', // key to encode session
-    maxAge: 24 * 60 * 60 * 1000, // cookie's lifespan
-    sameSite: 'lax', // controls when cookies are sent
-    path: '/', // explicitly set this for security purposes
-    secure: process.env.NODE_ENV === 'production', // cookie only sent on HTTPS
-    httpOnly: true, // cookie is not available to JavaScript (client)
-  })
-);
+// app.use(
+//   cookieSession({
+//     name: 'session', // name of the cookie
+//     secret: config.CSRF_SESSION_SECRET, // key to encode session
+//     maxAge: 24 * 60 * 60 * 1000, // cookie's lifespan -> 1 day
+//     sameSite: 'lax', // controls when cookies are sent
+//     path: '/', // explicitly set this for security purposes
+//     secure: process.env.MODE !== 'DEV', // cookie only sent on HTTPS
+//     httpOnly: true, // cookie is not available to JavaScript (client)
+//   })
+// );
 
 app.use(morgan('combined'));
 

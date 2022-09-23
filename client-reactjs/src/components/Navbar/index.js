@@ -114,13 +114,32 @@ export default function Navbar() {
                   {/* Logout */}
                   <a
                     href='#'
-                    onClick={() => {
-                      api.post('/auth/logout').then((res) => {
-                        if (res.data.success) {
-                          dispatch({ type: 'LOGOUT' });
-                          window.location.href = '/';
-                        }
-                      });
+                    onClick={async () => {
+                      const currentRefreshToken = JSON.parse(
+                        localStorage.getItem('refreshToken')
+                      );
+                      try {
+                        await api
+                          .post('/auth/logout', {
+                            refreshToken: currentRefreshToken, // To delete from redis
+                          })
+                          .then((res) => {
+                            if (res.data.success) {
+                              dispatch({ type: 'LOGOUT' });
+                              window.location.href = '/';
+                              return;
+                            } else {
+                              console.log('Error');
+                              console.log(res.data);
+                            }
+                          });
+                        dispatch({ type: 'LOGOUT' });
+                        window.location.href = '/';
+                      } catch (err) {
+                        console.log(err);
+                        dispatch({ type: 'LOGOUT' });
+                        window.location.href = '/';
+                      }
                     }}
                   >
                     Logout

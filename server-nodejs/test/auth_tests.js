@@ -4,6 +4,7 @@ const { describe } = require('mocha');
 let expect = chai.expect;
 // let should = chai.should();
 let server = require('../index');
+const db = require('../services/db.js');
 
 chai.use(chaiHttp);
 
@@ -11,310 +12,314 @@ const credentials = require('./credentials.json');
 
 describe('Login', () => {
   describe('/POST login-user-success', () => {
-    it('it should login a user with user role', (done) => {
+    it('it should login a user', (done) => {
       chai
         .request(server)
-        .post('/api/login')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.user.email,
-          password: credentials.user.password,
-        })
-
+        .post('/api/auth/login')
+        .set('content-type', 'application/json')
+        .send(credentials.user)
         .end((err, res) => {
           expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
-          expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.have.property('accessToken');
+          expect(res.body.data).to.have.property('refreshToken');
+          expect(res.body.data).to.have.property('csrfToken');
+          expect(res.body.data).to.have.property('user');
+          expect(res.body.data.user).to.have.property('email');
           expect(res.body.data.user.email).to.equal(credentials.user.email);
-          expect(res.body.data.user).to.have.property('id');
-          expect(res.body.data.user).to.have.property('avatarPath');
+          expect(res.body.data.user).to.have.property('roleFk');
+          expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body.success).to.be.true;
+          done();
+        });
+    });
+    it('it should login a admin', (done) => {
+      chai
+        .request(server)
+        .post('/api/auth/login')
+        .set('content-type', 'application/json')
+        .send(credentials.admin)
+        .end((err, res) => {
+          expect(res).to.have.status(200);
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.have.property('accessToken');
+          expect(res.body.data).to.have.property('refreshToken');
+          expect(res.body.data).to.have.property('csrfToken');
+          expect(res.body.data).to.have.property('user');
+          expect(res.body.data.user).to.have.property('email');
+          expect(res.body.data.user.email).to.equal(credentials.admin.email);
+          expect(res.body.data.user).to.have.property('roleFk');
+          expect(res.body.data.user.roleFk).to.equal(2);
+          expect(res.body.success).to.be.true;
           done();
         });
     });
   });
   describe('/POST login-user-fail', () => {
-    it('it should not login a user with wrong email', (done) => {
+    it('it should not login a user - wrong mail', (done) => {
       chai
         .request(server)
-        .post('/api/login')
-        .set('content-type', 'application/x-www-form-urlencoded')
+        .post('/api/auth/login')
+        .set('content-type', 'application/json')
         .send({
-          email: 'notAMail@example.de',
+          email: credentials.user.email + 'wrong',
           password: credentials.user.password,
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
+          expect(res.body).to.have.property('success');
           expect(res.body.success).to.be.false;
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('User not found');
+
           done();
         });
     });
-    it('it should not login a user with wrong password', (done) => {
+    it('it should not login a user - wrong password', (done) => {
       chai
         .request(server)
-        .post('/api/login')
-        .set('content-type', 'application/x-www-form-urlencoded')
+        .post('/api/auth/login')
+        .set('content-type', 'application/json')
         .send({
           email: credentials.user.email,
-          password: 'wrongPassword',
+          password: credentials.user.password + 'wrong',
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
+          expect(res.body).to.have.property('success');
           expect(res.body.success).to.be.false;
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('Credentials do not match');
+
           done();
         });
     });
   });
-  describe('/POST login-admin-success', () => {
-    it('it should login a user with admin role', (done) => {
-      chai
-        .request(server)
-        .post('/api/login')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.admin.email,
-          password: credentials.admin.password,
-        })
-        .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
-          expect(res.body.data.user.roleFk).to.equal(2);
-          done();
-        });
-    });
-  });
-  // Login Admin Fail handled in user login fail
 });
 
-// DB Service to delete registered user
-const db = require('../services/db');
-
-describe('Register', () => {
-  describe('/POST register-user-success', () => {
-    it('it should register a user with user role', (done) => {
+describe('Refresh', () => {
+  describe('/POST refresh-token-success', () => {
+    var refreshToken;
+    before((done) => {
       chai
         .request(server)
-        .put('/api/register')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.newUser.email,
-          password: credentials.newUser.password,
-        })
+        .post('/api/auth/login')
+        .set('content-type', 'application/json')
+        .send(credentials.user)
         .end((err, res) => {
           expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.have.property('accessToken');
+          expect(res.body.data).to.have.property('refreshToken');
+          refreshToken = res.body.data.refreshToken;
+          expect(res.body.data).to.have.property('csrfToken');
+          expect(res.body.data).to.have.property('user');
+          expect(res.body.data.user).to.have.property('email');
+          expect(res.body.data.user.email).to.equal(credentials.user.email);
+          expect(res.body.data.user).to.have.property('roleFk');
           expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body.success).to.be.true;
           done();
         });
     });
-  });
-  describe('/POST register-user-fail unsecure password', () => {
-    it('it should NOPT register a user with unsecure password', (done) => {
+    it('it should refresh a token', (done) => {
       chai
         .request(server)
-        .put('/api/register')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.newUser.email,
-          password: credentials.newUser.passwordNotSecure,
-        })
+        .post('/api/auth/refreshToken')
+        .set('content-type', 'application/json')
+        .send({ refreshToken: refreshToken })
         .end((err, res) => {
-          expect(res).to.have.status(400);
-          expect(res.body.success).to.be.false;
+          expect(res).to.have.status(200);
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.have.property('accessToken');
+          expect(res.body.data).to.have.property('refreshToken');
+          expect(res.body.data.refreshToken).to.not.equal(refreshToken);
+          expect(res.body.data).to.have.property('csrfToken');
+          expect(res.body.data).to.have.property('user');
+          expect(res.body.data.user).to.have.property('email');
+          expect(res.body.data.user.email).to.equal(credentials.user.email);
+          expect(res.body.data.user).to.have.property('roleFk');
+          expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body.success).to.be.true;
           done();
         });
     });
   });
-  describe('/POST register-user-fail', () => {
-    it('it should not register a user with existing email', (done) => {
-      after(async () => {
-        await db.query('DELETE FROM user WHERE email = ?', [
-          credentials.newUser.email,
-        ]);
-      });
+  describe('/POST refresh-token-fail', () => {
+    it('it should not refresh a token - wrong token', (done) => {
       chai
         .request(server)
-        .put('/api/register')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.newUser.email, // Existing email
-          password: credentials.newUser.password,
-        })
+        .post('/api/auth/refreshToken')
+        .set('content-type', 'application/json')
+        .send({ refreshToken: 'wrong' })
         .end((err, res) => {
           expect(res).to.have.status(400);
+          expect(res.body).to.have.property('success');
           expect(res.body.success).to.be.false;
-          done();
-        });
-    });
-  });
-  describe('/POST register-user-fail short password', () => {
-    it('it should not register a user with short password', (done) => {
-      after(async () => {
-        await db.query('DELETE FROM user WHERE email = ?', [
-          credentials.newUser.email,
-        ]);
-      });
-      chai
-        .request(server)
-        .put('/api/register')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.newUser.email, // Free email
-          password: credentials.newUserShortPw, // Short password - less than 8 characters
-        })
-        .end((err, res) => {
-          expect(res).to.have.status(400);
-          expect(res.body.success).to.be.false;
-          done();
-        });
-    });
-  });
-  describe('/POST register-user-fail invalid email (regex)', () => {
-    it('it should not register a user with short password', (done) => {
-      after(async () => {
-        await db.query('DELETE FROM user WHERE email = ?', [
-          credentials.newUser.email,
-        ]);
-      });
-      chai
-        .request(server)
-        .put('/api/register')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.newUser.email, // Free email
-          password: credentials.newUser.toShortPw, // Short password - less than 8 characters
-        })
-        .end((err, res) => {
-          expect(res).to.have.status(400);
-          expect(res.body.success).to.be.false;
-          done();
-        });
-    });
-  });
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('Invalid refresh token');
 
-  for (let invalidMail of credentials.newUser.invalidMail) {
-    describe(
-      '/POST register-user-fail invalid email (regex) - ' + invalidMail,
-      () => {
-        it('it should not register a user with invalid email', (done) => {
-          after(async () => {
-            await db.query('DELETE FROM user WHERE email = ?', [
-              credentials.newUser.email,
-            ]);
-          });
-          chai
-            .request(server)
-            .put('/api/register')
-            .set('content-type', 'application/x-www-form-urlencoded')
-            .send({
-              email: invalidMail, // Invalid email
-              password: credentials.newUser.password, // Valid password
-            })
-            .end((err, res) => {
-              expect(res).to.have.status(400);
-              expect(res.body.success).to.be.false;
-              done();
-            });
+          done();
         });
-      }
-    );
-  }
+    });
+  });
 });
 
 describe('Logout', () => {
   describe('/POST logout-success', () => {
+    var refreshToken;
+    before((done) => {
+      chai
+        .request(server)
+        .post('/api/auth/login')
+        .set('content-type', 'application/json')
+        .send(credentials.user)
+        .end((err, res) => {
+          expect(res).to.have.status(200);
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.have.property('accessToken');
+          expect(res.body.data).to.have.property('refreshToken');
+          refreshToken = res.body.data.refreshToken;
+          expect(res.body.data).to.have.property('csrfToken');
+          expect(res.body.data).to.have.property('user');
+          expect(res.body.data.user).to.have.property('email');
+          expect(res.body.data.user.email).to.equal(credentials.user.email);
+          expect(res.body.data.user).to.have.property('roleFk');
+          expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body.success).to.be.true;
+          done();
+        });
+    });
     it('it should logout a user', (done) => {
       chai
         .request(server)
-        .post('/api/logout')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send()
+        .post('/api/auth/logout')
+        .set('content-type', 'application/json')
+        .send({ refreshToken: refreshToken })
         .end((err, res) => {
           expect(res).to.have.status(200);
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.be.equal('Logged out');
           expect(res.body.success).to.be.true;
+          done();
+        });
+    });
+  });
+  describe('/POST logout-fail', () => {
+    it('it should not logout a user - wrong token', (done) => {
+      chai
+        .request(server)
+        .post('/api/auth/logout')
+        .set('content-type', 'application/json')
+        .send({ refreshToken: 'wrong' })
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          expect(res.body).to.have.property('success');
+          expect(res.body.success).to.be.false;
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('Invalid refresh token');
+
+          done();
+        });
+    });
+  });
+  describe('/POST logout-fail', () => {
+    it('it should not logout a user - no token', (done) => {
+      chai
+        .request(server)
+        .post('/api/auth/logout')
+        .set('content-type', 'application/json')
+        .send()
+        .end((err, res) => {
+          expect(res).to.have.status(401);
+          expect(res.body).to.have.property('success');
+          expect(res.body.success).to.be.false;
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Authentication Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('No refresh token');
+
           done();
         });
     });
   });
 });
 
-describe('Status Check', () => {
-  describe('/GET status-check-success-user', () => {
-    var cookie;
-    before((done) => {
+describe('Register', () => {
+  describe('/POST register-success', () => {
+    it('it should register a user', (done) => {
       chai
         .request(server)
-        .post('/api/login')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send({
-          email: credentials.user.email,
-          password: credentials.user.password,
-        })
+        .put('/api/auth/register')
+        .set('content-type', 'application/json')
+        .send(credentials.newUser)
         .end((err, res) => {
           expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
-          cookie = res.headers['set-cookie'];
-          done();
-        });
-    });
-    it('it should check the status of the USER-login', (done) => {
-      chai
-        .request(server)
-        .get('/api/user/status')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .set('Cookie', cookie)
-        .send()
-        .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
+          expect(res.body).to.have.property('success');
+          expect(res.body.data).to.have.property('accessToken');
+          expect(res.body.data).to.have.property('refreshToken');
+          expect(res.body.data).to.have.property('csrfToken');
+          expect(res.body.data).to.have.property('user');
+          expect(res.body.data.user).to.have.property('email');
+          expect(res.body.data.user.email).to.equal(credentials.newUser.email);
+          expect(res.body.data.user).to.have.property('roleFk');
           expect(res.body.data.user.roleFk).to.equal(1);
+          expect(res.body.success).to.be.true;
           done();
         });
     });
   });
-  // Admin Test
-  describe('/GET status-check-success-admin', () => {
-    var cookie;
-    before((done) => {
+  describe('/POST register-fail', () => {
+    afterEach(async () => {
+      await db.query('DELETE FROM user WHERE email = ?', [
+        credentials.newUser.email,
+      ]);
+    });
+    it('it should not register a user - email already exists', (done) => {
       chai
         .request(server)
-        .post('/api/login')
-        .set('content-type', 'application/x-www-form-urlencoded')
+        .put('/api/auth/register')
+        .set('content-type', 'application/json')
+        .send(credentials.newUser)
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          expect(res.body).to.have.property('success');
+          expect(res.body.success).to.be.false;
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('User already exists');
+
+          done();
+        });
+    });
+    it('it should not register a user - unsecure password', (done) => {
+      chai
+        .request(server)
+        .put('/api/auth/register')
+        .set('content-type', 'application/json')
         .send({
-          email: credentials.admin.email,
-          password: credentials.admin.password,
+          email: credentials.newUser.email,
+          username: credentials.newUser.username,
+          password: credentials.newUser.passwordNotSecure,
         })
         .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
-          cookie = res.headers['set-cookie'];
-          done();
-        });
-    });
-    it('it should check the status of the ADMIN-login', (done) => {
-      chai
-        .request(server)
-        .get('/api/user/status')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .set('Cookie', cookie)
-        .send()
-        .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body.success).to.be.true;
-          expect(res.body.data.user.roleFk).to.equal(2);
-          done();
-        });
-    });
-  });
-  describe('/GET status-check-fail', () => {
-    it('it should deny the status-check because no jwt cookie is present', (done) => {
-      chai
-        .request(server)
-        .get('/api/user/status')
-        .set('content-type', 'application/x-www-form-urlencoded')
-        .send()
-        .end((err, res) => {
-          expect(res).to.have.status(401);
+          expect(res).to.have.status(400);
+          expect(res.body).to.have.property('success');
           expect(res.body.success).to.be.false;
+          expect(res.body).to.have.property('message');
+          expect(res.body.message).to.be.equal('Error');
+          expect(res.body).to.have.property('data');
+          expect(res.body.data).to.be.equal('Password is too weak');
+
           done();
         });
     });

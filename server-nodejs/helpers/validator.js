@@ -11,7 +11,13 @@ const validatePassword = (password) => {
   );
 };
 
+const validateUsername = (username) => {
+  // Only alphanumeric characters, underscore and hyphen no spaces (min 3, max 20)
+  return username.match(/^[a-zA-Z0-9_-]{3,20}$/);
+};
+
 module.exports = {
   validateEmail,
   validatePassword,
+  validateUsername,
 };

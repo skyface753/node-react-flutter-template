@@ -16,6 +16,39 @@ export default function Login() {
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
 
+  async function login() {
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    uninterceptedAxiosInstance
+      .post('/auth/login', { email, password })
+      .then((res) => {
+        if (res.data.success) {
+          localStorage.setItem(
+            'token',
+            JSON.stringify(res.data.data.accessToken)
+          );
+          dispatch({
+            type: 'LOGIN',
+            payload: {
+              user: res.data.data.user,
+              isLoggedIn: true,
+              accessToken: res.data.data.accessToken,
+              refreshToken: res.data.data.refreshToken,
+              csrfToken: res.data.data.csrfToken,
+            },
+          });
+          window.location.href = '/';
+        } else {
+          setError(res.data.message);
+        }
+      })
+      .catch((err) => {
+        setError(err.response.data.data);
+      });
+  }
+
   return (
     <div className='sign-in-container'>
       {/* <GoogleLoginButton /> */}
@@ -34,6 +67,11 @@ export default function Login() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              login();
+            }
+          }}
         />
 
         <label htmlFor='password'>
@@ -45,6 +83,11 @@ export default function Login() {
           name='password'
           required
           value={password}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              login();
+            }
+          }}
           onChange={(e) => setPassword(e.target.value)}
         />
 
@@ -56,76 +99,7 @@ export default function Login() {
           {error}
         </p>
 
-        <button
-          className='sign-in-up-btn'
-          onClick={() => {
-            if (!email || !password) {
-              setError('Please fill in all fields');
-              return;
-            }
-            uninterceptedAxiosInstance
-              .post('/auth/login', { email, password })
-              .then((res) => {
-                if (res.data.success) {
-                  localStorage.setItem(
-                    'token',
-                    JSON.stringify(res.data.data.accessToken)
-                  );
-                  dispatch({
-                    type: 'LOGIN',
-                    payload: {
-                      user: res.data.data.user,
-                      isLoggedIn: true,
-                      accessToken: res.data.data.accessToken,
-                      refreshToken: res.data.data.refreshToken,
-                    },
-                  });
-                  window.location.href = '/';
-                } else {
-                  setError(res.data.message);
-                }
-              });
-
-            // ApiService.login(email, password).then((res) => {
-            //   if (!res) {
-            //     setError('Invalid email or password');
-            //     return;
-            //   }
-            //   if (res.data.success) {
-            //     console.log(res.data.data.user);
-            //     dispatch({
-            //       type: 'LOGIN',
-            //       payload: {
-            //         user: res.data.data.user,
-            //         isLoggedIn: true,
-            //       },
-            //     });
-            //     window.location.href = '/';
-            //   } else {
-            //     setError(res.data);
-            //   }
-            // });
-
-            // apiService("login/manuelly", {
-            //   username: email,
-            //   password,
-            // }).then((response) => {
-            //   if (response.data.success) {
-            //     var user = response.data["user"];
-            //     dispatch({
-            //       type: "LOGIN",
-            //       payload: {
-            //         user,
-            //         isLoggedIn: true,
-            //       },
-            //     });
-            //     window.location.href = "/";
-            //   } else {
-            //     setError(response.data.message);
-            //   }
-            // });
-          }}
-        >
+        <button className='sign-in-up-btn' onClick={login}>
           Sign In
         </button>
       </div>

@@ -1,9 +1,12 @@
 const db = require('./db');
-const tokenHelper = require('../helpers/token');
 const config = require('../config.json');
 const bycrypt = require('bcrypt');
 const sendResponse = require('../helpers/sendResponse');
-const { validateEmail, validatePassword } = require('../helpers/validator');
+const {
+  validateEmail,
+  validatePassword,
+  validateUsername,
+} = require('../helpers/validator');
 const crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 const redis = require('redis');
@@ -22,29 +25,6 @@ redisClient.on('connect', () => {
 });
 
 redisClient.connect();
-
-// const redisHelper = {
-//   setToken: (token, userId) => {
-//     return new Promise((resolve, reject) => {
-//       redisClient.set(token, userId, (err, reply) => {
-//         if (err) {
-//           reject(err);
-//         }
-//         resolve(reply);
-//       });
-//     });
-//   },
-//   checkTokenInRedis: (token) => {
-//     return new Promise((resolve, reject) => {
-//       redisClient.get(token, (err, reply) => {
-//         if (err) {
-//           reject(err);
-//         }
-//         resolve(reply);
-//       });
-//     });
-//   },
-// };
 
 // Prevent brute force attacks
 const failures = {};
@@ -82,11 +62,17 @@ setInterval(function () {
   }
 }, MINS30);
 
-const UserService = {
+const AuthService = {
   logout: async (req, res) => {
-    const token = tokenHelper.get(req);
-    req.session = null;
-    console.log('logout', token);
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return sendResponse.authError(res, 'No refresh token');
+    }
+    var tokenInRedis = await redisClient.get(refreshToken);
+    if (!tokenInRedis) {
+      return sendResponse.error(res, 'Invalid refresh token');
+    }
+    await redisClient.del(refreshToken);
     res.clearCookie('jwt');
     sendResponse.success(res, 'Logged out');
   },
@@ -128,20 +114,26 @@ const UserService = {
     onLoginSuccess(remoteIp);
     user = {
       id: user.id,
+      username: user.username,
       email: user.email,
       roleFk: user.roleFk,
       avatar: user.generatedPath,
     };
-    createAndSendTokens(user, res);
+    createAndSendTokens(req, res, user);
   },
   register: async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      sendResponse.missingParams(res, 'email or password');
+    console.log('IN REGISTER');
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      sendResponse.missingParams(res, 'username, email or password');
       return;
     }
     // Check if user already exists
-    let user = await db.query('SELECT * FROM user WHERE email = ?', [email]);
+    let user = await db.query(
+      'SELECT * FROM user WHERE username = ? OR email = ?',
+      [username, email]
+    );
+
     if (user.length > 0) {
       sendResponse.error(res, 'User already exists');
       return;
@@ -155,15 +147,22 @@ const UserService = {
       return;
     }
     if (!validatePassword(password)) {
-      sendResponse.error(res, 'Invalid password');
+      sendResponse.error(res, 'Password is too weak');
+      return;
+    }
+    if (!validateUsername(username)) {
+      sendResponse.error(
+        res,
+        'Username - only letters, numbers, underscore and hyphen allowed (min 3, max 20)'
+      );
       return;
     }
     // Hash password
     const hashedPassword = await bycrypt.hash(password, config.BCRYPT_ROUNDS);
     // Create user
     user = await db.query(
-      'INSERT INTO user (email, password, roleFk) VALUES (?, ?, 1)',
-      [email, hashedPassword]
+      'INSERT INTO user (username, email, password, roleFk) VALUES (?, ?, ?, 1)',
+      [username, email, hashedPassword]
     );
     if (!user) {
       sendResponse.error(res, 'Could not create user');
@@ -171,12 +170,13 @@ const UserService = {
     }
     user = {
       id: user.insertId,
+      username,
       email,
       roleFk: 1,
       avatar: null,
     };
 
-    createAndSendTokens(user, res);
+    createAndSendTokens(req, res, user);
   },
 
   refreshToken: async (req, res) => {
@@ -187,11 +187,10 @@ const UserService = {
     }
     const token = await redisClient.get(refreshToken);
     if (!token) {
-      sendResponse.authError(res, 'Invalid refresh token');
-      return;
+      return sendResponse.error(res, 'Invalid refresh token');
     }
     const user = JSON.parse(token);
-    createAndSendTokens(user, res);
+    createAndSendTokens(req, res, user);
     // Delete refresh token
     await redisClient.del(refreshToken);
   },
@@ -215,10 +214,11 @@ const UserService = {
         sendResponse.authError(res, 'User not found');
         return;
       }
-      console.log(user);
-      const { id, email, roleFk, generatedPath } = user[0];
+      // console.log(user);
+      const { id, username, email, roleFk, generatedPath } = user[0];
       sendResponse.success(res, {
         id,
+        username,
         email,
         roleFk,
         avatar: generatedPath,
@@ -233,16 +233,21 @@ const UserService = {
  *
  * @param {
  *   id: number,
+ *   username: string,
  *   email: string,
  *   roleFk: number
  *   avatar: string
  *  } user
  * @param {*} res
  */
-async function createAndSendTokens(user, res) {
+async function createAndSendTokens(req, res, user) {
+  if (!user || !user.id || !user.username || !user.email || !user.roleFk) {
+    sendResponse.serverError(res, 'Could not create tokens - missing data');
+    return;
+  }
   // Create Access Token
   const accessToken = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, username: user.username, email: user.email },
     config.JWT_SECRET,
     {
       // 10 seconds
@@ -252,29 +257,34 @@ async function createAndSendTokens(user, res) {
   // Create Refresh Token
   const refreshToken = crypto.randomBytes(64).toString('hex');
   // Store refresh token in redis
-  console.log('refreshToken', refreshToken);
+  // console.log('refreshToken', refreshToken);
   await redisClient.set(
     refreshToken,
     JSON.stringify({
       id: user.id,
+      username: user.username,
       email: user.email,
       roleFk: user.roleFk,
       avatar: user.generatedPath,
     })
   );
   await redisClient.expire(refreshToken, 60 * 60 * 24 * 7);
+  const csrfToken = jwt.sign({ id: user.id }, config.JWT_SECRET, {
+    expiresIn: 60 * 60 * 24 * 7,
+  });
   res.cookie('jwt', accessToken, {
     httpOnly: true,
-    // secure: true,
+    secure: process.env.MODE !== 'DEV',
     sameSite: 'strict',
-    // Max age is 30 minute
-    maxAge: 1000 * 60 * 30,
+    // Max age is 7 days
+    maxAge: 1000 * 60 * 60 * 24 * 7,
   });
   sendResponse.success(res, {
     accessToken,
     refreshToken,
+    csrfToken,
     user,
   });
 }
 
-module.exports = UserService;
+module.exports = AuthService;
