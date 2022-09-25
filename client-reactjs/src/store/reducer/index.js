@@ -8,8 +8,11 @@ const tryParse = (jsonString) => {
 };
 export const initialState = {
   // isLoggedIn:  JSON.parse(localStorage.getItem("isLoggedIn")) || false,
-  isLoggedIn: tryParse(localStorage.getItem("isLoggedIn")) || false,
-  user: tryParse(localStorage.getItem("user")) || null,
+  isLoggedIn: tryParse(localStorage.getItem('isLoggedIn')) || false,
+  user: tryParse(localStorage.getItem('user')) || null,
+  accessToken: tryParse(localStorage.getItem('accessToken')) || null,
+  refreshToken: tryParse(localStorage.getItem('refreshToken')) || null,
+  csrfToken: tryParse(localStorage.getItem('csrfToken')) || null,
   // user: JSON.parse(localStorage.getItem("user")) || null,
   // client_id: process.env.REACT_APP_CLIENT_ID,
   // redirect_uri: process.env.REACT_APP_REDIRECT_URI,
@@ -19,19 +22,31 @@ export const initialState = {
 
 export const reducer = (state, action) => {
   switch (action.type) {
-    case "LOGIN": {
+    case 'LOGIN': {
       localStorage.setItem(
-        "isLoggedIn",
+        'isLoggedIn',
         JSON.stringify(action.payload.isLoggedIn)
       );
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.setItem(
+        'accessToken',
+        JSON.stringify(action.payload.accessToken)
+      );
+      localStorage.setItem(
+        'refreshToken',
+        JSON.stringify(action.payload.refreshToken)
+      );
+      localStorage.setItem(
+        'csrfToken',
+        JSON.stringify(action.payload.csrfToken)
+      );
       return {
         ...state,
         isLoggedIn: action.payload.isLoggedIn,
         user: action.payload.user,
       };
     }
-    case "LOGOUT": {
+    case 'LOGOUT': {
       localStorage.clear();
       return {
         ...state,
@@ -39,8 +54,8 @@ export const reducer = (state, action) => {
         user: null,
       };
     }
-    case "CHANGE_USERNAME": {
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
+    case 'CHANGE_USERNAME': {
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
       return {
         ...state,
         user: action.payload.user,

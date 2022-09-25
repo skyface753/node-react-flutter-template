@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import '../../styles/navbar.css';
 import { useState } from 'react';
 import { AuthContext } from '../../App';
-import ApiService from '../../services/apiService';
 import defaultImage from '../../img/default-profile-pic.png';
 import config from '../../config.json';
+import api from '../../services/api';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -111,16 +111,36 @@ export default function Navbar() {
                   }
                 >
                   <a href={'/users/' + state.user.email}>{state.user.email}</a>
+                  <a href='/settings'>Settings</a>
                   {/* Logout */}
                   <a
                     href='#'
-                    onClick={() => {
-                      ApiService.logout().then((res) => {
-                        if (res.data.success) {
-                          dispatch({ type: 'LOGOUT' });
-                          window.location.href = '/';
-                        }
-                      });
+                    onClick={async () => {
+                      const currentRefreshToken = JSON.parse(
+                        localStorage.getItem('refreshToken')
+                      );
+                      try {
+                        await api
+                          .post('/auth/logout', {
+                            refreshToken: currentRefreshToken, // To delete from redis
+                          })
+                          .then((res) => {
+                            if (res.data.success) {
+                              dispatch({ type: 'LOGOUT' });
+                              window.location.href = '/';
+                              return;
+                            } else {
+                              console.log('Error');
+                              console.log(res.data);
+                            }
+                          });
+                        dispatch({ type: 'LOGOUT' });
+                        window.location.href = '/';
+                      } catch (err) {
+                        console.log(err);
+                        dispatch({ type: 'LOGOUT' });
+                        window.location.href = '/';
+                      }
                     }}
                   >
                     Logout

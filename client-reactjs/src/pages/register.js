@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import '../styles/sign-up-and-in.css';
 import { AuthContext } from '../App';
-import ApiService from '../services/apiService';
+import { uninterceptedAxiosInstance } from '../services/api';
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 
 export default function Register() {
@@ -11,6 +11,56 @@ export default function Register() {
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [error, setError] = React.useState('');
+
+  async function register() {
+    if (!email || !password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+    // Check if password contains at least 8 characters, one uppercase, one lowercase, one number and one special character
+    if (
+      !password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm)
+    ) {
+      setError(
+        'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+    uninterceptedAxiosInstance
+      .put('/auth/register', {
+        email,
+        password,
+      })
+      .then((res) => {
+        console.log(res);
+        if (res.data.success) {
+          console.log(res.data.data.user);
+          dispatch({
+            type: 'LOGIN',
+            payload: {
+              user: res.data.data.user,
+              isLoggedIn: true,
+            },
+          });
+          window.alert('You have successfully registered!');
+          window.location.href = lastPage;
+        } else {
+          setError(res.data);
+        }
+      })
+      .catch((err) => {
+        setError(err.response.data.data);
+      });
+  }
 
   return (
     <div>
@@ -33,6 +83,11 @@ export default function Register() {
               setEmail(e.target.value);
               // TODO: check if email is free
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                register();
+              }
+            }}
           />
 
           <label htmlFor='password'>
@@ -45,6 +100,11 @@ export default function Register() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                register();
+              }
+            }}
           />
 
           <label htmlFor='confirmPassword'>
@@ -57,6 +117,11 @@ export default function Register() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                register();
+              }
+            }}
           />
 
           <p
@@ -80,51 +145,7 @@ export default function Register() {
               type='submit'
               className='sign-in-up-btn'
               onClick={() => {
-                if (!email || !password || !confirmPassword) {
-                  setError('Please fill in all fields');
-                  return;
-                }
-                // Check if password contains at least 8 characters, one uppercase, one lowercase, one number and one special character
-                if (
-                  !password.match(
-                    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm
-                  )
-                ) {
-                  setError(
-                    'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
-                  );
-                  return;
-                }
-
-                if (password !== confirmPassword) {
-                  setError('Passwords do not match');
-                  return;
-                }
-                if (password.length < 8) {
-                  setError('Password must be at least 8 characters long');
-                  return;
-                }
-                ApiService.register(email, password)
-                  .then((res) => {
-                    console.log(res);
-                    if (res.data.success) {
-                      console.log(res.data.data.user);
-                      dispatch({
-                        type: 'LOGIN',
-                        payload: {
-                          user: res.data.data.user,
-                          isLoggedIn: true,
-                        },
-                      });
-                      window.alert('You have successfully registered!');
-                      window.location.href = lastPage;
-                    } else {
-                      setError(res.data);
-                    }
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
+                register();
               }}
             >
               Sign Up
