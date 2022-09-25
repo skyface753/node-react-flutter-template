@@ -12,5 +12,11 @@ router.put(
   Middleware.csrfValidation,
   UserService.changeUsername
 );
+router.get(
+  '/settings',
+  Middleware.authUser,
+  Middleware.csrfValidation,
+  UserService.getSettings
+);
 
 module.exports = router;

@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 // import GoogleLoginButton from "../components/google-login-button";
 // import "../styles/sign-up-in-style.css";
 import '../styles/sign-up-and-in.css';
+import VerificationInput from 'react-verification-input';
 
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 import { AuthContext } from '../App';
@@ -15,6 +16,9 @@ export default function Login() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
+  const [required2FA, setRequired2FA] = React.useState(false);
+  const [twoFactorCode, setTwoFactorCode] = React.useState('');
+  const [twoFactorError, setTwoFactorError] = React.useState('');
 
   async function login() {
     if (!email || !password) {
@@ -45,6 +49,9 @@ export default function Login() {
         }
       })
       .catch((err) => {
+        if (err.response.data.data == '2FA required') {
+          setRequired2FA(true);
+        }
         setError(err.response.data.data);
       });
   }
@@ -53,6 +60,53 @@ export default function Login() {
     <div className='sign-in-container'>
       {/* <GoogleLoginButton /> */}
       {/* <GitHubLoginButton /> */}
+      {required2FA ? (
+        <div className='mfa-container'>
+          <h1>Enter your 2FA code</h1>
+          <VerificationInput
+            autoFocus={true}
+            value={twoFactorCode}
+            onChange={(value) => {
+              setTwoFactorCode(value);
+              if (value.length == 6) {
+                uninterceptedAxiosInstance
+                  .post('/auth/login', { email, password, totpCode: value })
+                  .then((res) => {
+                    if (res.data.success) {
+                      localStorage.setItem(
+                        'token',
+                        JSON.stringify(res.data.data.accessToken)
+                      );
+                      dispatch({
+                        type: 'LOGIN',
+                        payload: {
+                          user: res.data.data.user,
+                          isLoggedIn: true,
+                          accessToken: res.data.data.accessToken,
+                          refreshToken: res.data.data.refreshToken,
+                          csrfToken: res.data.data.csrfToken,
+                        },
+                      });
+                      window.location.href = '/';
+                    } else {
+                      setTwoFactorError(res.data.message);
+                      setTwoFactorCode('');
+                    }
+                  })
+                  .catch((err) => {
+                    setTwoFactorError(err.response.data.data);
+                    setTwoFactorCode('');
+                  });
+              }
+            }}
+            length={6}
+          />
+          {twoFactorError ? (
+            <p className='mfa-error'>{twoFactorError}</p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className='container'>
         <h1 className='site-title'>Sign In</h1>
         <hr />

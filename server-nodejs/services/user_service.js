@@ -42,6 +42,22 @@ const UserService = {
     ]);
     sendResponse.success(res, 'Username changed');
   },
+  getSettings: async (req, res) => {
+    const user = await db.query(
+      'SELECT * FROM user LEFT JOIN user_2fa ON user_2fa.userFk = user.id LEFT JOIN avatar ON avatar.userFk = user.id WHERE id = ?',
+      [req.user.id]
+    );
+    if (user.length === 0) {
+      sendResponse.error(res, 'User not found');
+      return;
+    }
+    sendResponse.success(res, {
+      username: user[0].username,
+      email: user[0].email,
+      avatar: user[0].generatedPath,
+      twoFactorEnabled: user[0].verified && user[0].secretBase32 ? true : false,
+    });
+  },
 };
 
 module.exports = UserService;

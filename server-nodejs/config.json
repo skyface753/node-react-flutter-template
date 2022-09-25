@@ -1,4 +1,5 @@
 {
+  "MFA_Issuer": "MyApp",
   "SQLDB": {
     "host": "localhost",
     "user": "user",

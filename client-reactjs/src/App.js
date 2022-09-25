@@ -13,6 +13,7 @@ import Login from './pages/login';
 import Register from './pages/register';
 import Profile from './pages/profile';
 import NotFound from './pages/notFound';
+import SettingsPage from './pages/settings';
 
 export const AuthContext = createContext();
 
@@ -53,6 +54,11 @@ function App() {
             <Route element={<UserProtectedRoute />}>
               {/* User Protected Route - redirect to login page */}
               <Route path='/profile' element={<Profile />} />
+              <Route path='/settings' element={<SettingsPage />} />
+              <Route
+                path='/settings/:settingSection'
+                element={<SettingsPage />}
+              />
             </Route>
             <Route path='*' element={<NotFound />} />
           </Routes>

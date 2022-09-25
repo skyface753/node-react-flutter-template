@@ -111,6 +111,7 @@ export default function Navbar() {
                   }
                 >
                   <a href={'/users/' + state.user.email}>{state.user.email}</a>
+                  <a href='/settings'>Settings</a>
                   {/* Logout */}
                   <a
                     href='#'
