@@ -1,7 +1,9 @@
-const db = require('./db');
-const sendResponse = require('../helpers/sendResponse');
+import db from './db';
+import sendResponse from '../helpers/sendResponse';
+import { Request, Response } from 'express';
+import { IUserFromCookieInRequest } from '../types/express-custom';
 
-async function checkIfUsernameIsFree(username) {
+async function checkIfUsernameIsFree(username: string) {
   const result = await db.query('SELECT * FROM user WHERE username = ?', [
     username,
   ]);
@@ -12,7 +14,7 @@ async function checkIfUsernameIsFree(username) {
 }
 
 const UserService = {
-  checkIfUsernameIsFree: async (req, res) => {
+  checkIfUsernameIsFree: async (req: Request, res: Response) => {
     const { username } = req.body;
     if (!username) {
       sendResponse.missingParams(res, 'username');
@@ -25,7 +27,7 @@ const UserService = {
     }
     sendResponse.error(res, 'Username is taken');
   },
-  changeUsername: async (req, res) => {
+  changeUsername: async (req: IUserFromCookieInRequest, res: Response) => {
     const { username } = req.body;
     if (!username) {
       sendResponse.missingParams(res, 'username');
@@ -38,14 +40,14 @@ const UserService = {
     }
     await db.query('UPDATE user SET username = ? WHERE id = ?', [
       username,
-      req.user.id,
+      req.user?.id,
     ]);
     sendResponse.success(res, 'Username changed');
   },
-  getSettings: async (req, res) => {
+  getSettings: async (req: IUserFromCookieInRequest, res: Response) => {
     const user = await db.query(
       'SELECT * FROM user LEFT JOIN user_2fa ON user_2fa.userFk = user.id LEFT JOIN avatar ON avatar.userFk = user.id WHERE id = ?',
-      [req.user.id]
+      [req.user?.id]
     );
     if (user.length === 0) {
       sendResponse.error(res, 'User not found');
@@ -60,4 +62,4 @@ const UserService = {
   },
 };
 
-module.exports = UserService;
+export default UserService;

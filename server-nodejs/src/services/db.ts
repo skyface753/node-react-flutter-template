@@ -1,7 +1,8 @@
-const mysql = require('mysql2/promise');
-const config = require('../config.json');
+import mysql, { ResultSetHeader } from 'mysql2/promise';
+import config from '../config.json';
 
-async function query(sql, params) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function query(sql: string, params: any[]) {
   try {
     if (process.env.SQLDEBUG == 'true') {
       console.log('SQL Query: ' + sql);
@@ -11,16 +12,21 @@ async function query(sql, params) {
     const connection = await mysql.createConnection(config.SQLDB);
     const [results] = await connection.execute(sql, params);
     connection.end();
-    return results;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return results as any;
   } catch (error) {
     console.log('SQL ERROR: ' + error);
     return false;
   }
 }
 
-module.exports = {
+export default {
   query,
 };
+
+// module.exports = {
+//   query,
+// };
 initDb();
 async function initDb() {
   // Create Tables
@@ -32,10 +38,10 @@ async function initDb() {
     'CREATE TABLE IF NOT EXISTS `user` (`id` int(11) NOT NULL AUTO_INCREMENT,`username` varchar(100) NOT NULL, `email` varchar(100) NOT NULL,`password` varchar(250) NOT NULL,`roleFk` int(11) NOT NULL DEFAULT 1, PRIMARY KEY (`id`), KEY `role_fk` (`roleFk`), CONSTRAINT `role_fk` FOREIGN KEY (`roleFk`) REFERENCES `role` (`id`) ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4';
   const user_2fa =
     'CREATE TABLE IF NOT EXISTS `user_2fa` ( `userFk` int(11) NOT NULL, `secretBase32` varchar(250) NOT NULL, `verified` tinyint(1) NOT NULL DEFAULT 0, PRIMARY KEY (`userFk`), CONSTRAINT `user2fa_userFK` FOREIGN KEY (`userFk`) REFERENCES `user` (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
-  var avatarResult = await query(avatar, []);
-  var roleResult = await query(role, []);
-  var userResult = await query(user, []);
-  var user2faResult = await query(user_2fa, []);
+  const avatarResult = (await query(avatar, [])) as ResultSetHeader;
+  const roleResult = (await query(role, [])) as ResultSetHeader;
+  const userResult = (await query(user, [])) as ResultSetHeader;
+  const user2faResult = (await query(user_2fa, [])) as ResultSetHeader;
 
   if (process.env.SQLDEBUG == 'true') {
     console.log('Avatar Result: ' + JSON.stringify(avatarResult));
@@ -44,16 +50,20 @@ async function initDb() {
     console.log('User 2FA Result: ' + JSON.stringify(user2faResult));
   }
   if (
+    avatarResult &&
     avatarResult.warningStatus == 1 &&
+    roleResult &&
     roleResult.warningStatus == 1 &&
+    userResult &&
     userResult.warningStatus == 1 &&
+    user2faResult &&
     user2faResult.warningStatus == 1
   ) {
     console.log('SQL Tables already exist - no need to create');
     return;
   }
   console.log('Creating SQL Tables');
-  var commands = [];
+  const commands: string[] = [];
 
   commands.push('ALTER TABLE `user` ADD UNIQUE KEY `email` (`email`)');
   commands.push('ALTER TABLE `user` ADD UNIQUE KEY `username` (`username`)');
@@ -71,7 +81,7 @@ async function initDb() {
   // commands.push(
   //   'ALTER TABLE `user_2fa` ADD CONSTRAINT `user2fa_userFK` FOREIGN KEY (`userFk`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;'
   // );
-  var promises = [];
+  const promises = [];
   for (let i = 0; i < commands.length; i++) {
     promises.push(
       new Promise((resolve) => {

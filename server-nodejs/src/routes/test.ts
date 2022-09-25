@@ -1,9 +1,9 @@
 // Imports
-const express = require('express');
-const Middleware = require('../middleware.js');
+import express from 'express';
+import Middleware from '../middleware';
 const router = express.Router();
 
-const RoutesTestService = require('../services/routes-test.js'); // Test Routes Authenticated
+import RoutesTestService from '../services/routes-test'; // Test Routes Authenticated
 
 router.post('/anonym', RoutesTestService.anonymous); // Test Routes Not Authenticated
 router.post(
@@ -15,4 +15,4 @@ router.post(
 );
 router.post('/admin', Middleware.authAdmin, RoutesTestService.admin);
 
-module.exports = router;
+export default router;

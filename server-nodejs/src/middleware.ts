@@ -1,21 +1,38 @@
 // const { checkTokenInRedis } = require('./helpers/redis_helper');
-const sendResponse = require('./helpers/sendResponse');
+import { Response, NextFunction } from 'express';
+
+// const sendResponse = require('./helpers/sendResponse');
+import sendResponse from './helpers/sendResponse';
 // const tokenHelper = require('./helpers/token');
-const db = require('./services/db.js');
-const jwt = require('jsonwebtoken');
-const config = require('./config.json');
-const Middleware = {
-  authUser: async (req, res, next) => {
-    var token = req.cookies.jwt;
+// const db = require('./services/db.js');
+// const jwt = require('jsonwebtoken');
+// const config = require('./config.json');
+import db from './services/db';
+import jwt from 'jsonwebtoken';
+import config from './config.json';
+import { IUserFromCookieInRequest } from './types/express-custom';
+import { IAccessTokenPayload } from './types/jwt-payload';
+
+export default {
+  // const Middlewargcce = {
+  authUser: async (
+    req: IUserFromCookieInRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const token = req.cookies.jwt;
     if (!token) {
       return sendResponse.authError(res, 'Not logged in');
     }
     try {
-      var payload = jwt.verify(token, config.JWT_SECRET);
+      const payload = jwt.verify(
+        token,
+        config.JWT_SECRET
+      ) as IAccessTokenPayload;
       if (!payload) {
         return sendResponse.authError(res, 'Not logged in');
       }
-      var user = await db.query('SELECT * FROM user WHERE id = ?', [
+      const user = await db.query('SELECT * FROM user WHERE id = ?', [
         payload.id,
       ]);
       if (user.length === 0) {
@@ -27,17 +44,24 @@ const Middleware = {
       catchError(err, res);
     }
   },
-  authAdmin: async (req, res, next) => {
-    var token = req.cookies.jwt;
+  authAdmin: async (
+    req: IUserFromCookieInRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const token = req.cookies.jwt;
     if (!token) {
       return sendResponse.authError(res, 'Not logged in');
     }
     try {
-      var payload = jwt.verify(token, config.JWT_SECRET);
+      const payload = jwt.verify(
+        token,
+        config.JWT_SECRET
+      ) as IAccessTokenPayload;
       if (!payload) {
         return sendResponse.authError(res, 'Not logged in');
       }
-      var user = await db.query('SELECT * FROM user WHERE id = ?', [
+      const user = await db.query('SELECT * FROM user WHERE id = ?', [
         payload.id,
       ]);
       if (user.length === 0) {
@@ -52,16 +76,20 @@ const Middleware = {
       catchError(err, res);
     }
   },
-  catchErrorExport: async (err, res) => {
+  catchErrorExport: async (err: unknown, res: Response) => {
     catchError(err, res);
   },
-  csrfValidation: async (req, res, next) => {
-    const csrfTokenInHeader = req.headers['x-csrf-token'];
+  csrfValidation: async (
+    req: IUserFromCookieInRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const csrfTokenInHeader = req.headers['x-csrf-token'] as string;
     try {
       if (!csrfTokenInHeader) {
         return sendResponse.authError(res, 'CSRF token missing');
       }
-      var payload = jwt.verify(csrfTokenInHeader, config.JWT_SECRET);
+      const payload = jwt.verify(csrfTokenInHeader, config.JWT_SECRET);
       if (!payload) {
         return sendResponse.authError(res, 'CSRF token invalid');
       }
@@ -87,7 +115,7 @@ const Middleware = {
   },
 };
 
-const catchError = (err, res) => {
+const catchError = (err: unknown, res: Response) => {
   if (err instanceof jwt.TokenExpiredError) {
     return res.status(401).json({
       error: 'jwt expired',
@@ -104,5 +132,3 @@ const catchError = (err, res) => {
   sendResponse.error(res, err);
   return;
 };
-
-module.exports = Middleware;

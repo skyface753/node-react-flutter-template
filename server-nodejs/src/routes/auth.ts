@@ -1,9 +1,12 @@
 // Imports
-const express = require('express');
-const router = express.Router();
+// const express = require('express');
 
-const AuthService = require('../services/auth_service.js');
-const Middleware = require('../middleware.js');
+import express from 'express';
+const router = express.Router();
+import AuthService from '../services/auth_service';
+import Middleware from '../middleware';
+// const AuthService = require('../services/auth_service.js');
+// const Middleware = require('../middleware.js');
 
 router.post('/logout', AuthService.logout);
 router.post('/login', AuthService.login);
@@ -28,5 +31,4 @@ router.post(
   Middleware.csrfValidation,
   AuthService.disable2FA
 );
-
-module.exports = router;
+export default router;

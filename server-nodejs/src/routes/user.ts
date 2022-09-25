@@ -1,10 +1,8 @@
 // Imports
-const express = require('express');
+import express from 'express';
+import Middleware from '../middleware';
+import UserService from '../services/user_service';
 const router = express.Router();
-
-const UserService = require('../services/user_service.js');
-const Middleware = require('../middleware.js');
-
 router.get('/username/isFree', UserService.checkIfUsernameIsFree);
 router.put(
   '/username/update',
@@ -18,5 +16,4 @@ router.get(
   Middleware.csrfValidation,
   UserService.getSettings
 );
-
-module.exports = router;
+export default router;
