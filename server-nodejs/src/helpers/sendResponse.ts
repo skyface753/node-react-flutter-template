@@ -1,6 +1,7 @@
-import { Response} from 'express';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Response } from 'express';
 
-const  sendResponse = {
+const sendResponse = {
   success: (res: Response, data: any) => {
     res.status(200).json({
       success: true,

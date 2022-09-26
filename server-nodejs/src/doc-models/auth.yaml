@@ -1,9 +1,10 @@
 components:
   schemas:
-    UserResponse:
+    AuthUserResponse: # User without password
       type: object
       required:
         - id
+        - username
         - email
         - roleFk
         - avatarPath
@@ -11,6 +12,9 @@ components:
         id:
           type: integer
           format: int64
+        username:
+          type: string
+          description: The Username for the user (unique but not used for login - yet)
         email:
           type: string
           description: User email (unique)
@@ -21,16 +25,45 @@ components:
           type: string
           description: Path to user avatar
           nullable: true
-    User: # UserResponse + password
-      allOf:
-        - $ref: '#/components/schemas/UserResponse'
-        - type: object
-          required:
-            - password
-          properties:
-            password:
-              type: string
-              description: User password (hashed)
+    AuthResponse: # tokens + user
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - csrfToken
+        - user
+      properties:
+        accessToken:
+          type: string
+          description: Access token
+        refreshToken:
+          type: string
+          description: Refresh token
+        csrfToken:
+          type: string
+          description: CSRF token (for XSRF protection)
+        user:
+          $ref: '#/components/schemas/AuthUserResponse'
+    User: # AuthUserRespone with password
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          description: User password
+        $ref: '#/components/schemas/AuthUserResponse'
+
+    # User: # UserResponse + password
+    #   allOf:
+    #     - $ref: '#/components/schemas/UserResponse'
+    #     - type: object
+    #       required:
+    #         - password
+    #       properties:
+    #         password:
+    #           type: string
+    #           description: User password (hashed)
 tags:
   - name: Users
     description: User management

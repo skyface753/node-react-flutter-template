@@ -7,6 +7,7 @@ import db from '../services/db';
 import totp from 'totp-generator';
 chai.use(chaiHttp);
 import credentials from './credentials.json';
+
 describe('Login', () => {
 	describe('/POST login-user-success', () => {
 		it('it should login a user', (done) => {
@@ -506,13 +507,180 @@ describe('Register', () => {
 					done();
 				});
 		});
+		it('it should not register a user - missing email', (done) => {
+			chai.request(server)
+				.put('/api/auth/register')
+				.set('content-type', 'application/json')
+				.send({
+					username: credentials.newUser.username,
+					password: credentials.newUser.password,
+				})
+				.end((err, res) => {
+					expect(res).to.have.status(400);
+					expect(res.body).to.have.property(
+						'success'
+					);
+					expect(res.body.success).to.be.false;
+					expect(res.body).to.have.property(
+						'message'
+					);
+					expect(res.body.message).to.be.equal(
+						'Missing Parameters'
+					);
+					expect(res.body).to.have.property(
+						'data'
+					);
+					expect(res.body.data).to.be.equal(
+						'username, email or password'
+					);
+
+					done();
+				});
+		});
+		credentials.newUser.invalidMail.forEach((mail) => {
+			it(`it should not register a user - invalid email ${mail}`, (done) => {
+				chai.request(server)
+					.put('/api/auth/register')
+					.set('content-type', 'application/json')
+					.send({
+						email: mail,
+						username: credentials.newUser
+							.username,
+						password: credentials.newUser
+							.password,
+					})
+					.end((err, res) => {
+						expect(res).to.have.status(400);
+						expect(
+							res.body
+						).to.have.property('success');
+						expect(res.body.success).to.be
+							.false;
+						expect(
+							res.body
+						).to.have.property('message');
+						expect(
+							res.body.message
+						).to.be.equal('Error');
+						expect(
+							res.body
+						).to.have.property('data');
+						expect(
+							res.body.data
+						).to.be.equal('Invalid email');
+
+						done();
+					});
+			});
+		});
+		credentials.newUser.invalidUsername.forEach((username) => {
+			it(`it should not register a user - invalid username ${username}`, (done) => {
+				chai.request(server)
+					.put('/api/auth/register')
+					.set('content-type', 'application/json')
+					.send({
+						email: credentials.newUser
+							.email,
+						username,
+						password: credentials.newUser
+							.password,
+					})
+					.end((err, res) => {
+						expect(res).to.have.status(400);
+						expect(
+							res.body
+						).to.have.property('success');
+						expect(res.body.success).to.be
+							.false;
+						expect(
+							res.body
+						).to.have.property('message');
+						expect(
+							res.body.message
+						).to.be.equal('Error');
+						expect(
+							res.body
+						).to.have.property('data');
+						expect(
+							res.body.data
+						).to.be.equal(
+							'Username - only letters, numbers, underscore and hyphen allowed (min 3, max 20)'
+						);
+
+						done();
+					});
+			});
+			credentials.newUser.invalidPassword.forEach(
+				(password) => {
+					it(`it should not register a user - unsecure password ${password}`, (done) => {
+						chai.request(server)
+							.put(
+								'/api/auth/register'
+							)
+							.set(
+								'content-type',
+								'application/json'
+							)
+							.send({
+								email: credentials
+									.newUser
+									.email,
+								username: credentials
+									.newUser
+									.username,
+								password,
+							})
+							.end((err, res) => {
+								expect(
+									res
+								).to.have.status(
+									400
+								);
+								expect(
+									res.body
+								).to.have.property(
+									'success'
+								);
+								expect(
+									res.body
+										.success
+								).to.be.false;
+								expect(
+									res.body
+								).to.have.property(
+									'message'
+								);
+								expect(
+									res.body
+										.message
+								).to.be.equal(
+									'Error'
+								);
+								expect(
+									res.body
+								).to.have.property(
+									'data'
+								);
+								expect(
+									res.body
+										.data
+								).to.be.equal(
+									'Password is too weak'
+								);
+
+								done();
+							});
+					});
+				}
+			);
+		});
 	});
 });
 
 describe('2FA', () => {
 	describe('/POST 2fa-success', () => {
 		let csrfToken: string;
-		let cookie: any;
+		let cookie: string;
 		before(async () => {
 			// Login user
 			const res = await chai

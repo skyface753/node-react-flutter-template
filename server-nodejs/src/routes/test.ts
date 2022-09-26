@@ -10,9 +10,13 @@ router.post(
   '/user',
   Middleware.authUser,
   Middleware.csrfValidation,
-
   RoutesTestService.user
 );
-router.post('/admin', Middleware.authAdmin, RoutesTestService.admin);
+router.post(
+  '/admin',
+  Middleware.authAdmin,
+  Middleware.csrfValidation,
+  RoutesTestService.admin
+);
 
 export default router;
