@@ -1,11 +1,18 @@
+import { AxiosResponse } from 'axios';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import Disable2FA from './disable2FA';
 import Enable2FA from './enable2FA';
 
+interface IUserSettings {
+  twoFactorEnabled: boolean;
+  username: string;
+  email: string;
+}
+
 export default function SettingsPage() {
-  const [user, setUser] = React.useState({});
+  const [user, setUser] = React.useState<IUserSettings>();
   const [error, setError] = React.useState('');
   let { settingSection } = useParams();
 
@@ -13,14 +20,14 @@ export default function SettingsPage() {
     try {
       api
         .get('/user/settings')
-        .then((res) => {
+        .then((res: AxiosResponse) => {
           setUser(res.data.data);
         })
-        .catch((err) => {
+        .catch((err: any) => {
           setError(err.response.data.message);
         });
     } catch (err) {
-      setError(err.response.data.data);
+      setError((err as any).response.data.data);
     }
   }
 

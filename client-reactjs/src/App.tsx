@@ -1,7 +1,7 @@
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { initialState, reducer } from './store/reducer';
+import { initialState, IState, reducer } from './store/reducer';
 import React, { createContext, useReducer } from 'react';
 import UseGaTracker from './useGATracker';
 import CookieConsent from 'react-cookie-consent';
@@ -15,7 +15,7 @@ import Profile from './pages/profile';
 import NotFound from './pages/notFound';
 import SettingsPage from './pages/settings';
 
-export const AuthContext = createContext();
+export const AuthContext = createContext<any>(initialState);
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -46,7 +46,7 @@ function App() {
         <Navbar />
         <div className='main-div'>
           <Routes>
-            <Route path='/' exact element={<Home />} />
+            <Route path='/' element={<Home />} />
             <Route path='/home' element={<Home />} />
             <Route path='/register' element={<Register />} />
             <Route path='/login' element={<Login />} />

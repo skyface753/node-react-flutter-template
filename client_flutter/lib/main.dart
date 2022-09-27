@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:client_flutter/dio_helper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -59,6 +60,24 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+  }
+
+  @override
+  void initState() {
+    DioHelper.init();
+    super.initState();
+    _testApi();
+  }
+
+  _testApi() async {
+    final response = await DioHelper.getData(
+      url: 'auth/status',
+      query: {
+        'country': 'us',
+        'apiKey': 'YOUR_API_KEY',
+      },
+    );
+    print(response.data);
   }
 
   @override

@@ -45,25 +45,15 @@ components:
         user:
           $ref: '#/components/schemas/AuthUserResponse'
     User: # AuthUserRespone with password
-      type: object
-      required:
-        - password
-      properties:
-        password:
-          type: string
-          description: User password
-        $ref: '#/components/schemas/AuthUserResponse'
-
-    # User: # UserResponse + password
-    #   allOf:
-    #     - $ref: '#/components/schemas/UserResponse'
-    #     - type: object
-    #       required:
-    #         - password
-    #       properties:
-    #         password:
-    #           type: string
-    #           description: User password (hashed)
+      allOf:
+        - $ref: '#/components/schemas/AuthUserResponse'
+        - type: object
+          required:
+            - password
+          properties:
+            password:
+              type: string
+              description: User password
 tags:
   - name: Users
     description: User management

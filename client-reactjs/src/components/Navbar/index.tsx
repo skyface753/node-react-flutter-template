@@ -5,6 +5,7 @@ import { AuthContext } from '../../App';
 import defaultImage from '../../img/default-profile-pic.png';
 import config from '../../config.json';
 import api from '../../services/api';
+import { AxiosResponse } from 'axios';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -68,7 +69,8 @@ export default function Navbar() {
                   // Enter key
                   if (e.key === 'Enter') {
                     window.location.href =
-                      '/search/?searchString=' + e.target.value;
+                      '/search/?searchString=' +
+                      (e.target as HTMLInputElement).value;
                   }
                 }}
               />
@@ -117,14 +119,14 @@ export default function Navbar() {
                     href='#'
                     onClick={async () => {
                       const currentRefreshToken = JSON.parse(
-                        localStorage.getItem('refreshToken')
+                        localStorage.getItem('refreshToken') || '{}'
                       );
                       try {
                         await api
                           .post('/auth/logout', {
                             refreshToken: currentRefreshToken, // To delete from redis
                           })
-                          .then((res) => {
+                          .then((res: AxiosResponse) => {
                             if (res.data.success) {
                               dispatch({ type: 'LOGOUT' });
                               window.location.href = '/';

@@ -1,14 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import '../../styles/socials.css';
-export default class GitHubSocials extends React.Component {
+
+type Props = {
+  href: string;
+  size?: number;
+};
+export default class GitHubSocials extends React.Component<Props> {
   render() {
     if (
       window.matchMedia &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
     ) {
       return (
-        <a href={this.props.link} target='_blank' rel='noopener noreferrer'>
+        <a href={this.props.href} target='_blank' rel='noopener noreferrer'>
           <img
             src={require('../../img/GitHub-PNG/GitHub-Mark-Light-120px-plus.png')}
             className='socials-icon'
@@ -18,7 +23,7 @@ export default class GitHubSocials extends React.Component {
       );
     }
     return (
-      <a href={this.props.link} target='_blank' rel='noopener noreferrer'>
+      <a href={this.props.href} target='_blank' rel='noopener noreferrer'>
         <img
           src={require('../../img/GitHub-PNG/GitHub-Mark-120px-plus.png')}
           className='socials-icon'

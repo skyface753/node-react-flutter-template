@@ -23,17 +23,18 @@ const port = 5000;
 app.disable('x-powered-by');
 
 // CORS TODO: Change for Production
-// app.use(cors()); // Development
-app.use(
-  // Production
-  cors({
-    origin: [
-      'http://localhost:3000',
-      // "http://localhost:19006",
-    ],
-    credentials: true,
-  })
-);
+app.use(cors()); // Development
+// app.use(
+//   // Production
+//   cors({
+//     origin: [
+//       'http://localhost:3000',
+//       '*',
+//       // "http://localhost:19006",
+//     ],
+//     credentials: true,
+//   })
+// );
 
 // Helmet
 app.use(helmet());

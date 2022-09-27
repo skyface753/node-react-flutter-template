@@ -1,6 +1,10 @@
 // import React from "react";
 // import { RSSURL } from "../../consts";
 
+export const RssSocials = () => {
+  return null;
+};
+
 // const RssSocials = (props) => {
 //   if (
 //     window.matchMedia &&

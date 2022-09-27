@@ -1,6 +1,6 @@
-const tryParse = (jsonString) => {
+const tryParse = (jsonString: any) => {
   try {
-    var o = JSON.parse(jsonString);
+    var o = JSON.parse(jsonString || '');
     return o;
   } catch (e) {
     return null;
@@ -20,7 +20,20 @@ export const initialState = {
   // proxy_url: process.env.REACT_APP_PROXY_URL,
 };
 
-export const reducer = (state, action) => {
+export interface IState {
+  isLoggedIn: boolean;
+  user: any;
+  accessToken: string;
+  refreshToken: string;
+  csrfToken: string;
+}
+
+interface IAction {
+  type: string;
+  payload: any;
+}
+
+export const reducer = (state: IState, action: IAction) => {
   switch (action.type) {
     case 'LOGIN': {
       localStorage.setItem(

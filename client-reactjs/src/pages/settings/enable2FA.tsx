@@ -2,6 +2,7 @@ import VerificationInput from 'react-verification-input';
 import React from 'react';
 import api from '../../services/api';
 import QRCode from 'react-qr-code';
+import { AxiosResponse } from 'axios';
 
 var empty2FAData = {
   url: '',
@@ -28,14 +29,14 @@ export default function Enable2FA() {
           onClick={() => {
             api
               .post('/auth/2fa/enable', { password })
-              .then((res) => {
+              .then((res: AxiosResponse) => {
                 if (res.data.success) {
                   setTwoFactorData(res.data.data);
                 } else {
                   setError(res.data.message);
                 }
               })
-              .catch((err) => {
+              .catch((err: any) => {
                 setError(err.response.data.data);
               });
           }}
@@ -59,7 +60,7 @@ export default function Enable2FA() {
                 if (value.length == 6) {
                   api
                     .post('/auth/2fa/verify', { password, currentCode: value })
-                    .then((res) => {
+                    .then((res: AxiosResponse) => {
                       if (res.data.success) {
                         window.alert('2FA has been enabled and verified!');
                         window.location.href = '/';
@@ -68,7 +69,7 @@ export default function Enable2FA() {
                         setTwoFactorCode('');
                       }
                     })
-                    .catch((err) => {
+                    .catch((err: any) => {
                       setTwoFactorError(err.response.data.data);
                       setTwoFactorCode('');
                     });

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { setupInterceptorsTo } from './interceptors.js';
+import { setupInterceptorsTo } from './interceptors';
 import config from '../config.json';
 
 axios.defaults.withCredentials = true;

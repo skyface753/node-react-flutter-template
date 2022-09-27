@@ -3,13 +3,18 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 
-export default class CodepenButton extends React.Component {
+type Props = {
+  href: string;
+  size: number;
+};
+
+export default class CodepenButton extends React.Component<Props> {
   render() {
-    let { link, size } = this.props;
+    let { href, size } = this.props;
 
     return (
       <a
-        href={link}
+        href={href}
         target='_blank'
         rel='noopener noreferrer'
         style={{ color: 'white', textDecoration: 'none', marginLeft: '10px' }}

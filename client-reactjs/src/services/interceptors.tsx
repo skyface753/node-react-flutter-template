@@ -1,27 +1,32 @@
-import axios from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+} from 'axios';
 // import Router from 'next/router';
 import config from '../config.json';
 const API_URL = config.BackendUrl;
-const onRequest = (config) => {
-  const token = JSON.parse(localStorage.getItem('csrfToken'));
+const onRequest = (config: AxiosRequestConfig) => {
+  const token = JSON.parse(localStorage.getItem('csrfToken') || '""');
   if (token) {
-    config.headers['X-CSRF-Token'] = token;
+    config.headers!['X-CSRF-Token'] = token;
   }
 
   return config;
 };
 
-const onRequestError = (error) => {
+const onRequestError = (error: AxiosError) => {
   console.log('onRequestError', error);
   return Promise.reject(error);
 };
 
-const onResponse = (response) => {
+const onResponse = (response: AxiosResponse) => {
   console.log('onResponse', response);
   return response;
 };
 
-const onResponseError = async (error) => {
+const onResponseError = async (error: any) => {
   console.log('onResponseError', error);
   if (error.response) {
     // Access Token was expired
@@ -29,7 +34,9 @@ const onResponseError = async (error) => {
       error.response.status === 401 &&
       error.response.data.error === 'jwt expired'
     ) {
-      const oldRefreshToken = JSON.parse(localStorage.getItem('refreshToken'));
+      const oldRefreshToken = JSON.parse(
+        localStorage.getItem('refreshToken') || '{}'
+      );
       console.log('oldRefreshToken', oldRefreshToken);
       try {
         const rs = await axios.post(`${API_URL}/auth/refreshToken`, {
@@ -55,7 +62,7 @@ const onResponseError = async (error) => {
   return Promise.reject(error);
 };
 
-export const setupInterceptorsTo = (axiosInstance) => {
+export const setupInterceptorsTo = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.request.use(onRequest, onRequestError);
   axiosInstance.interceptors.response.use(onResponse, onResponseError);
   return axiosInstance;

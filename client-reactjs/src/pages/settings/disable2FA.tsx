@@ -1,6 +1,15 @@
 import VerificationInput from 'react-verification-input';
 import React from 'react';
 import api from '../../services/api';
+import { AxiosError, AxiosResponse } from 'axios';
+
+interface disabel2FAError extends AxiosError {
+  response: AxiosResponse<{
+    success: boolean;
+    message: string;
+    data: string;
+  }>;
+}
 
 export default function Disable2FA() {
   const [password, setPassword] = React.useState('');
@@ -27,7 +36,7 @@ export default function Disable2FA() {
             if (value.length == 6) {
               api
                 .post('/auth/2fa/disable', { password, totpCode: value })
-                .then((res) => {
+                .then((res: AxiosResponse) => {
                   if (res.data.success) {
                     window.alert('2FA has been disabled for your account');
                     window.location.href = '/';
@@ -36,8 +45,8 @@ export default function Disable2FA() {
                     setTwoFactorCode('');
                   }
                 })
-                .catch((err) => {
-                  setTwoFactorError(err.response.data.data);
+                .catch((err: disabel2FAError) => {
+                  setTwoFactorError(err?.response?.data?.data);
                   setTwoFactorCode('');
                 });
             }
