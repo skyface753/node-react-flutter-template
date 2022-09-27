@@ -1,46 +1,120 @@
+import 'package:dio/adapter_browser.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DioHelper {
-  static Dio dio = Dio();
-  static init() {
-    dio = Dio(
+  static Dio geBaseDio() {
+    var adapter = BrowserHttpClientAdapter();
+    adapter.withCredentials = true;
+    return Dio(
       BaseOptions(
         baseUrl: 'http://localhost:5000/api/',
         receiveDataWhenStatusError: true,
-      ),
-    );
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          print(
-            '${options.method} ${options.path}',
-          );
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          print(
-            '${response.statusCode} ${response.statusMessage}',
-          );
-          return handler.next(response);
-        },
-        onError: (DioError e, handler) {
-          print("Error status: ${e.response?.statusCode}");
-          // print(
-          //   '${e.response?.statusCode} ${e.response?.statusMessage}',
-          // );
-          return handler.next(e);
+        headers: {
+          "Accept": "application/json",
+          'Content-type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       ),
-    );
+    )..httpClientAdapter = adapter;
   }
 
-  static Future<Response> getData({
-    required String url,
-    required Map<String, dynamic> query,
-  }) async {
-    return await dio.get(
-      url,
-      queryParameters: query,
-    );
+  Dio getApi() {
+    Dio dio = geBaseDio();
+
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      final storage = new FlutterSecureStorage();
+      storage.read(key: 'csrfToken').then((value) {
+        print("Added csrfToken");
+        options.headers['X-CSRF-Token'] = value;
+      });
+
+      return handler.next(options);
+      print(
+        '${options.method} ${options.path}',
+      );
+      return handler.next(options);
+    }, onResponse: (response, handler) {
+      print(
+        '${response.statusCode} ${response.statusMessage}',
+      );
+      return handler.next(response);
+    }, onError: (DioError error, handler) async {
+      print("Error status: ${error.response?.statusCode}");
+
+      final Map errorData = error.response?.data;
+      print(errorData['error']);
+      print(error.response);
+      // print(error.response);
+      if (error.response?.statusCode == 401 &&
+          errorData['error'] == 'jwt expired') {
+        print("REFRESH ACCESS TOKEN");
+        if (!await refreshToken(dio)) {
+          print("REFRESH TOKEN FAILED");
+          return handler.next(error);
+        }
+        //create request with new access token
+        final opts = new Options(
+            method: error.requestOptions.method,
+            headers: error.requestOptions.headers);
+        final cloneReq = await dio.request(error.requestOptions.path,
+            options: opts,
+            data: error.requestOptions.data,
+            queryParameters: error.requestOptions.queryParameters);
+
+        return handler.resolve(cloneReq);
+      }
+
+      return handler.next(error);
+    }));
+
+    return dio;
   }
+
+  Future<bool> refreshToken(Dio dio) async {
+    final storage = new FlutterSecureStorage();
+    String? refreshToken = await storage.read(key: 'refreshToken');
+    if (refreshToken == null) {
+      print("REFRESH TOKEN NOT FOUND");
+      return false;
+    }
+    Response refreshResponse = await dio
+        .post('auth/refreshToken', data: {'refreshToken': refreshToken});
+    if (refreshResponse.statusCode == 200) {
+      print("REFRESH TOKEN SUCCESS");
+      print(refreshResponse.data);
+      final Map response = refreshResponse.data;
+      await storage.write(
+          key: 'accessToken', value: response['data']['accessToken']);
+      await storage.write(
+          key: 'refreshToken', value: response['data']['refreshToken']);
+      await storage.write(
+          key: 'csrfToken', value: response['data']['csrfToken']);
+      return true;
+    }
+    print("REFRESH TOKEN FAILED");
+    return false;
+  }
+
+  Future<Response<dynamic>> _retry(
+      RequestOptions requestOptions, Dio _dio) async {
+    final options = new Options(
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+    );
+    return _dio.request<dynamic>(requestOptions.path,
+        data: requestOptions.data,
+        queryParameters: requestOptions.queryParameters,
+        options: options);
+  }
+
+  // static Future<Response> getData({
+  //   required String url,
+  //   required Map<String, dynamic> query,
+  // }) async {
+  //   return await dio.get(
+  //     url,
+  //     queryParameters: query,
+  //   );
+  // }
 }
