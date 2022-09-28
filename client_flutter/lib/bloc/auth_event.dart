@@ -17,12 +17,14 @@ class SignInRequested extends AuthEvent {
 class SignUpRequested extends AuthEvent {
   final String email;
   final String password;
-
-  SignUpRequested(this.email, this.password);
+  final String username;
+  SignUpRequested(this.email, this.password, this.username);
 }
 
 // When the user signing in with google this event is called and the [AuthRepository] is called to sign in the user
-class GoogleSignInRequested extends AuthEvent {}
+// class GoogleSignInRequested extends AuthEvent {}
 
 // When the user signing out this event is called and the [AuthRepository] is called to sign out the user
 class SignOutRequested extends AuthEvent {}
+
+class OnStartUp extends AuthEvent {}

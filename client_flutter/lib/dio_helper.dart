@@ -10,6 +10,10 @@ class DioHelper {
       BaseOptions(
         baseUrl: 'http://localhost:5000/api/',
         receiveDataWhenStatusError: true,
+        validateStatus: (status) {
+          // All to 500 except 401
+          return status! < 500 && status != 401;
+        },
         headers: {
           "Accept": "application/json",
           'Content-type': 'application/json',
@@ -64,7 +68,8 @@ class DioHelper {
 
         return handler.resolve(cloneReq);
       }
-
+      print("ERROR in DIO");
+      print(error);
       return handler.next(error);
     }));
 
