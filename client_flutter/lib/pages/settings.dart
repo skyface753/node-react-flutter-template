@@ -95,9 +95,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                   setState(() {
                                     settingsData!.avatar = responseMap['data']
                                         ['avatar']['generatedPath'];
-                                    BlocProvider.of<AuthBloc>(context).add(
-                                        ChangeAvatarRequested(
-                                            settingsData!.avatar!));
+                                    //TODO: update avatar in auth bloc
+                                    // BlocProvider.of<AuthBloc>(context).add(
+                                    //     ChangeAvatarRequested(
+                                    //         settingsData!.avatar!));
+                                    state.changeAvatar(settingsData!.avatar!);
                                   });
                                 }
                               });

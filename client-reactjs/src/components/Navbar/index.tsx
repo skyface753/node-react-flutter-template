@@ -91,10 +91,10 @@ export default function Navbar() {
                 }
               >
                 <div className='loggedInUserMenu-Button'>
-                  {state.user.avatarPath ? (
+                  {state.user.avatar ? (
                     <img
                       className='profile-pic'
-                      src={config.BackendFilesUrl + state.user.avatarPath}
+                      src={config.BackendFilesUrl + state.user.avatar}
                       alt='User'
                     />
                   ) : (

@@ -74,6 +74,22 @@ export const reducer = (state: IState, action: IAction) => {
         user: action.payload.user,
       };
     }
+    case 'CHANGE_AVATAR': {
+      // Old user
+      const oldUser = state.user;
+      // New user
+      const newUser = {
+        ...oldUser,
+        avatar: action.payload.avatar,
+      };
+      // Set new user
+      localStorage.setItem('user', JSON.stringify(newUser));
+      console.log('newUser: ', newUser);
+      return {
+        ...state,
+        user: newUser,
+      };
+    }
     default:
       return state;
   }

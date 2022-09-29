@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import Disable2FA from './disable2FA';
 import Enable2FA from './enable2FA';
+import { AuthContext } from '../../App';
+import { useContext } from 'react';
 
 interface IUserSettings {
   twoFactorEnabled: boolean;
@@ -12,6 +14,7 @@ interface IUserSettings {
 }
 
 export default function SettingsPage() {
+  const { state, dispatch } = useContext(AuthContext);
   const [user, setUser] = React.useState<IUserSettings>();
   const [error, setError] = React.useState('');
   let { settingSection } = useParams();
@@ -58,6 +61,7 @@ export default function SettingsPage() {
         <div>
           <h3>2FA</h3>
           <p>Change your 2FA settings here.</p>
+
           <div>
             <h4>Current 2FA Status</h4>
             <p>{user.twoFactorEnabled ? 'Enabled' : 'Disabled'}</p>
@@ -78,6 +82,23 @@ export default function SettingsPage() {
         <h2>Account</h2>
         <p>Change your account settings here.</p>
         <div>
+          <h3>Avatar</h3>
+          <p>Change your avatar here.</p>
+          <div>
+            <button
+              onClick={() => {
+                dispatch({
+                  type: 'CHANGE_AVATAR',
+                  payload: {
+                    avatar:
+                      'https://cdn.discordapp.com/avatars/803511102154379284/1c2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b.png?size=128',
+                  },
+                });
+              }}
+            >
+              Change Avatar
+            </button>
+          </div>
           <h3>Username</h3>
           <p>Change your username here.</p>
           <div>

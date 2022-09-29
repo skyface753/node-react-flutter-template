@@ -14,6 +14,13 @@ class Authenticated extends AuthState {
   final UserState authenticatedUser;
   Authenticated({required this.authenticatedUser});
 
+  bool changeAvatar(String avatar) {
+    authenticatedUser.avatar = avatar;
+    const FlutterSecureStorage storage = FlutterSecureStorage();
+    storage.write(key: "avatar", value: avatar);
+    return true;
+  }
+
   @override
   List<Object?> get props => [authenticatedUser];
 }
