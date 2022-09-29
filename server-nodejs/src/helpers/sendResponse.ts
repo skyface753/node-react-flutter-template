@@ -8,46 +8,42 @@ const sendResponse = {
       data: data,
     });
   },
-  missingParams: (res: Response, data: any) => {
+  missingParams: (res: Response) => {
     res.status(400).json({
       success: false,
       message: 'Missing Parameters',
-      data: data,
     });
   },
-  error: (res: Response, data: any) => {
+  error: (res: Response) => {
     res.status(400).json({
       success: false,
       message: 'Error',
-      data: data,
     });
   },
   expiredToken: (res: Response) => {
     res.status(401).json({
       success: false,
-      message: 'Expired Token',
+      message: 'jwt expired',
     });
   },
 
-  authError: (res: Response, data: any) => {
+  authError: (res: Response) => {
+    // console.trace('authError');
     res.status(401).json({
       success: false,
-      message: 'Authentication Error',
-      data: data,
+      message: 'Access Denied - Not Authorized',
     });
   },
-  authAdminError: (res: Response, data: any) => {
+  authAdminError: (res: Response) => {
     res.status(403).json({
       success: false,
-      message: 'Admin Authentication Error',
-      data: data,
+      message: 'Access Denied - Admin Only',
     });
   },
-  serverError: (res: Response, data: any) => {
+  serverError: (res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Server Error',
-      data: data,
     });
   },
 };

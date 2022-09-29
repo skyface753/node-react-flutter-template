@@ -32,7 +32,7 @@ const onResponseError = async (error: any) => {
     // Access Token was expired
     if (
       error.response.status === 401 &&
-      error.response.data.error === 'jwt expired'
+      error.response.data.message === 'jwt expired'
     ) {
       const oldRefreshToken = JSON.parse(
         localStorage.getItem('refreshToken') || '{}'

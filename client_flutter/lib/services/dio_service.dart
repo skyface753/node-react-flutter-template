@@ -2,7 +2,7 @@ import 'package:dio/adapter_browser.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class DioHelper {
+class DioService {
   static Dio geBaseDio() {
     var adapter = BrowserHttpClientAdapter();
     adapter.withCredentials = true;
@@ -26,11 +26,12 @@ class DioHelper {
   Dio getApi() {
     Dio dio = geBaseDio();
 
-    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+    dio.interceptors
+        .add(InterceptorsWrapper(onRequest: (options, handler) async {
       final storage = new FlutterSecureStorage();
-      storage.read(key: 'csrfToken').then((value) {
+      await storage.read(key: 'csrfToken').then((value) {
         print("Added csrfToken");
-        options.headers['X-CSRF-Token'] = value;
+        options.headers['x-csrf-token'] = value;
       });
 
       return handler.next(options);
@@ -51,7 +52,7 @@ class DioHelper {
       print(error.response);
       // print(error.response);
       if (error.response?.statusCode == 401 &&
-          errorData['error'] == 'jwt expired') {
+          errorData['message'] == 'jwt expired') {
         print("REFRESH ACCESS TOKEN");
         if (!await refreshToken(dio)) {
           print("REFRESH TOKEN FAILED");
@@ -59,8 +60,14 @@ class DioHelper {
         }
         //create request with new access token
         final opts = new Options(
-            method: error.requestOptions.method,
-            headers: error.requestOptions.headers);
+          method: error.requestOptions.method,
+          extra: error.requestOptions.extra,
+          headers: error.requestOptions.headers,
+          contentType: error.requestOptions.contentType,
+          responseType: error.requestOptions.responseType,
+          listFormat: error.requestOptions.listFormat,
+        );
+
         final cloneReq = await dio.request(error.requestOptions.path,
             options: opts,
             data: error.requestOptions.data,

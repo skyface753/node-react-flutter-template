@@ -9,8 +9,8 @@ abstract class AuthEvent extends Equatable {
 class SignInRequested extends AuthEvent {
   final String email;
   final String password;
-
-  SignInRequested(this.email, this.password);
+  final String? totpCode;
+  SignInRequested(this.email, this.password, {this.totpCode});
 }
 
 // When the user signing up with email and password this event is called and the [AuthRepository] is called to sign up the user
@@ -27,4 +27,9 @@ class SignUpRequested extends AuthEvent {
 // When the user signing out this event is called and the [AuthRepository] is called to sign out the user
 class SignOutRequested extends AuthEvent {}
 
-class OnStartUp extends AuthEvent {}
+class AppStarted extends AuthEvent {}
+
+class ChangeAvatarRequested extends AuthEvent {
+  final String avatar;
+  ChangeAvatarRequested(this.avatar);
+}

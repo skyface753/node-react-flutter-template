@@ -49,10 +49,13 @@ export default function Login() {
         }
       })
       .catch((err) => {
-        if (err.response.data.data == '2FA required') {
+        if (
+          err.response.status === 400 &&
+          err.response.data.message === '2FA required'
+        ) {
           setRequired2FA(true);
         }
-        setError(err.response.data.data);
+        setError(err.response.data.message);
       });
   }
 

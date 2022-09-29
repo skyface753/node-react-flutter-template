@@ -22,7 +22,8 @@ export default {
 	) => {
 		const token = req.cookies.jwt;
 		if (!token) {
-			return sendResponse.authError(res, 'Not logged in');
+			console.log('No token');
+			return sendResponse.authError(res);
 		}
 		try {
 			const payload = jwt.verify(
@@ -30,20 +31,16 @@ export default {
 				config.JWT_SECRET
 			) as IAccessTokenPayload;
 			if (!payload) {
-				return sendResponse.authError(
-					res,
-					'Not logged in'
-				);
+				console.log('No payload');
+				return sendResponse.authError(res);
 			}
 			const user = await db.query(
 				'SELECT * FROM user WHERE id = ?',
 				[payload.id]
 			);
 			if (user.length === 0) {
-				return sendResponse.authError(
-					res,
-					'User not found'
-				);
+				console.log('No user');
+				return sendResponse.authError(res);
 			}
 			req.user = user[0];
 			next();
@@ -58,7 +55,7 @@ export default {
 	) => {
 		const token = req.cookies.jwt;
 		if (!token) {
-			return sendResponse.authError(res, 'Not logged in');
+			return sendResponse.authError(res);
 		}
 		try {
 			const payload = jwt.verify(
@@ -66,26 +63,17 @@ export default {
 				config.JWT_SECRET
 			) as IAccessTokenPayload;
 			if (!payload) {
-				return sendResponse.authError(
-					res,
-					'Not logged in'
-				);
+				return sendResponse.authError(res);
 			}
 			const user = await db.query(
 				'SELECT * FROM user WHERE id = ?',
 				[payload.id]
 			);
 			if (user.length === 0) {
-				return sendResponse.authError(
-					res,
-					'User not found'
-				);
+				return sendResponse.authError(res);
 			}
 			if (user[0].roleFk !== 2) {
-				return sendResponse.authAdminError(
-					res,
-					'Not an admin'
-				);
+				return sendResponse.authAdminError(res);
 			}
 			req.user = user[0];
 			next();
@@ -104,63 +92,42 @@ export default {
 		const csrfTokenInHeader = req.headers['x-csrf-token'] as string;
 		try {
 			if (!csrfTokenInHeader) {
-				return sendResponse.authError(
-					res,
-					'CSRF token missing'
-				);
+				return sendResponse.authError(res);
 			}
 			const payload = jwt.verify(
 				csrfTokenInHeader,
 				config.JWT_SECRET
 			);
 			if (!payload) {
-				return sendResponse.authError(
-					res,
-					'CSRF token invalid'
-				);
+				return sendResponse.authError(res);
 			}
 
 			next();
 		} catch (err) {
 			if (err instanceof jwt.TokenExpiredError) {
-				return sendResponse.authError(
-					res,
-					'CSRF token expired'
-				);
+				return sendResponse.authError(res);
 			} else if (err instanceof jwt.JsonWebTokenError) {
-				return sendResponse.authError(
-					res,
-					'CSRF token invalid'
-				);
+				return sendResponse.authError(res);
 			}
-			return res.status(500).json({
-				message: 'Internal server error - csrfValidation',
-			});
+			return sendResponse.serverError(res);
 		}
-		// const csrfTokenInSession = req.session.csrf;
-		// // console.log(csrfTokenInHeader);
-		// // console.log(csrfTokenInSession);
-		// if (csrfTokenInHeader !== csrfTokenInSession) {
-		//   return sendResponse.authError(res, 'CSRF token mismatch');
-		// }
-		// next();
 	},
 };
 
 const catchError = (err: unknown, res: Response) => {
 	if (err instanceof jwt.TokenExpiredError) {
-		return res.status(401).json({
-			error: 'jwt expired',
-		});
+		console.log('Token expired');
+		return sendResponse.expiredToken(res);
 	} else if (err instanceof jwt.JsonWebTokenError) {
-		return res.status(401).json({
-			error: 'Invalid token',
-		});
+		console.log('JsonWebTokenError');
+		return sendResponse.authError(res);
 	}
 	if (err instanceof jwt.JsonWebTokenError) {
-		sendResponse.authError(res, 'Token invalid');
+		console.log('JsonWebTokenError');
+		sendResponse.authError(res);
 		return;
 	}
-	sendResponse.error(res, err);
+	console.log('Server error');
+	sendResponse.serverError(res);
 	return;
 };

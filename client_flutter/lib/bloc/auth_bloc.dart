@@ -16,12 +16,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(Loading());
       try {
         await authRepository
-            .signIn(email: event.email, password: event.password)
+            .signIn(
+                email: event.email,
+                password: event.password,
+                totpCode: event.totpCode)
             .then((value) => {
                   print("Emitted Authenticated"),
                   print(value),
-                  emit(Authenticated(
-                      email: value!.email, username: value.username))
+                  if (value == "2FA")
+                    {emit(OTPRequired())}
+                  else
+                    {emit(Authenticated(authenticatedUser: value as UserState))}
                 });
       } catch (e) {
         emit(AuthError(e.toString()));
@@ -40,8 +45,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             .then((value) => {
                   print("Emitted Register Authenticated"),
                   print(value),
-                  emit(Authenticated(
-                      email: value!.email, username: value.username))
+                  emit(Authenticated(authenticatedUser: value!))
                 });
       } catch (e) {
         emit(AuthError(e.toString()));
@@ -55,14 +59,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(UnAuthenticated());
     });
     // When the App Starts, we will send the OnStartUp Event to the AuthBloc to handle it and emit the Authenticated State if the user is authenticated
-    // on<OnStartUp>((event, emit) async {
-    //   emit(Loading());
-    //   final bool isSignedIn = await authRepository.();
-    //   if (isSignedIn) {
-    //     emit(Authenticated());
-    //   } else {
-    //     emit(UnAuthenticated());
-    //   }
-    // });
+    on<AppStarted>((event, emit) async {
+      emit(Loading());
+      UserState? userState = await authRepository.isSignedIn();
+      if (userState != null) {
+        emit(Authenticated(authenticatedUser: userState));
+      } else {
+        emit(UnAuthenticated());
+      }
+    });
+
+    on<ChangeAvatarRequested>((event, emit) async {
+      emit(Loading());
+      try {
+        await authRepository.changeAvatar(event.avatar);
+        UserState? userState = await authRepository.isSignedIn();
+        if (userState != null) {
+          emit(Authenticated(authenticatedUser: userState));
+        } else {
+          print("UserState is null");
+        }
+      } catch (e) {
+        print(e);
+        emit(AuthError(e.toString()));
+        emit(UnAuthenticated());
+      }
+    });
   }
 }

@@ -11,16 +11,11 @@ class Loading extends AuthState {
 
 // When the user is authenticated the state is changed to Authenticated.
 class Authenticated extends AuthState {
-  final String email;
-  final String username;
-
-  Authenticated({required this.email, required this.username});
+  final UserState authenticatedUser;
+  Authenticated({required this.authenticatedUser});
 
   @override
-  List<Object?> get props => [email, username];
-
-  // @override
-  // List<Object?> get props => [];
+  List<Object?> get props => [authenticatedUser];
 }
 
 // This is the initial state of the bloc. When the user is not authenticated the state is changed to Unauthenticated.
@@ -36,4 +31,9 @@ class AuthError extends AuthState {
   AuthError(this.error);
   @override
   List<Object?> get props => [error];
+}
+
+class OTPRequired extends AuthState {
+  @override
+  List<Object?> get props => [];
 }

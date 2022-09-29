@@ -1,6 +1,7 @@
 import 'package:client_flutter/bloc/auth_bloc.dart';
-import 'package:client_flutter/dio_helper.dart';
+import 'package:client_flutter/components/drawer.dart';
 import 'package:client_flutter/pages/login.dart';
+import 'package:client_flutter/services/dio_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  Dio dio = DioHelper().getApi();
+  Dio dio = DioService().getApi();
   String authStatus = "Loading";
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: DrawerWidget(),
       appBar: AppBar(
         title: Text('Home'),
         actions: [
@@ -68,7 +70,15 @@ class _HomePageState extends State<HomePage> {
             );
           }
           if (state is Authenticated) {
-            print("Email: ${state.email}");
+            return Center(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Authenticated"),
+                Text("User: ${state.authenticatedUser.email}"),
+                Text("AuthState: $authStatus"),
+              ],
+            ));
           }
           // print(state);
           return Center(

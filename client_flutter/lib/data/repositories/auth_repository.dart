@@ -1,4 +1,4 @@
-import 'package:client_flutter/dio_helper.dart';
+import 'package:client_flutter/services/dio_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class UserState {
@@ -9,31 +9,42 @@ class UserState {
   String? avatar;
 
   UserState(this.id, this.username, this.email, this.roleFk, this.avatar);
+
+  // From Json
+  factory UserState.fromJson(Map<String, dynamic> json) {
+    return UserState(json['id'], json['username'], json['email'],
+        json['roleFk'], json['avatar']);
+  }
 }
 
 class AuthRepository {
-  Future<UserState?> signIn(
-      {required String email, required String password}) async {
-    var response = await DioHelper.geBaseDio().post('auth/login', data: {
-      'email': email,
-      'password': password,
-    }).then((value) {
-      final Map response = value.data;
-      print(response);
-      if (response['success']) {
-        print('Login Success');
-        final Map data = response['data'];
-        writeData(data: data);
-        return data['user'];
-      } else {
-        throw Exception("Something went wrong");
-      }
-    }).catchError((error) {
-      throw Exception("Login Failed");
-    });
-    UserState user = UserState(response['id'], response['username'],
-        response['email'], response['roleFk'], response['avatar']);
-    return user;
+  Future<Object?> signIn(
+      {required String email,
+      required String password,
+      String? totpCode}) async {
+    var resp = await DioService.geBaseDio().post('auth/login',
+        data: {'email': email, 'password': password, 'totpCode': totpCode});
+    if (resp.statusCode == 400 && resp.data['message'] == '2FA required') {
+      return "2FA";
+    }
+    final Map responseMap = resp.data;
+    if (responseMap['success']) {
+      final Map data = responseMap['data'];
+      await writeData(data: data);
+      final Map userData = data['user'];
+      UserState userState = UserState(userData['id'], userData['username'],
+          userData['email'], userData['roleFk'], userData['avatar']);
+      return userState;
+    } else {
+      throw Exception(responseMap['message']);
+    }
+  }
+
+  Future<bool> changeAvatar(String? avatar) async {
+    // Get old state
+    final storage = new FlutterSecureStorage();
+    await storage.write(key: 'avatar', value: avatar!);
+    return true;
   }
 
   Future<void> writeData({required Map data}) async {
@@ -59,7 +70,7 @@ class AuthRepository {
       {required String email,
       required String password,
       required String username}) async {
-    var response = await DioHelper.geBaseDio().put('auth/register', data: {
+    var response = await DioService.geBaseDio().put('auth/register', data: {
       'email': email,
       'password': password,
       'username': username,
@@ -83,37 +94,41 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
-    String? refreshToken =
-        await FlutterSecureStorage().read(key: 'refreshToken');
-    await DioHelper.geBaseDio().post('auth/logout', data: {
-      'refreshToken': refreshToken,
-    }).then((value) {});
-    await clearData();
+    try {
+      String? refreshToken =
+          await FlutterSecureStorage().read(key: 'refreshToken');
+      await DioService.geBaseDio().post('auth/logout', data: {
+        'refreshToken': refreshToken,
+      }).then((value) {});
+      await clearData();
+    } catch (e) {
+      print(e);
+      await clearData();
+    }
   }
 
-  // Future<bool> isSignedIn() async {
-  //   const storage = FlutterSecureStorage();
-  //   final accessToken = await storage.read(key: 'accessToken');
-  //   final refreshToken = await storage.read(key: 'refreshToken');
-  //   final csrfToken = await storage.read(key: 'csrfToken');
-  //   final userId = await storage.read(key: 'userId');
-  //   final username = await storage.read(key: 'username');
-  //   final email = await storage.read(key: 'email');
-  //   final roleFk = await storage.read(key: 'roleFk');
-  //   final avatar = await storage.read(key: 'avatar');
-  //   if (accessToken != null &&
-  //       refreshToken != null &&
-  //       csrfToken != null &&
-  //       userId != null &&
-  //       username != null &&
-  //       email != null &&
-  //       roleFk != null &&
-  //       avatar != null) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  //   // rddeturn true;
-  // }
-
+  Future<UserState?> isSignedIn() async {
+    const storage = FlutterSecureStorage();
+    String? accessToken = await storage.read(key: 'accessToken');
+    String? refreshToken = await storage.read(key: 'refreshToken');
+    String? csrfToken = await storage.read(key: 'csrfToken');
+    String? userId = await storage.read(key: 'userId');
+    String? username = await storage.read(key: 'username');
+    String? email = await storage.read(key: 'email');
+    String? roleFk = await storage.read(key: 'roleFk');
+    String? avatar = await storage.read(key: 'avatar');
+    if (accessToken != null &&
+        refreshToken != null &&
+        csrfToken != null &&
+        userId != null &&
+        username != null &&
+        email != null &&
+        roleFk != null) {
+      print("User is signed in");
+      return UserState(
+          int.parse(userId), username, email, int.parse(roleFk), avatar);
+    } else {
+      return null;
+    }
+  }
 }
