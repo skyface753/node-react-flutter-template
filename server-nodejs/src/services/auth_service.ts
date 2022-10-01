@@ -143,14 +143,14 @@ const AuthService = {
     }
 
     onLoginSuccess(remoteIp);
-    user = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      roleFk: user.roleFk,
-      avatar: user.generatedPath,
-    };
-    createAndSendTokens(res, user);
+    // user = {
+    //   id: user.id,
+    //   username: user.username,
+    //   email: user.email,
+    //   roleFk: user.roleFk,
+    //   avatar: user.generatedPath,
+    // };
+    createAndSendTokens(res, user.id);
   },
   register: async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
@@ -196,15 +196,15 @@ const AuthService = {
       sendResponse.error(res);
       return;
     }
-    user = {
-      id: user.insertId,
-      username,
-      email,
-      roleFk: 1,
-      avatar: null,
-    };
+    // user = {
+    //   id: user.insertId,
+    //   username,
+    //   email,
+    //   roleFk: 1,
+    //   avatar: null,
+    // };
 
-    createAndSendTokens(res, user);
+    createAndSendTokens(res, user.insertId);
   },
   // Before verifying
   enable2FA: async (req: IUserFromCookieInRequest, res: Response) => {
@@ -355,8 +355,15 @@ const AuthService = {
     if (!token) {
       return sendResponse.error(res);
     }
-    const user = JSON.parse(token);
-    createAndSendTokens(res, user);
+    const userFromRedis = JSON.parse(token);
+    const user = await db.query('SELECT * FROM user WHERE id = ?', [
+      userFromRedis.id,
+    ]);
+    if (user.length === 0) {
+      return sendResponse.error(res);
+    }
+    delete user[0].password;
+    createAndSendTokens(res, user[0].id);
     // Delete refresh token
     await redisClient.del(refreshToken);
   },
@@ -409,18 +416,56 @@ const AuthService = {
  *  } user
  * @param {*} res
  */
-interface User {
+// interface User {
+//   id: number;
+//   username: string;
+//   email: string;
+//   roleFk: number;
+//   generatedPath: string;
+// }
+
+class User {
   id: number;
   username: string;
   email: string;
   roleFk: number;
-  generatedPath: string;
-}
-async function createAndSendTokens(res: Response, user: User) {
-  if (!user || !user.id || !user.username || !user.email || !user.roleFk) {
-    sendResponse.serverError(res);
-    return;
+  avatar: string;
+  constructor(
+    id: number,
+    username: string,
+    email: string,
+    roleFk: number,
+    generatedPath: string
+  ) {
+    this.id = id;
+    this.username = username;
+    this.email = email;
+    this.roleFk = roleFk;
+    this.avatar = generatedPath;
   }
+}
+
+async function createAndSendTokens(res: Response, userId: number) {
+  if (!userId) {
+    return sendResponse.serverError(res);
+  }
+  const userDb = await db.query(
+    'SELECT * FROM user LEFT JOIN avatar ON avatar.userFk = user.id WHERE id = ?',
+    [userId]
+  );
+
+  if (userDb.length === 0) {
+    return sendResponse.serverError(res);
+  }
+  delete userDb[0].password;
+  const user: User = new User(
+    userDb[0].id,
+    userDb[0].username,
+    userDb[0].email,
+    userDb[0].roleFk,
+    userDb[0].generatedPath
+  );
+
   // Create Access Token
   const accessToken = jwt.sign(
     { id: user.id, username: user.username, email: user.email },
@@ -441,7 +486,7 @@ async function createAndSendTokens(res: Response, user: User) {
       username: user.username,
       email: user.email,
       roleFk: user.roleFk,
-      avatar: user.generatedPath,
+      avatar: user.avatar,
     })
   );
   await redisClient.expire(refreshToken, 60 * 60 * 24 * 7);

@@ -6,7 +6,7 @@ import api from '../services/api';
 import { IState } from '../store/reducer';
 
 const access = async () => {
-  const response = await api.get('/auth/status');
+  const response = await api.get('auth/status');
   console.log('After /auth/status');
   if (!response) {
     return false;

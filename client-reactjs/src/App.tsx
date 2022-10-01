@@ -59,6 +59,7 @@ function App() {
                 path='/settings/:settingSection'
                 element={<SettingsPage />}
               />
+              {/* <Route path='/settings/' */}
             </Route>
             <Route path='*' element={<NotFound />} />
           </Routes>

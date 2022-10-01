@@ -26,7 +26,7 @@ export default function Login() {
       return;
     }
     uninterceptedAxiosInstance
-      .post('/auth/login', { email, password })
+      .post('auth/login', { email, password })
       .then((res) => {
         if (res.data.success) {
           localStorage.setItem(
@@ -73,7 +73,7 @@ export default function Login() {
               setTwoFactorCode(value);
               if (value.length == 6) {
                 uninterceptedAxiosInstance
-                  .post('/auth/login', { email, password, totpCode: value })
+                  .post('auth/login', { email, password, totpCode: value })
                   .then((res) => {
                     if (res.data.success) {
                       localStorage.setItem(

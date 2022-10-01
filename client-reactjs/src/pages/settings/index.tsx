@@ -6,6 +6,7 @@ import Disable2FA from './disable2FA';
 import Enable2FA from './enable2FA';
 import { AuthContext } from '../../App';
 import { useContext } from 'react';
+import AvatarUpload from './avatarUpload';
 
 interface IUserSettings {
   twoFactorEnabled: boolean;
@@ -45,6 +46,23 @@ export default function SettingsPage() {
     return <Disable2FA />;
   } else if (settingSection === 'enable2fa') {
     return <Enable2FA />;
+  } else if (settingSection === 'avatar') {
+    return (
+      <AvatarUpload
+        currentFile={null}
+        progress={0}
+        message={''}
+        fileInfos={undefined}
+        changeAvatarCallback={(avatar: string) => {
+          dispatch({
+            type: 'CHANGE_AVATAR',
+            payload: {
+              avatar: avatar,
+            },
+          });
+        }}
+      />
+    );
   }
 
   if (!user) {
@@ -85,19 +103,7 @@ export default function SettingsPage() {
           <h3>Avatar</h3>
           <p>Change your avatar here.</p>
           <div>
-            <button
-              onClick={() => {
-                dispatch({
-                  type: 'CHANGE_AVATAR',
-                  payload: {
-                    avatar:
-                      'https://cdn.discordapp.com/avatars/803511102154379284/1c2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b.png?size=128',
-                  },
-                });
-              }}
-            >
-              Change Avatar
-            </button>
+            <a href='/settings/avatar'>Change Avatar</a>
           </div>
           <h3>Username</h3>
           <p>Change your username here.</p>

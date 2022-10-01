@@ -36,7 +36,7 @@ export default function Register() {
       return;
     }
     uninterceptedAxiosInstance
-      .put('/auth/register', {
+      .put('auth/register', {
         email,
         password,
       })
