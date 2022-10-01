@@ -1,162 +1,102 @@
-const tryParse = (jsonString: any) => {
-  try {
-    var o = JSON.parse(jsonString || '');
-    if (o && typeof o === 'object') {
-      return o;
-    }
-    return o;
-  } catch (e) {
-    return null;
-  }
-};
-
-// type User = {
-//   id: number;
-//   email: string;
-//   username: string;
-//   roleFk: number;
-//   avatar: string;
-// };
-
-class User {
-  id: number;
-  email: string;
-  username: string;
-  roleFk: number;
-  avatar: string;
-
-  constructor(
-    id: number,
-    email: string,
-    username: string,
-    roleFk: number,
-    avatar: string
-  ) {
-    this.id = id;
-    this.email = email;
-    this.username = username;
-    this.roleFk = roleFk;
-    this.avatar = avatar;
-  }
-}
-
-export interface IState {
-  isLoggedIn: boolean;
-  user: User | null | any;
-  accessToken: string | null;
-  refreshToken: string | null;
-  csrfToken: string | null;
-}
-
-type PayloadLogin = {
-  user: User;
-  isLoggedIn: boolean;
-  accessToken: string;
-  refreshToken: string;
-  csrfToken: string;
-};
-
-type PayloadChangeAvatar = {
-  avatar: string;
-};
-
-interface IAction {
-  type: string;
-  payload: PayloadLogin | PayloadChangeAvatar;
-}
-
-const getUser: () => User | null = () => {
-  const user = tryParse(localStorage.getItem('user'));
-  if (user) {
-    return new User(
-      user.id,
-      user.email,
-      user.username,
-      user.roleFk,
-      user.avatar
-    );
-  }
-  return null;
-};
-
-export const initialState: IState = {
-  isLoggedIn: tryParse(localStorage.getItem('isLoggedIn')) || false,
-  user: getUser() || null,
-
-  // user: tryParse(localStorage.getItem('user')) || null,
-  accessToken: tryParse(localStorage.getItem('accessToken')) || null,
-  refreshToken: tryParse(localStorage.getItem('refreshToken')) || null,
-  csrfToken: tryParse(localStorage.getItem('csrfToken')) || null,
-};
-
-enum ActionType {
+export enum ActionType {
   LOGIN = 'LOGIN',
   LOGOUT = 'LOGOUT',
   CHANGE_USERNAME = 'CHANGE_USERNAME',
   CHANGE_AVATAR = 'CHANGE_AVATAR',
 }
 
-export const reducer = (state: IState, action: IAction) => {
+export interface IAction {
+  type: ActionType;
+  payload: any;
+}
+
+interface IUser {
+  id: number;
+  username: string;
+  email: string;
+  avatar: string;
+  roleFk: number;
+}
+
+export interface IAuthState {
+  isLoggedIn: boolean;
+  user: IUser | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  csrfToken: string | null;
+}
+
+export const initialState = {
+  isLoggedIn: localStorage.getItem('isLoggedIn') === 'true',
+  user: localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') as string)
+    : null,
+  accessToken: localStorage.getItem('accessToken'),
+  refreshToken: localStorage.getItem('refreshToken'),
+  csrfToken: localStorage.getItem('csrfToken'),
+};
+
+export const reducer = (state: IAuthState, action: IAction) => {
   const { type, payload } = action;
   switch (type) {
     case ActionType.LOGIN: {
-      // Check if payload is of type PayloadLogin
-      action.payload = action.payload as PayloadLogin;
-      localStorage.setItem(
-        'isLoggedIn',
-        JSON.stringify(action.payload.isLoggedIn)
-      );
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
-      localStorage.setItem(
-        'accessToken',
-        JSON.stringify(action.payload.accessToken)
-      );
-      localStorage.setItem(
-        'refreshToken',
-        JSON.stringify(action.payload.refreshToken)
-      );
-      localStorage.setItem(
-        'csrfToken',
-        JSON.stringify(action.payload.csrfToken)
-      );
+      const { user, accessToken, refreshToken, csrfToken } = payload;
+      localStorage.setItem('isLoggedIn', JSON.stringify(true));
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('accessToken', JSON.stringify(accessToken));
+      localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
+      localStorage.setItem('csrfToken', JSON.stringify(csrfToken));
       return {
         ...state,
-        isLoggedIn: action.payload.isLoggedIn,
-        user: action.payload.user,
+        isLoggedIn: true,
+        user: user,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        csrfToken: csrfToken,
       };
     }
     case ActionType.LOGOUT: {
+      //TODO clear local storage specific
       localStorage.clear();
       return {
         ...state,
         isLoggedIn: false,
         user: null,
+        accessToken: null,
+        refreshToken: null,
+        csrfToken: null,
       };
     }
     case ActionType.CHANGE_USERNAME: {
-      action.payload = action.payload as PayloadLogin;
+      const { username } = payload;
+      // TODO: update local storage
+      if (localStorage.getItem('user')) {
+        const user = JSON.parse(localStorage.getItem('user')!);
+        user.username = username;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
 
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
       return {
         ...state,
-        user: action.payload.user,
+        user: {
+          ...state.user,
+          username: username,
+        },
       };
     }
     case ActionType.CHANGE_AVATAR: {
-      // Old user
-      const oldUser = state.user;
-      action.payload = action.payload as PayloadChangeAvatar;
-      // New user
-      const newUser = {
-        ...oldUser,
-        avatar: action.payload.avatar,
-      };
-      // Set new user
-      localStorage.setItem('user', JSON.stringify(newUser));
-      console.log('newUser: ', newUser);
+      const { avatar } = payload; // Avatar as URL
+      if (localStorage.getItem('user')) {
+        const user = JSON.parse(localStorage.getItem('user')!);
+        user.avatar = avatar;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       return {
         ...state,
-        user: newUser,
+        user: {
+          ...state.user,
+          avatar: avatar,
+        },
       };
     }
     default:

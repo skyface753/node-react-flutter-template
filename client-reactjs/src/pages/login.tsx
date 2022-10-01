@@ -8,6 +8,7 @@ import VerificationInput from 'react-verification-input';
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 import { AuthContext } from '../App';
 import { uninterceptedAxiosInstance } from '../services/api';
+import { ActionType } from '../store/reducer';
 // import api from '../services/api.js';
 // import ApiService from '../services/apiService';
 
@@ -34,7 +35,7 @@ export default function Login() {
             JSON.stringify(res.data.data.accessToken)
           );
           dispatch({
-            type: 'LOGIN',
+            type: ActionType.LOGIN,
             payload: {
               user: res.data.data.user,
               isLoggedIn: true,
@@ -81,7 +82,7 @@ export default function Login() {
                         JSON.stringify(res.data.data.accessToken)
                       );
                       dispatch({
-                        type: 'LOGIN',
+                        type: ActionType.LOGIN,
                         payload: {
                           user: res.data.data.user,
                           isLoggedIn: true,

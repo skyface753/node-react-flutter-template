@@ -1,7 +1,7 @@
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { initialState, IState, reducer } from './store/reducer';
+import { initialState, reducer, IAuthState, IAction } from './store/reducer';
 import React, { createContext, useReducer } from 'react';
 import UseGaTracker from './useGATracker';
 import CookieConsent from 'react-cookie-consent';
@@ -15,7 +15,12 @@ import Profile from './pages/profile';
 import NotFound from './pages/notFound';
 import SettingsPage from './pages/settings';
 
-export const AuthContext = createContext<any>(initialState);
+// export const AuthContext = createContext<any>(initialState);
+
+export const AuthContext = createContext<{
+  state: IAuthState;
+  dispatch: React.Dispatch<IAction>;
+}>({ state: initialState, dispatch: () => {} });
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);

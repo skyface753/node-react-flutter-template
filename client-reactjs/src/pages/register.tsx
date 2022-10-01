@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import '../styles/sign-up-and-in.css';
 import { AuthContext } from '../App';
 import { uninterceptedAxiosInstance } from '../services/api';
+import { ActionType } from '../store/reducer';
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 
 export default function Register() {
@@ -45,7 +46,7 @@ export default function Register() {
         if (res.data.success) {
           console.log(res.data.data.user);
           dispatch({
-            type: 'LOGIN',
+            type: ActionType.LOGIN,
             payload: {
               user: res.data.data.user,
               isLoggedIn: true,

@@ -6,6 +6,7 @@ import defaultImage from '../../img/default-profile-pic.png';
 import config from '../../config.json';
 import api from '../../services/api';
 import { AxiosResponse } from 'axios';
+import { ActionType } from '../../store/reducer';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -53,7 +54,7 @@ export default function Navbar() {
             <a href='/profile'>Profile (User Route)</a>
           </li>
           {state.isLoggedIn ? (
-            state.user.role === 'admin' ? (
+            state.user?.roleFk === 2 ? (
               <li>
                 <a href='/admin'>Admin</a>
               </li>
@@ -91,7 +92,7 @@ export default function Navbar() {
                 }
               >
                 <div className='loggedInUserMenu-Button'>
-                  {state.user.avatar ? (
+                  {state.user?.avatar ? (
                     <img
                       className='profile-pic'
                       src={config.BackendFilesUrl + state.user.avatar}
@@ -112,7 +113,9 @@ export default function Navbar() {
                       : 'loggedInUser-dropdown-content'
                   }
                 >
-                  <a href={'/users/' + state.user.email}>{state.user.email}</a>
+                  <a href={'/users/' + state.user?.email}>
+                    {state.user?.email}
+                  </a>
                   <a href='/settings'>Settings</a>
                   {/* Logout */}
                   <a
@@ -128,7 +131,10 @@ export default function Navbar() {
                           })
                           .then((res: AxiosResponse) => {
                             if (res.data.success) {
-                              dispatch({ type: 'LOGOUT' });
+                              dispatch({
+                                type: ActionType.LOGOUT,
+                                payload: {},
+                              });
                               window.location.href = '/';
                               return;
                             } else {
@@ -136,11 +142,11 @@ export default function Navbar() {
                               console.log(res.data);
                             }
                           });
-                        dispatch({ type: 'LOGOUT' });
+                        dispatch({ type: ActionType.LOGOUT, payload: {} });
                         window.location.href = '/';
                       } catch (err) {
                         console.log(err);
-                        dispatch({ type: 'LOGOUT' });
+                        dispatch({ type: ActionType.LOGOUT, payload: {} });
                         window.location.href = '/';
                       }
                     }}

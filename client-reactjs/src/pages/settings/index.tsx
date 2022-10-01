@@ -7,6 +7,7 @@ import Enable2FA from './enable2FA';
 import { AuthContext } from '../../App';
 import { useContext } from 'react';
 import AvatarUpload from './avatarUpload';
+import { ActionType } from '../../store/reducer';
 
 interface IUserSettings {
   twoFactorEnabled: boolean;
@@ -55,7 +56,7 @@ export default function SettingsPage() {
         fileInfos={undefined}
         changeAvatarCallback={(avatar: string) => {
           dispatch({
-            type: 'CHANGE_AVATAR',
+            type: ActionType.CHANGE_AVATAR,
             payload: {
               avatar: avatar,
             },

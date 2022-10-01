@@ -3,7 +3,6 @@ import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../App';
 import React from 'react';
 import api from '../services/api';
-import { IState } from '../store/reducer';
 
 const access = async () => {
   const response = await api.get('auth/status');
