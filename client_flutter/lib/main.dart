@@ -21,10 +21,12 @@ class MyApp extends StatelessWidget {
           authRepository: RepositoryProvider.of<AuthRepository>(context),
         )..add(AppStarted()),
         child: MaterialApp(
-            home:
-                LoginPage()
+            themeMode: ThemeMode.dark,
+            darkTheme: ThemeData.dark(),
+            theme: ThemeData.light(),
+            // home: const App(),
 
-            ),
+            home: LoginPage()),
       ),
     );
   }

@@ -39,7 +39,7 @@ const onResponseError = async (error: any) => {
       );
       console.log('oldRefreshToken', oldRefreshToken);
       try {
-        const rs = await axios.post(`${API_URL}/auth/refreshToken`, {
+        const rs = await axios.post(`${API_URL}auth/refreshToken`, {
           refreshToken: oldRefreshToken,
         });
 

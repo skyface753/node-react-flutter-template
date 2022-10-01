@@ -60,3 +60,9 @@ body {
   color: #fff;
   margin-bottom: 1rem;
 }
+
+.profile-pic {
+  border-radius: 50%;
+  max-height: 50px;
+  max-width: 50px;
+}

@@ -18,10 +18,7 @@
   .navigation {
   }
 }
-.profile-pic {
-  border-radius: 50%;
-  max-height: 50px;
-}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;

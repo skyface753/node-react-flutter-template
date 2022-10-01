@@ -7,6 +7,7 @@ import config from '../../config.json';
 import api from '../../services/api';
 import { AxiosResponse } from 'axios';
 import { ActionType } from '../../store/reducer';
+import ProfilePictureComponent from '../ProfilePicture';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -51,7 +52,7 @@ export default function Navbar() {
             <a href='/home'>Home</a>
           </li>
           <li>
-            <a href='/profile'>Profile (User Route)</a>
+            <a href='/status'>Auth Status (User Route)</a>
           </li>
           {state.isLoggedIn ? (
             state.user?.roleFk === 2 ? (
@@ -92,19 +93,7 @@ export default function Navbar() {
                 }
               >
                 <div className='loggedInUserMenu-Button'>
-                  {state.user?.avatar ? (
-                    <img
-                      className='profile-pic'
-                      src={config.BackendFilesUrl + state.user.avatar}
-                      alt='User'
-                    />
-                  ) : (
-                    <img
-                      className='profile-pic'
-                      src={defaultImage}
-                      alt='User'
-                    />
-                  )}
+                  <ProfilePictureComponent avatarPath={state.user?.avatar} />
                 </div>
                 <div
                   className={

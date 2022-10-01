@@ -11,7 +11,7 @@ import { UserProtectedRoute } from './helpers/UserRouteProtector';
 import Home from './pages/home';
 import Login from './pages/login';
 import Register from './pages/register';
-import Profile from './pages/profile';
+import StatusPage from './pages/status';
 import NotFound from './pages/notFound';
 import SettingsPage from './pages/settings';
 
@@ -58,7 +58,7 @@ function App() {
 
             <Route element={<UserProtectedRoute />}>
               {/* User Protected Route - redirect to login page */}
-              <Route path='/profile' element={<Profile />} />
+              <Route path='/status' element={<StatusPage />} />
               <Route path='/settings' element={<SettingsPage />} />
               <Route
                 path='/settings/:settingSection'
