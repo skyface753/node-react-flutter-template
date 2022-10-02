@@ -20,10 +20,15 @@ export default {
 		res: Response,
 		next: NextFunction
 	) => {
-		const token = req.cookies.jwt;
+		//Token from cookie or Barer
+		let token = req.cookies.jwt || req.headers.authorization;
+
 		if (!token) {
 			console.log('No token');
 			return sendResponse.authError(res);
+		}
+		if (token.startsWith('Bearer ')) {
+			token = token.slice(7, token.length);
 		}
 		try {
 			const payload = jwt.verify(
@@ -53,9 +58,13 @@ export default {
 		res: Response,
 		next: NextFunction
 	) => {
-		const token = req.cookies.jwt;
+		let token = req.cookies.jwt || req.headers.authorization;
+
 		if (!token) {
 			return sendResponse.authError(res);
+		}
+		if (token.startsWith('Bearer ')) {
+			token = token.slice(7, token.length);
 		}
 		try {
 			const payload = jwt.verify(

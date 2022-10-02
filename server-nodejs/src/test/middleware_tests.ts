@@ -122,6 +122,76 @@ describe('Routes as User', () => {
 	});
 });
 
+describe('Routes as User with token as Bearer', () => {
+	let accessToken = '';
+	let csrfToken = '';
+	before((done) => {
+		chai.request(server)
+			.post('/api/auth/login')
+			.set(
+				'content-type',
+				'application/x-www-form-urlencoded'
+			)
+			.send(credentials.user)
+			.end((err, res) => {
+				expect(res).to.have.status(200);
+				expect(res.body.success).to.be.true;
+				expect(res.body.data.user.roleFk).to.equal(1);
+				accessToken = res.body.data.accessToken;
+				csrfToken = res.body.data.csrfToken;
+				done();
+			});
+	});
+	describe('/POST anonymous', () => {
+		it('Route should be accessible without login - no cookie or Bearer', (done) => {
+			chai.request(server)
+				.post('/api/test/anonym')
+				.end((err, res) => {
+					expect(res).to.have.status(200);
+					expect(res.body.success).to.be.true;
+					expect(res.body.data.message).to.equal(
+						'Anonymous'
+					);
+					done();
+				});
+		});
+	});
+	describe('/POST user', () => {
+		it('Route should be accessible user - cookie or baerer is required', (done) => {
+			chai.request(server)
+				.post('/api/test/user')
+				.set('Authorization', `Bearer ${accessToken}`)
+				.set('X-CSRF-Token', csrfToken)
+				.end((err, res) => {
+					expect(res).to.have.status(200);
+					expect(res.body.success).to.equal(true);
+					expect(
+						res.body.data.user.email
+					).to.equal(credentials.user.email);
+					done();
+				});
+		});
+		describe('/POST admin', () => {
+			it('Route should not be accessible as user - cookie or baerer is required', (done) => {
+				chai.request(server)
+					.post('/api/test/admin')
+					.set(
+						'Authorization',
+						`Bearer ${accessToken}`
+					)
+					.set('X-CSRF-Token', csrfToken)
+					.end((err, res) => {
+						expect(res).to.have.status(403);
+						expect(
+							res.body.success
+						).to.equal(false);
+						done();
+					});
+			});
+		});
+	});
+});
+
 describe('Routes as Admin', () => {
 	let cookie = '';
 	let csrfToken = '';

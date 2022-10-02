@@ -1,11 +1,8 @@
-import 'package:dio/adapter_browser.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DioService {
   static Dio geBaseDio() {
-    var adapter = BrowserHttpClientAdapter();
-    adapter.withCredentials = true;
     return Dio(
       BaseOptions(
         baseUrl: 'http://localhost:5000/api/',
@@ -20,7 +17,7 @@ class DioService {
           'X-Requested-With': 'XMLHttpRequest',
         },
       ),
-    )..httpClientAdapter = adapter;
+    );
   }
 
   Dio getApi() {
@@ -29,10 +26,10 @@ class DioService {
     dio.interceptors
         .add(InterceptorsWrapper(onRequest: (options, handler) async {
       final storage = new FlutterSecureStorage();
-      await storage.read(key: 'csrfToken').then((value) {
-        print("Added csrfToken");
-        options.headers['x-csrf-token'] = value;
-      });
+      String? csrfToken = await storage.read(key: 'csrfToken');
+      String? accessToken = await storage.read(key: 'accessToken');
+      options.headers['X-CSRF-TOKEN'] = csrfToken;
+      options.headers['Authorization'] = 'Bearer $accessToken';
 
       return handler.next(options);
       print(
