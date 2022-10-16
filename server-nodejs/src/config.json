@@ -1,12 +1,5 @@
 {
   "MFA_Issuer": "MyApp",
-  "SQLDB": {
-    "host": "localhost",
-    "user": "user",
-    "password": "password",
-    "database": "database",
-    "multipleStatements": false
-  },
   "JWT_SECRET": "secret",
   "BCRYPT_ROUNDS": 10,
   "files": {

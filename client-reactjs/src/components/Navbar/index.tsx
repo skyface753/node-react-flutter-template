@@ -102,8 +102,8 @@ export default function Navbar() {
                       : 'loggedInUser-dropdown-content'
                   }
                 >
-                  <a href={'/users/' + state.user?.email}>
-                    {state.user?.email}
+                  <a href={'/users/' + state.user?.username}>
+                    {state.user?.username}
                   </a>
                   <a href='/settings'>Settings</a>
                   {/* Logout */}

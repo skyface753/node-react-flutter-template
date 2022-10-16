@@ -6,7 +6,7 @@ import { AxiosResponse } from 'axios';
 
 var empty2FAData = {
   url: '',
-  secretBase32: '',
+  secretbase32: '',
 };
 export default function Enable2FA() {
   const [password, setPassword] = React.useState('');
@@ -49,7 +49,7 @@ export default function Enable2FA() {
             <h3>Scan the QR Code</h3>
             <QRCode value={twoFactorData.url} />
             <h3>Or enter the code manually</h3>
-            <input type='text' value={twoFactorData.secretBase32} readOnly />
+            <input type='text' value={twoFactorData.secretbase32} readOnly />
             <h3>Enter the 2FA code</h3>
 
             <VerificationInput

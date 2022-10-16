@@ -28,7 +28,6 @@ const sendResponse = {
   },
 
   authError: (res: Response) => {
-    // console.trace('authError');
     res.status(401).json({
       success: false,
       message: 'Access Denied - Not Authorized',

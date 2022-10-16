@@ -1,0 +1,93 @@
+version: '3.3'
+
+services:
+  debug-backend:
+    build:
+      context: ./server-nodejs
+      dockerfile: Dockerfile.debug
+    ports:
+      - 5000:5000
+    volumes:
+      - ./server-nodejs:/app
+    networks:
+      - crunchynet
+  primary:
+    hostname: 'primary'
+    image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+    environment:
+      - PGHOST=/tmp
+      - MAX_CONNECTIONS=10
+      - MAX_WAL_SENDERS=5
+      - PG_MODE=primary
+      - MODE=postgres
+      - PG_PRIMARY_USER=primaryuser
+      - PG_PRIMARY_PASSWORD=password
+      - PG_DATABASE=testdb
+      - PG_USER=testuser
+      - PG_PASSWORD=password
+      - PG_ROOT_PASSWORD=password
+      - PG_PRIMARY_PORT=5432
+    volumes:
+      - pg-primary-vol:/pgdata
+    ports:
+      - '5432'
+    networks:
+      - crunchynet
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == primary
+          - node.role == worker
+  replica:
+    image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+    environment:
+      - PGHOST=/tmp
+      - MAX_CONNECTIONS=10
+      - MAX_WAL_SENDERS=5
+      - PG_MODE=replica
+      - MODE=postgres
+      - PG_PRIMARY_HOST=primary
+      - PG_PRIMARY_PORT=5432
+      - PG_PRIMARY_USER=primaryuser
+      - PG_PRIMARY_PASSWORD=password
+      - PG_DATABASE=testdb
+      - PG_USER=testuser
+      - PG_PASSWORD=password
+      - PG_ROOT_PASSWORD=password
+    volumes:
+      - pg-replica-vol:/pgdata
+    ports:
+      - '5432'
+    networks:
+      - crunchynet
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type != primary
+          - node.role == worker
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - '5050:80'
+    networks:
+      - crunchynet
+
+  redis:
+    image: bitnami/redis:latest
+    ports:
+      - 6379:6379
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - crunchynet
+networks:
+  crunchynet:
+
+volumes:
+  pg-primary-vol:
+  pg-replica-vol:
