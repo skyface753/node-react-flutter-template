@@ -14,7 +14,7 @@ import { ActionType } from '../store/reducer';
 
 export default function Login() {
   const { dispatch } = useContext(AuthContext);
-  const [email, setEmail] = React.useState('');
+  const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
   const [required2FA, setRequired2FA] = React.useState(false);
@@ -22,12 +22,12 @@ export default function Login() {
   const [twoFactorError, setTwoFactorError] = React.useState('');
 
   async function login() {
-    if (!email || !password) {
+    if (!username || !password) {
       setError('Please fill in all fields');
       return;
     }
     uninterceptedAxiosInstance
-      .post('auth/login', { email, password })
+      .post('auth/login', { username, password })
       .then((res) => {
         if (res.data.success) {
           localStorage.setItem(
@@ -74,7 +74,7 @@ export default function Login() {
               setTwoFactorCode(value);
               if (value.length == 6) {
                 uninterceptedAxiosInstance
-                  .post('auth/login', { email, password, totpCode: value })
+                  .post('auth/login', { username, password, totpCode: value })
                   .then((res) => {
                     if (res.data.success) {
                       localStorage.setItem(
@@ -115,16 +115,16 @@ export default function Login() {
         <h1 className='site-title'>Sign In</h1>
         <hr />
 
-        <label htmlFor='email'>
+        <label htmlFor='username'>
           <b>Email</b>
         </label>
         <input
           type='text'
-          placeholder='Enter Email'
-          name='email'
+          placeholder='Enter Username'
+          name='username'
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               login();

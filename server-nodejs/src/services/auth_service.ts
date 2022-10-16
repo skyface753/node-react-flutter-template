@@ -111,7 +111,7 @@ const AuthService = {
 
     const user = await db
       .queryReplica(
-        'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id LEFT JOIN testuser.avatar ON testuser.avatar.userFk = testuser.user.id WHERE username = $1',
+        'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id LEFT JOIN testuser.avatar ON testuser.avatar.userFk = testuser.user.id WHERE LOWER(username) = LOWER($1)',
         [username.toLowerCase()]
       )
       .then((result) => {
@@ -129,7 +129,7 @@ const AuthService = {
       sendResponse.error(res);
       return;
     }
-    if (user.secretBase32 && user.verified) {
+    if (user.secretbase32 && user.verified) {
       if (!totpCode) {
         return res.status(400).send({
           success: false,
@@ -137,7 +137,7 @@ const AuthService = {
         });
       }
       const verified = speakeasy.totp.verify({
-        secret: user.secretBase32,
+        secret: user.secretbase32,
         encoding: 'base32',
         token: totpCode,
       });
@@ -158,8 +158,8 @@ const AuthService = {
     }
     // Check if user already exists
     const user = await db.queryReplica(
-      'SELECT * FROM testuser.user WHERE username = $1',
-      [username.toLowerCase()]
+      'SELECT * FROM testuser.user WHERE LOWER(username) = LOWER($1)',
+      [username]
     );
     if (user.length > 0) {
       sendResponse.error(res);
@@ -182,7 +182,7 @@ const AuthService = {
     const userId = await db
       .queryPrimary(
         'INSERT INTO testuser.user (username, password, rolefk) VALUES ($1, $2, $3) RETURNING id',
-        [username.toLowerCase(), hashedPassword, 1]
+        [username, hashedPassword, 1]
       )
       .then((result) => {
         return result[0].id;
@@ -198,145 +198,145 @@ const AuthService = {
   enable2FA: async (req: IUserFromCookieInRequest, res: Response) => {
     const { password } = req.body;
     const requestingUser = req.user;
-    const email = requestingUser?.email;
-    if (!email || !password) {
-      console.log('Missing : ', email, password);
+    const username = requestingUser?.username;
+    if (!username || !password) {
+      console.log('Missing : ', username, password);
       sendResponse.missingParams(res);
       return;
     }
     // Check if user already has 2FA
-    // let user = await db.query(
-    // 	'SELECT * FROM user LEFT JOIN user_2fa ON user_2fa.userFk = user.id WHERE email = ?',
-    // 	[email]
-    // );
-    // if (user.length === 0) {
-    // 	return sendResponse.error(res);
-    // }
-    // user = user[0];
-    // if (user.secretBase32 && user.verified) {
-    // 	return sendResponse.error(res);
-    // } else if (user.secretBase32 && !user.verified) {
-    // 	console.log(
-    // 		'User has 2FA but not verified - deleting and re-creating'
-    // 	);
-    // 	await db.query(
-    // 		'DELETE FROM user_2fa WHERE userFk = ?',
-    // 		[user.id]
-    // 	);
-    // }
+    let user = await db.queryReplica(
+      'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userfk = testuser.user.id WHERE testuser.user.id = $1',
+      [requestingUser?.id]
+    );
+    if (user.length === 0) {
+      return sendResponse.error(res);
+    }
+    user = user[0];
+    if (user.secretbase32 && user.verified) {
+      return sendResponse.error(res);
+    } else if (user.secretbase32 && !user.verified) {
+      console.log('User has 2FA but not verified - deleting and re-creating');
+      await db.queryPrimary(
+        'DELETE FROM testuser.user_2fa WHERE userfk = $1',
 
-    // // Verify password
-    // const match = await bycrypt.compare(password, user.password);
-    // if (!match) {
-    // 	return sendResponse.error(res);
-    // }
-    // const secret = speakeasy.generateSecret({
-    // 	otpauth_url: true,
-    // 	name: config.MFA_Issuer + ' (' + user.email + ')',
-    // });
-    // const url = secret.otpauth_url;
-    // const secretBase32 = secret.base32;
-    // const dbResult = await db.query(
-    // 	'INSERT INTO user_2fa (userFk, secretBase32) VALUES (?, ?)',
-    // 	[user.id, secretBase32]
-    // );
-    // if (!dbResult) {
-    // 	sendResponse.error(res);
-    // 	return;
-    // }
-    // sendResponse.success(res, {
-    // 	url,
-    // 	secretBase32,
-    // });
+        [user.id]
+      );
+    }
+
+    // Verify password
+    const match = await bycrypt.compare(password, user.password);
+    if (!match) {
+      return sendResponse.error(res);
+    }
+    const secret = speakeasy.generateSecret({
+      otpauth_url: true,
+      name: config.MFA_Issuer + ' (' + user.username + ')',
+    });
+    const url = secret.otpauth_url;
+    const secretbase32 = secret.base32;
+    const dbResult = await db.queryPrimary(
+      'INSERT INTO testuser.user_2fa (userfk, secretbase32) VALUES ($1, $2)',
+      [user.id, secretbase32]
+    );
+    if (!dbResult) {
+      sendResponse.error(res);
+      return;
+    }
+    sendResponse.success(res, {
+      url,
+      secretbase32,
+    });
   },
   // After enabling
   verify2FA: async (req: IUserFromCookieInRequest, res: Response) => {
     const { currentCode } = req.body;
     const requestingUser = req.user;
-    const email = requestingUser?.email;
-    if (!email || !currentCode) {
-      console.log('Missing : ', email, currentCode);
+    const username = requestingUser?.username;
+    if (!username || !currentCode) {
+      console.log('Missing : ', username, currentCode);
       return sendResponse.missingParams(res);
     }
     // Check if user already has 2FA
-    // let user = await db.query(
-    // 	'SELECT * FROM user LEFT JOIN user_2fa ON user_2fa.userFk = user.id WHERE email = ? ',
-    // 	[email]
-    // );
-    // if (user.length === 0) {
-    // 	return sendResponse.error(res);
-    // }
-    // user = user[0];
-    // if (!user.secretBase32) {
-    // 	return sendResponse.error(res);
-    // }
-    // if (user.verified) {
-    // 	return sendResponse.error(res);
-    // }
-    // const verified = speakeasy.totp.verify({
-    // 	secret: user.secretBase32,
-    // 	encoding: 'base32',
-    // 	token: currentCode,
-    // });
-    // if (!verified) {
-    // 	return sendResponse.error(res);
-    // }
-    // const dbResult = await db.query(
-    // 	'UPDATE user_2fa SET verified = 1 WHERE userFk = ?',
-    // 	[user.id]
-    // );
-    // if (!dbResult) {
-    // 	sendResponse.error(res);
-    // 	return;
-    // }
-    // sendResponse.success(res, {
-    // 	message: '2FA verified',
-    // });
+    let user = await db.queryReplica(
+      'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE LOWER(testuser.user.username) = LOWER($1)',
+      [username]
+    );
+    if (user.length === 0) {
+      return sendResponse.error(res);
+    }
+    user = user[0];
+    if (!user.secretbase32) {
+      return sendResponse.error(res);
+    }
+    if (user.verified) {
+      return sendResponse.error(res);
+    }
+    const verified = speakeasy.totp.verify({
+      secret: user.secretbase32,
+      encoding: 'base32',
+      token: currentCode,
+    });
+    if (!verified) {
+      return sendResponse.error(res);
+    }
+    const dbResult = await db.queryPrimary(
+      'UPDATE testuser.user_2fa SET verified = true WHERE userFk = $1',
+      [user.id]
+    );
+    if (!dbResult) {
+      sendResponse.error(res);
+      return;
+    }
+    sendResponse.success(res, {
+      message: '2FA verified',
+    });
   },
   disable2FA: async (req: IUserFromCookieInRequest, res: Response) => {
     const { password, totpCode } = req.body;
     const requestingUser = req.user;
-    const email = requestingUser?.email;
-    if (!email || !password || !totpCode) {
-      console.log('Missing : ', email, password, totpCode);
+    const username = requestingUser?.username;
+    if (!username || !password || !totpCode) {
+      console.log('Missing : ', username, password, totpCode);
       return sendResponse.missingParams(res);
     }
     // Check if user already has 2FA
-    // let user = await db.query(
-    // 	'SELECT * FROM user LEFT JOIN user_2fa ON user_2fa.userFk = user.id WHERE email = ? ',
-    // 	[email]
-    // );
-    // if (user.length === 0) {
-    // 	return sendResponse.error(res);
-    // }
-    // user = user[0];
-    // if (!user.secretBase32 || !user.verified) {
-    // 	return sendResponse.error(res);
-    // }
-    // // Verify password
-    // const match = await bycrypt.compare(password, user.password);
-    // if (!match) {
-    // 	return sendResponse.error(res);
-    // }
-    // // Verify 2FA
-    // const verified = speakeasy.totp.verify({
-    // 	secret: user.secretBase32,
-    // 	encoding: 'base32',
-    // 	token: totpCode,
-    // });
-    // if (!verified) {
-    // 	return sendResponse.error(res);
-    // }
-    // const dbResult = await db.query(
-    // 	'DELETE FROM user_2fa WHERE userFk = ?',
-    // 	[user.id]
-    // );
-    // if (!dbResult) {
-    // 	return sendResponse.error(res);
-    // }
-    // sendResponse.success(res, {
-    // 	message: '2FA disabled',
-    // });
+    let user = await db.queryReplica(
+      'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE testuser.user.id = $1',
+      [requestingUser?.id]
+    );
+
+    if (user.length === 0) {
+      return sendResponse.error(res);
+    }
+    user = user[0];
+    if (!user.secretbase32 || !user.verified) {
+      return sendResponse.error(res);
+    }
+    // Verify password
+    const match = await bycrypt.compare(password, user.password);
+    if (!match) {
+      return sendResponse.error(res);
+    }
+    // Verify 2FA
+    const verified = speakeasy.totp.verify({
+      secret: user.secretbase32,
+      encoding: 'base32',
+      token: totpCode,
+    });
+    if (!verified) {
+      return sendResponse.error(res);
+    }
+    const dbResult = await db.queryPrimary(
+      'DELETE FROM testuser.user_2fa WHERE userfk = $1',
+      [user.id]
+    );
+    if (!dbResult) {
+      return sendResponse.error(res);
+    }
+    sendResponse.success(res, {
+      message: '2FA disabled',
+    });
   },
 
   refreshToken: async (req: Request, res: Response) => {
@@ -383,7 +383,7 @@ const AuthService = {
         return;
       }
       const user = await db.queryReplica(
-        'SELECT * FROM testuser.user LEFT JOIN testuser.avatar ON avatar.userFk = user.id WHERE user.id = $1',
+        'SELECT * FROM testuser.user LEFT JOIN testuser.avatar ON testuser.avatar.userfk = testuser.user.id WHERE testuser.user.id = $1',
         [decoded.id]
       );
       if (user.length === 0) {
@@ -410,7 +410,6 @@ const AuthService = {
  * @param {
  *   id: number,
  *   username: string,
- *   email: string,
  *   rolefk: number
  *   avatar: string
  *  } user
@@ -427,19 +426,16 @@ const AuthService = {
 class User {
   id: number;
   username: string;
-  email: string;
   rolefk: number;
   avatar: string;
   constructor(
     id: number,
     username: string,
-    email: string,
     rolefk: number,
     generatedpath: string
   ) {
     this.id = id;
     this.username = username;
-    this.email = email;
     this.rolefk = rolefk;
     this.avatar = generatedpath;
   }
@@ -461,18 +457,17 @@ async function createAndSendTokens(res: Response, userId: number) {
   const user: User = new User(
     userDb[0].id,
     userDb[0].username,
-    userDb[0].email,
     userDb[0].rolefk,
     userDb[0].generatedpath
   );
 
   // Create Access Token
   const accessToken = jwt.sign(
-    { id: user.id, username: user.username, email: user.email },
+    { id: user.id, username: user.username },
     config.JWT_SECRET,
     {
       // 10 minutes
-      expiresIn: 10,
+      expiresIn: 10 * 60,
     }
   );
   // Create Refresh Token
@@ -484,7 +479,6 @@ async function createAndSendTokens(res: Response, userId: number) {
     JSON.stringify({
       id: user.id,
       username: user.username,
-      email: user.email,
       rolefk: user.rolefk,
       avatar: user.avatar,
     })

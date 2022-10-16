@@ -15,6 +15,7 @@ const sendResponse = {
     });
   },
   error: (res: Response) => {
+    console.trace();
     res.status(400).json({
       success: false,
       message: 'Error',
@@ -28,7 +29,7 @@ const sendResponse = {
   },
 
   authError: (res: Response) => {
-    // console.trace('authError');
+    console.trace('authError');
     res.status(401).json({
       success: false,
       message: 'Access Denied - Not Authorized',

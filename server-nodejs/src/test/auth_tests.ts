@@ -63,7 +63,8 @@ describe('Login', () => {
           expect(res.body.data.user.rolefk).to.equal(1);
           expect(res.body.success).to.be.true;
           done();
-        });
+        })
+        .timeout(5000); // Because of the db connection
     });
     it('it should login a admin', (done) => {
       chai
@@ -320,9 +321,10 @@ describe('Register', () => {
   describe('/POST register-fail', () => {
     afterEach(async () => {
       // SQL POSTGRESQL
-      await db.queryPrimary('DELETE FROM testuser.user WHERE username = $1', [
-        credentials.newUser.username,
-      ]);
+      await db.queryPrimary(
+        'DELETE FROM testuser.user WHERE LOWER(username) = LOWER($1)',
+        [credentials.newUser.username]
+      );
     });
     it('it should not register a user - username already exists', (done) => {
       chai
@@ -464,7 +466,7 @@ describe('2FA', () => {
       csrfToken = res.body.data.csrfToken;
       cookie = res.header['set-cookie'];
     });
-    let secretBase32: string;
+    let secretbase32: string;
     it('it should enable 2fa', (done) => {
       chai
         .request(server)
@@ -480,13 +482,13 @@ describe('2FA', () => {
           expect(res).to.have.status(200);
           expect(res.body).to.have.property('success');
           expect(res.body.success).to.be.true;
-          expect(res.body.data).to.have.property('secretBase32');
-          secretBase32 = res.body.data.secretBase32;
+          expect(res.body.data).to.have.property('secretbase32');
+          secretbase32 = res.body.data.secretbase32;
           done();
         });
     });
     it('it should verify 2fa', (done) => {
-      const currentCode = totp(secretBase32);
+      const currentCode = totp(secretbase32);
       chai
         .request(server)
         .post('/api/auth/2fa/verify')
@@ -541,7 +543,7 @@ describe('2FA', () => {
         });
     });
     it('it should login user', (done) => {
-      const currentCode = totp(secretBase32);
+      const currentCode = totp(secretbase32);
       chai
         .request(server)
         .post('/api/auth/login')
@@ -569,7 +571,7 @@ describe('2FA', () => {
     });
     it('it should disable 2fa', (done) => {
       const password = credentials.user.password;
-      const totpCode = totp(secretBase32);
+      const totpCode = totp(secretbase32);
       chai
         .request(server)
         .post('/api/auth/2fa/disable')

@@ -39,15 +39,16 @@ export default {
         console.log('No payload');
         return sendResponse.authError(res);
       }
-      // const user = await db.query(
-      // 	'SELECT * FROM user WHERE id = ?',
-      // 	[payload.id]
-      // );
-      // if (user.length === 0) {
-      // 	console.log('No user');
-      // 	return sendResponse.authError(res);
-      // }
-      // req.user = user[0];
+      const user = await db.queryReplica(
+        'SELECT * FROM testuser.user WHERE id = $1',
+
+        [payload.id]
+      );
+      if (user.length === 0) {
+        console.log('No user');
+        return sendResponse.authError(res);
+      }
+      req.user = user[0];
       next();
     } catch (err) {
       catchError(err, res);
@@ -74,17 +75,17 @@ export default {
       if (!payload) {
         return sendResponse.authError(res);
       }
-      // const user = await db.query(
-      // 	'SELECT * FROM user WHERE id = ?',
-      // 	[payload.id]
-      // );
-      // if (user.length === 0) {
-      // 	return sendResponse.authError(res);
-      // }
-      // if (user[0].roleFk !== 2) {
-      // 	return sendResponse.authAdminError(res);
-      // }
-      // req.user = user[0];
+      const user = await db.queryReplica(
+        'SELECT * FROM testuser.user WHERE id = $1',
+        [payload.id]
+      );
+      if (user.length === 0) {
+        return sendResponse.authError(res);
+      }
+      if (user[0].roleFk !== 2) {
+        return sendResponse.authAdminError(res);
+      }
+      req.user = user[0];
       next();
     } catch (err) {
       catchError(err, res);

@@ -42,6 +42,9 @@ const poolReplica = new Pool(pgConfigReplica);
  */
 async function queryPrimary(sql: string, params: any[]) {
   try {
+    console.log('Primary query');
+    console.log(sql);
+    console.log(params);
     const result = await poolPrimay.query(sql, params);
     return result.rows as any;
   } catch (error) {
