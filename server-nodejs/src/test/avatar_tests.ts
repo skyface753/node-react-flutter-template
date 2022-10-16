@@ -15,8 +15,8 @@ describe('Avatar', () => {
       .post('/api/auth/login')
       .set('content-type', 'application/x-www-form-urlencoded')
       .send({
-        email: credentials.user.email,
         password: credentials.user.password,
+        username: credentials.user.username,
       })
       .end((err, res) => {
         expect(res).to.have.status(200);
@@ -36,8 +36,8 @@ describe('Avatar', () => {
         .end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.body.success).to.be.true;
-          expect(res.body.data.avatar).to.have.property('generatedPath');
-          generatedAvatarPath = res.body.data.avatar.generatedPath;
+          expect(res.body.data.avatar).to.have.property('generatedpath');
+          generatedAvatarPath = res.body.data.avatar.generatedpath;
           done();
         });
     }).timeout(5000);

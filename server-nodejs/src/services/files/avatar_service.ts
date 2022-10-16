@@ -16,70 +16,72 @@ const AvatarService = {
       return;
     }
     const user = req.user;
-    const originalName = file.originalname;
-    const generatedPath = config.files.avatarDir + file.filename;
+    const originalname = file.originalname;
+    const generatedpath = config.files.avatarDir + file.filename;
     const type = file.mimetype;
 
-    // const avatarExists = await db.query(
-    //   'SELECT * FROM avatar WHERE userFk = ?',
-    //   [user?.id]
-    // );
-    // let result;
-    // if (avatarExists.length > 0) {
-    //   try {
-    //     fs.unlinkSync(avatarExists[0].generatedPath);
-    //   } catch (e) {
-    //     console.log(e);
-    //   }
-    //   result = await db.query(
-    //     'UPDATE avatar SET originalName = ?, generatedPath = ?, type = ? WHERE userFk = ?',
-    //     [originalName, generatedPath, type, user?.id]
-    //   );
-    // } else {
-    //   result = await db.query(
-    //     'INSERT INTO avatar (originalName, generatedPath, type, userFk) VALUES (?, ?, ?, ?)',
-    //     [originalName, generatedPath, type, user?.id]
-    //   );
-    // }
-    // if (!result) {
-    //   sendResponse.error(res);
-    //   return;
-    // }
-    // sendResponse.success(res, {
-    //   message: 'Avatar uploaded',
-    //   avatar: {
-    //     originalName: originalName,
-    //     generatedPath: generatedPath,
-    //     type: type,
-    //     userFk: user?.id,
-    //   },
-    // });
+    const avatarExists = await db.queryReplica(
+      'SELECT * FROM testuser.avatar WHERE testuser.avatar.userfk = $1',
+      [user?.id]
+    );
+    let result;
+    if (avatarExists.length > 0) {
+      try {
+        fs.unlinkSync(avatarExists[0].generatedpath);
+      } catch (e) {
+        console.log(e);
+      }
+      result = await db.queryPrimary(
+        'UPDATE testuser.avatar SET originalname = $1, generatedpath = $2, type = $3 WHERE testuser.avatar.userfk = $4',
+        [originalname, generatedpath, type, user?.id]
+      );
+    } else {
+      result = await db.queryPrimary(
+        'INSERT INTO testuser.avatar (originalname, generatedpath, type, userfk) VALUES ($1, $2, $3, $4)',
+        [originalname, generatedpath, type, user?.id]
+      );
+    }
+    if (!result) {
+      sendResponse.error(res);
+      return;
+    }
+    sendResponse.success(res, {
+      message: 'Avatar uploaded',
+      avatar: {
+        originalname: originalname,
+        generatedpath: generatedpath,
+        type: type,
+        userFk: user?.id,
+      },
+    });
   },
   deleteAvatar: async (req: IUserFromCookieInRequest, res: Response) => {
     const user = req.user;
-    // let avatar = await db.query('SELECT * FROM avatar WHERE userFk = ?', [
-    //   user?.id,
-    // ]);
-    // if (avatar.length === 0) {
-    //   sendResponse.error(res);
-    //   return;
-    // }
-    // avatar = avatar[0];
-    // const result = await db.query('DELETE FROM avatar WHERE userFk = ?', [
-    //   user?.id,
-    // ]);
-    // if (!result) {
-    //   sendResponse.error(res);
-    //   return;
-    // }
-    // fs.unlink(avatar.generatedPath, (err) => {
-    //   if (err) {
-    //     console.log(err);
-    //   }
-    // });
-    // sendResponse.success(res, {
-    //   message: 'Avatar deleted',
-    // });
+    let avatar = await db.queryReplica(
+      'SELECT * FROM testuser.avatar WHERE testuser.avatar.userfk = $1',
+      [user?.id]
+    );
+    if (avatar.length === 0) {
+      sendResponse.error(res);
+      return;
+    }
+    avatar = avatar[0];
+    const result = await db.queryPrimary(
+      'DELETE FROM testuser.avatar WHERE testuser.avatar.userfk = $1',
+      [user?.id]
+    );
+    if (!result) {
+      sendResponse.error(res);
+      return;
+    }
+    fs.unlink(avatar.generatedpath, (err) => {
+      if (err) {
+        console.log(err);
+      }
+    });
+    sendResponse.success(res, {
+      message: 'Avatar deleted',
+    });
   },
 };
 export default AvatarService;

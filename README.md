@@ -17,6 +17,6 @@
 
 ## TODO
 
-- [] Flutter - all
+- [] Flutter - rewrite to postgres -> lowercase
 - [] React - Profile
-- [] NodeJs - mongodb for files
+- [] NodeJs - rewrite to postgres (avatar)

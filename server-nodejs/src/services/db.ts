@@ -66,6 +66,10 @@ async function queryPrimary(sql: string, params: any[]) {
  **/
 async function queryReplica(sql: string, params: any[]) {
   try {
+    // Check if the query is read only
+    if (!sql.toLowerCase().startsWith('select')) {
+      throw new Error('Replica query can only be read only');
+    }
     console.log('Replica query');
     console.log(sql);
     console.log(params);

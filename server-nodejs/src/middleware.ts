@@ -82,7 +82,7 @@ export default {
       if (user.length === 0) {
         return sendResponse.authError(res);
       }
-      if (user[0].roleFk !== 2) {
+      if (user[0].rolefk !== 2) {
         return sendResponse.authAdminError(res);
       }
       req.user = user[0];
