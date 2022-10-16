@@ -14,6 +14,8 @@ import helmet from 'helmet';
 // const helmet = require("helmet");
 // const morgan = require("morgan");
 import morgan from 'morgan';
+import db from './services/db';
+db.initDb();
 // var cookieSession = require('cookie-session');
 // Variables
 const app = express();
