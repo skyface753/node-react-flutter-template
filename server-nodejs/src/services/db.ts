@@ -89,7 +89,8 @@ export default {
 };
 async function initDb() {
   try {
-    // Unique title
+    // Create the Schema
+    await queryPrimary('CREATE SCHEMA IF NOT EXISTS testuser', []);
     await queryPrimary(
       'CREATE TABLE IF NOT EXISTS testuser.role (id SERIAL PRIMARY KEY, title VARCHAR(255) UNIQUE NOT NULL);',
       []

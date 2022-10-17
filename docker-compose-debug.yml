@@ -11,29 +11,49 @@ services:
       - NODE_ENV=development
       - DB_HOST_PRIMARY=primary
       - DB_HOST_REPLICA=primary
+  # react:
+  #   build:
+  #     context: ./client-reactjs
+  #     dockerfile: Dockerfile.debug
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - ./client-reactjs:/app
+  #   environment:
+  #     - NODE_ENV=development
+  # primary:
+  #   hostname: 'primary'
+  #   image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+  #   environment:
+  #     - PGHOST=/tmp
+  #     - MAX_CONNECTIONS=10
+  #     - MAX_WAL_SENDERS=5
+  #     - PG_MODE=primary
+  #     - MODE=postgres
+  #     - PG_PRIMARY_USER=primaryuser
+  #     - PG_PRIMARY_PASSWORD=password
+  #     - PG_DATABASE=testdb
+  #     - PG_USER=testuser
+  #     - PG_PASSWORD=password
+  #     - PG_ROOT_PASSWORD=password
+  #     - PG_PRIMARY_PORT=5432
+  #   volumes:
+  #     - pg-vol-debug:/pgdata
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == primary
+  #         - node.role == worker
+
   primary:
-    hostname: 'primary'
-    image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+    image: postgres
     environment:
-      - PGHOST=/tmp
-      - MAX_CONNECTIONS=10
-      - MAX_WAL_SENDERS=5
-      - PG_MODE=primary
-      - MODE=postgres
-      - PG_PRIMARY_USER=primaryuser
-      - PG_PRIMARY_PASSWORD=password
-      - PG_DATABASE=testdb
-      - PG_USER=testuser
-      - PG_PASSWORD=password
-      - PG_ROOT_PASSWORD=password
-      - PG_PRIMARY_PORT=5432
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=testdb
     volumes:
-      - pg-vol-debug:/pgdata
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == primary
-          - node.role == worker
+      - pg-vol-debug2:/var/lib/postgresql/data
+
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
@@ -44,12 +64,12 @@ services:
     ports:
       - '5050:80'
   redis:
-    image: bitnami/redis:latest
+    image: redis
     ports:
       - 6379:6379
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
 
 volumes:
-  pg-vol-debug:
+  pg-vol-debug2:
     driver: local
