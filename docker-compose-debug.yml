@@ -1,4 +1,16 @@
 services:
+  backend:
+    build:
+      context: ./server-nodejs
+      dockerfile: Dockerfile.debug
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./server-nodejs:/app
+    environment:
+      - NODE_ENV=development
+      - DB_HOST_PRIMARY=primary
+      - DB_HOST_REPLICA=primary
   primary:
     hostname: 'primary'
     image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
@@ -16,9 +28,7 @@ services:
       - PG_ROOT_PASSWORD=password
       - PG_PRIMARY_PORT=5432
     volumes:
-      - pg-primary-vol:/pgdata
-    ports:
-      - 5432:5432
+      - pg-vol-debug:/pgdata
     deploy:
       placement:
         constraints:
@@ -41,5 +51,5 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
 
 volumes:
-  pg-primary-vol:
+  pg-vol-debug:
     driver: local

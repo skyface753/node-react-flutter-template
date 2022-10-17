@@ -6,7 +6,7 @@
     "avatarDir": "files/avatars/"
   },
   "REDIS": {
-    "host": "localhost",
+    "host": "redis",
     "port": 6379
   }
 }
