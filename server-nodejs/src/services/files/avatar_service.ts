@@ -8,6 +8,12 @@ interface MulterRequest extends Request {
   file: Express.Multer.File;
 }
 
+type Avatar = {
+  generatedpath: string;
+  originalname: string;
+  type: string;
+};
+
 const AvatarService = {
   uploadAvatar: async (req: IUserFromCookieInRequest, res: Response) => {
     const file = (req as MulterRequest).file;
@@ -57,15 +63,15 @@ const AvatarService = {
   },
   deleteAvatar: async (req: IUserFromCookieInRequest, res: Response) => {
     const user = req.user;
-    let avatar = await db.queryReplica(
+    const avatarDb = (await db.queryReplica(
       'SELECT * FROM testuser.avatar WHERE testuser.avatar.userfk = $1',
       [user?.id]
-    );
-    if (avatar.length === 0) {
+    )) as Avatar[];
+    if (avatarDb.length === 0) {
       sendResponse.error(res);
       return;
     }
-    avatar = avatar[0];
+    const avatar = avatarDb[0];
     const result = await db.queryPrimary(
       'DELETE FROM testuser.avatar WHERE testuser.avatar.userfk = $1',
       [user?.id]

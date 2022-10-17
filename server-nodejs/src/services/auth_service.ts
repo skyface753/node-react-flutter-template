@@ -3,11 +3,7 @@ import config from '../config.json';
 import bycrypt from 'bcrypt';
 import sendResponse from '../helpers/sendResponse';
 import speakeasy from 'speakeasy';
-import {
-  validateEmail,
-  validatePassword,
-  validateUsername,
-} from '../helpers/validator';
+import { validatePassword, validateUsername } from '../helpers/validator';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import * as redis from 'redis';
@@ -77,6 +73,14 @@ setInterval(function () {
     }
   }
 }, MINS30);
+
+type User2FA = {
+  secretbase32: string;
+  verified: boolean;
+  id?: number;
+  password?: string;
+  username?: string;
+};
 
 const AuthService = {
   logout: async (req: Request, res: Response) => {
@@ -205,14 +209,14 @@ const AuthService = {
       return;
     }
     // Check if user already has 2FA
-    let user = await db.queryReplica(
+    const userDB = (await db.queryReplica(
       'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userfk = testuser.user.id WHERE testuser.user.id = $1',
       [requestingUser?.id]
-    );
-    if (user.length === 0) {
+    )) as User2FA[];
+    if (userDB.length === 0) {
       return sendResponse.error(res);
     }
-    user = user[0];
+    const user = userDB[0];
     if (user.secretbase32 && user.verified) {
       return sendResponse.error(res);
     } else if (user.secretbase32 && !user.verified) {
@@ -225,7 +229,7 @@ const AuthService = {
     }
 
     // Verify password
-    const match = await bycrypt.compare(password, user.password);
+    const match = await bycrypt.compare(password, user.password as string);
     if (!match) {
       return sendResponse.error(res);
     }
@@ -258,14 +262,16 @@ const AuthService = {
       return sendResponse.missingParams(res);
     }
     // Check if user already has 2FA
-    let user = await db.queryReplica(
+
+    const userDB = (await db.queryReplica(
       'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE LOWER(testuser.user.username) = LOWER($1)',
       [username]
-    );
-    if (user.length === 0) {
+    )) as User2FA[];
+    if (userDB.length === 0) {
       return sendResponse.error(res);
     }
-    user = user[0];
+    // user = user[0];
+    const user = userDB[0];
     if (!user.secretbase32) {
       return sendResponse.error(res);
     }
@@ -301,20 +307,20 @@ const AuthService = {
       return sendResponse.missingParams(res);
     }
     // Check if user already has 2FA
-    let user = await db.queryReplica(
+    const userDB = (await db.queryReplica(
       'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE testuser.user.id = $1',
       [requestingUser?.id]
-    );
+    )) as User2FA[];
 
-    if (user.length === 0) {
+    if (userDB.length === 0) {
       return sendResponse.error(res);
     }
-    user = user[0];
+    const user = userDB[0];
     if (!user.secretbase32 || !user.verified) {
       return sendResponse.error(res);
     }
     // Verify password
-    const match = await bycrypt.compare(password, user.password);
+    const match = await bycrypt.compare(password, user.password as string);
     if (!match) {
       return sendResponse.error(res);
     }

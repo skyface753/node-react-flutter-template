@@ -40,13 +40,13 @@ const poolReplica = new Pool(pgConfigReplica);
  * const result = await query('INSERT INTO testuser.user (username, password) VALUES ($1, $2)', ['testuser', 'password']);
  * Write query
  */
-async function queryPrimary(sql: string, params: any[]) {
+async function queryPrimary(sql: string, params: unknown[]) {
   try {
     console.log('Primary query');
     console.log(sql);
     console.log(params);
     const result = await poolPrimay.query(sql, params);
-    return result.rows as any;
+    return result.rows;
   } catch (error) {
     console.error(error);
     console.trace(error);
@@ -64,7 +64,7 @@ async function queryPrimary(sql: string, params: any[]) {
  * const result = await queryReplica('SELECT * FROM testuser.user', []);
  * Read only replication
  **/
-async function queryReplica(sql: string, params: any[]) {
+async function queryReplica(sql: string, params: unknown[]) {
   try {
     // Check if the query is read only
     if (!sql.toLowerCase().startsWith('select')) {
@@ -75,7 +75,7 @@ async function queryReplica(sql: string, params: any[]) {
     console.log(params);
 
     const result = await poolReplica.query(sql, params);
-    return result.rows as any;
+    return result.rows;
   } catch (error) {
     console.error(error);
     throw error;
