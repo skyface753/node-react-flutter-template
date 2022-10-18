@@ -66,11 +66,14 @@ describe('Avatar', () => {
     });
     after((done) => {
       //Check if avatar exists
-      if (fs.existsSync(generatedAvatarPath)) {
-        throw new Error('Avatar still exists');
-      } else {
-        done();
-      }
+      // Wait for 1 second to make sure the avatar is deleted
+      setTimeout(() => {
+        if (fs.existsSync(generatedAvatarPath)) {
+          throw new Error('Avatar still exists');
+        } else {
+          done();
+        }
+      }, 1000);
     });
     it('it should delete a avatar', (done) => {
       chai

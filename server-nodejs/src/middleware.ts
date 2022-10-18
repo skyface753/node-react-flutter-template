@@ -1,17 +1,10 @@
-// const { checkTokenInRedis } = require('./helpers/redis_helper');
 import { Response, NextFunction } from 'express';
-
-// const sendResponse = require('./helpers/sendResponse');
 import sendResponse from './helpers/sendResponse';
-// const tokenHelper = require('./helpers/token');
-// const db = require('./services/db.js');
-// const jwt = require('jsonwebtoken');
-// const config = require('./config.json');
 import db from './services/db';
 import jwt from 'jsonwebtoken';
-import config from './config.json';
 import { IUserFromCookieInRequest } from './types/express-custom';
 import { IAccessTokenPayload } from './types/jwt-payload';
+import { JWT_SECRET } from './config';
 
 export default {
   // const Middlewargcce = {
@@ -31,10 +24,7 @@ export default {
       token = token.slice(7, token.length);
     }
     try {
-      const payload = jwt.verify(
-        token,
-        config.JWT_SECRET
-      ) as IAccessTokenPayload;
+      const payload = jwt.verify(token, JWT_SECRET) as IAccessTokenPayload;
       if (!payload) {
         console.log('No payload');
         return sendResponse.authError(res);
@@ -68,10 +58,7 @@ export default {
       token = token.slice(7, token.length);
     }
     try {
-      const payload = jwt.verify(
-        token,
-        config.JWT_SECRET
-      ) as IAccessTokenPayload;
+      const payload = jwt.verify(token, JWT_SECRET) as IAccessTokenPayload;
       if (!payload) {
         return sendResponse.authError(res);
       }
@@ -104,7 +91,7 @@ export default {
       if (!csrfTokenInHeader) {
         return sendResponse.authError(res);
       }
-      const payload = jwt.verify(csrfTokenInHeader, config.JWT_SECRET);
+      const payload = jwt.verify(csrfTokenInHeader, JWT_SECRET);
       if (!payload) {
         return sendResponse.authError(res);
       }

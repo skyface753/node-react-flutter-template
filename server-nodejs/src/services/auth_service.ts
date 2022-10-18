@@ -1,5 +1,4 @@
 import db from './db';
-import config from '../config.json';
 import bycrypt from 'bcrypt';
 import sendResponse from '../helpers/sendResponse';
 import speakeasy from 'speakeasy';
@@ -11,9 +10,10 @@ import middleware from '../middleware';
 import { Request, Response } from 'express';
 import { IUserFromCookieInRequest } from '../types/express-custom';
 import { IAccessTokenPayload } from '../types/jwt-payload';
+import { BCRYPT_ROUNDS, JWT_SECRET, REDIS } from '../config';
 
 const redisClient = redis.createClient({
-  url: ('redis://' + config.REDIS.host + ':' + config.REDIS.port).toString(),
+  url: ('redis://' + REDIS.host + ':' + REDIS.port).toString(),
   //   legacyMode: true,
 });
 
@@ -181,7 +181,7 @@ const AuthService = {
     }
 
     // Hash password
-    const hashedPassword = await bycrypt.hash(password, config.BCRYPT_ROUNDS);
+    const hashedPassword = await bycrypt.hash(password, BCRYPT_ROUNDS);
     // Create user
     const userId = await db
       .queryPrimary(
@@ -233,9 +233,10 @@ const AuthService = {
     if (!match) {
       return sendResponse.error(res);
     }
+    const MFA_Issuer = process.env.MFA_ISSUER || 'MyApp';
     const secret = speakeasy.generateSecret({
       otpauth_url: true,
-      name: config.MFA_Issuer + ' (' + user.username + ')',
+      name: MFA_Issuer + ' (' + user.username + ')',
     });
     const url = secret.otpauth_url;
     const secretbase32 = secret.base32;
@@ -380,10 +381,7 @@ const AuthService = {
       token = token.slice(7, token.length).trimLeft();
     }
     try {
-      const decoded = jwt.verify(
-        token,
-        config.JWT_SECRET
-      ) as IAccessTokenPayload;
+      const decoded = jwt.verify(token, JWT_SECRET) as IAccessTokenPayload;
       if (!decoded || !decoded.id) {
         sendResponse.authError(res);
         return;
@@ -451,7 +449,8 @@ async function createAndSendTokens(res: Response, userId: number) {
   if (!userId) {
     return sendResponse.serverError(res);
   }
-  const userDb = await db.queryReplica(
+  const userDb = await db.queryPrimary(
+    // Primary because backend is too fast for replicadb to update
     'SELECT * FROM testuser.user LEFT JOIN testuser.avatar ON avatar.userFk = testuser.user.id WHERE testuser.user.id = $1',
     [userId]
   );
@@ -470,7 +469,7 @@ async function createAndSendTokens(res: Response, userId: number) {
   // Create Access Token
   const accessToken = jwt.sign(
     { id: user.id, username: user.username },
-    config.JWT_SECRET,
+    JWT_SECRET,
     {
       // 10 minutes
       expiresIn: 10 * 60,
@@ -490,7 +489,7 @@ async function createAndSendTokens(res: Response, userId: number) {
     })
   );
   await redisClient.expire(refreshToken, 60 * 60 * 24 * 7);
-  const csrfToken = jwt.sign({ id: user.id }, config.JWT_SECRET, {
+  const csrfToken = jwt.sign({ id: user.id }, JWT_SECRET, {
     expiresIn: 60 * 60 * 24 * 7,
   });
   res.cookie('jwt', accessToken, {

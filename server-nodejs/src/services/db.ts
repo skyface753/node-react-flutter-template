@@ -1,4 +1,3 @@
-// import config from '../config.json';
 import bycrypt from 'bcrypt';
 import { Pool, PoolConfig } from 'pg';
 
@@ -64,7 +63,12 @@ async function queryPrimary(sql: string, params: unknown[]) {
  * const result = await queryReplica('SELECT * FROM testuser.user', []);
  * Read only replication
  **/
-async function queryReplica(sql: string, params: unknown[]) {
+async function queryReplica(
+  sql: string,
+  params: unknown[],
+  retry = 0
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any[]> {
   try {
     // Check if the query is read only
     if (!sql.toLowerCase().startsWith('select')) {
@@ -78,6 +82,10 @@ async function queryReplica(sql: string, params: unknown[]) {
     return result.rows;
   } catch (error) {
     console.error(error);
+    if (retry < 3) {
+      console.log('Retry ------------------------------------');
+      return queryReplica(sql, params, retry + 1);
+    }
     throw error;
   }
 }

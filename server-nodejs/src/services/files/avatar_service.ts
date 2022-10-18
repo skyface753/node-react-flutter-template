@@ -1,6 +1,5 @@
 import sendResponse from '../../helpers/sendResponse';
 import db from '../db';
-import config from '../../config.json';
 import fs from 'fs';
 import { Request, Response } from 'express';
 import { IUserFromCookieInRequest } from '../../types/express-custom';
@@ -14,6 +13,8 @@ type Avatar = {
   type: string;
 };
 
+export const AvatarDir = 'files/avatars/';
+
 const AvatarService = {
   uploadAvatar: async (req: IUserFromCookieInRequest, res: Response) => {
     const file = (req as MulterRequest).file;
@@ -23,7 +24,7 @@ const AvatarService = {
     }
     const user = req.user;
     const originalname = file.originalname;
-    const generatedpath = config.files.avatarDir + file.filename;
+    const generatedpath = AvatarDir + file.filename;
     const type = file.mimetype;
 
     const avatarExists = await db.queryReplica(

@@ -8,8 +8,9 @@
     "mocha": "mocha --exit -r ts-node/register  ./src/test/*.ts",
     "lint": "eslint .",
     "dev": "MODE=DEV nodemon -e ts,tsx,js,yaml src/index.ts",
-    "start": "node index.js",
-    "sqldebug": "SQLDEBUG=true nodemon index.js"
+    "sqldebug": "SQLDEBUG=true nodemon index.js",
+    "build": "tsc -p tsconfig.json",
+    "start": "node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
