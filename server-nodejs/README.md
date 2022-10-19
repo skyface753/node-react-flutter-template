@@ -46,3 +46,8 @@ Admin123
 
 CSRF
 ```
+
+## CORS
+
+ENV FRONTEND_URL: Default = http://localhost:80
+Set the URL of your frontend -> Avoid CORS errors

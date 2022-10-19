@@ -25,14 +25,12 @@ const port = 5000;
 app.disable('x-powered-by');
 
 // CORS TODO: Change for Production
-// app.use(cors()); // Development
+
 app.use(
   // Production
   cors({
     origin: [
-      'http://localhost:3000', // React
-      'http://localhost:3001', // Flutter
-      // "http://localhost:19006",
+      process.env.FRONTEND_URL || 'http://localhost:3000', // React debug as default
     ],
     credentials: true,
   })
@@ -41,14 +39,21 @@ app.use(
 // Helmet
 app.use(
   helmet({
-    crossOriginResourcePolicy: process.env.MODE !== 'DEV',
+    // crossOriginResourcePolicy: process.env.MODE !== 'DEV',
+
+    crossOriginResourcePolicy:
+      process.env.MODE !== 'DEV'
+        ? {
+            policy: 'same-site',
+          }
+        : false,
   })
 );
 
 // set up rate limiter to prevent brute force attacks
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 400000, // TODO: Change for Production
+  max: process.env.MODE == 'DEV' ? 400000 : 100, // limit each IP to 100 requests per windowMs
 });
 app.use(limiter); //  apply to all requests
 

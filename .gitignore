@@ -2,3 +2,4 @@ server-nodejs/node_modules
 data/db
 server-nodejs/files/avatars/**
 server-nodejs/dist/**
+server-nodejs/build/**

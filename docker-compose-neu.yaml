@@ -28,7 +28,8 @@ services:
       - PG_ROOT_PASSWORD=password
       - PG_PRIMARY_PORT=5432
     volumes:
-      - pg-primary-vol:/pgdata
+      - ./pgtest/data:/pgdata
+      # - ./pgtest/conf:/pgconf
     ports:
       - '5432'
     networks:
@@ -38,33 +39,33 @@ services:
         constraints:
           - node.labels.type == primary
           - node.role == worker
-  replica:
-    image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
-    environment:
-      - PGHOST=/tmp
-      - MAX_CONNECTIONS=10
-      - MAX_WAL_SENDERS=5
-      - PG_MODE=replica
-      - MODE=postgres
-      - PG_PRIMARY_HOST=primary
-      - PG_PRIMARY_PORT=5432
-      - PG_PRIMARY_USER=primaryuser
-      - PG_PRIMARY_PASSWORD=password
-      - PG_DATABASE=testdb
-      - PG_USER=testuser
-      - PG_PASSWORD=password
-      - PG_ROOT_PASSWORD=password
-    volumes:
-      - pg-replica-vol:/pgdata
-    ports:
-      - '5432'
-    networks:
-      - crunchynet
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type != primary
-          - node.role == worker
+  # replica:
+  #   image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+  #   environment:
+  #     - PGHOST=/tmp
+  #     - MAX_CONNECTIONS=10
+  #     - MAX_WAL_SENDERS=5
+  #     - PG_MODE=replica
+  #     - MODE=postgres
+  #     - PG_PRIMARY_HOST=primary
+  #     - PG_PRIMARY_PORT=5432
+  #     - PG_PRIMARY_USER=primaryuser
+  #     - PG_PRIMARY_PASSWORD=password
+  #     - PG_DATABASE=testdb
+  #     - PG_USER=testuser
+  #     - PG_PASSWORD=password
+  #     - PG_ROOT_PASSWORD=password
+  #   volumes:
+  #     - pg-replica-vol:/pgdata
+  #   ports:
+  #     - '5432'
+  #   networks:
+  #     - crunchynet
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type != primary
+  #         - node.role == worker
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
@@ -91,6 +92,4 @@ networks:
   crunchynet:
 
 volumes:
-  pg-primary-vol:
-  pg-replica-vol:
   pgadmin-data:

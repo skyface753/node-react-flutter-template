@@ -1,17 +1,22 @@
 version: '3.3'
 
 services:
+  frontend-reactjs:
+    image: skyface753/template-frontend
+    ports:
+      - '8080:80'
+
   backend:
-    build:
-      context: ./server-nodejs
-      dockerfile: Dockerfile
+    image: skyface753/template-backend
     ports:
       - 5000:5000
     networks:
       - crunchynet
+    volumes:
+      - avatars:/app/files/avatars/
     environment:
       - DB_HOST_PRIMARY=primary
-      - DB_HOST_REPLICA=replica
+      - DB_HOST_REPLICA=primary
       - DB_PORT_PRIMARY=5432
       - DB_PORT_REPLICA=5432
       - DB_USER=postgresUser
@@ -22,73 +27,103 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=redisPassword
+      - FRONTEND_URL=http://localhost:8080
     depends_on:
       - redis
       - primary
-      - replica
+      # - replica
 
   primary:
-    image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+    image: postgres
     environment:
-      - PGHOST=/tmp
-      - MAX_CONNECTIONS=10
-      - MAX_WAL_SENDERS=5
-      - PG_MODE=primary
-      - MODE=postgres
-      - PG_PRIMARY_USER=primaryuser
-      - PG_PRIMARY_PASSWORD=password
-      - PG_DATABASE=postgresDatabase
-      - PG_USER=postgresUser
-      - PG_PASSWORD=postgresPassword
-      - PG_ROOT_PASSWORD=password
-      - PG_PRIMARY_PORT=5432
+      - POSTGRES_USER=postgresUser
+      - POSTGRES_PASSWORD=postgresPassword
+      - POSTGRES_DB=postgresDatabase
+    volumes:
+      - pg-vol-neu4:/var/lib/postgresql/data
     networks:
       - crunchynet
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == primary
-          - node.role == worker
-    volumes:
-      - primary-vol:/pgdata
-    ports:
-      - '5432'
-  replica:
-    image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
-    environment:
-      - PGHOST=/tmp
-      - MAX_CONNECTIONS=10
-      - MAX_WAL_SENDERS=5
-      - PG_MODE=replica
-      - MODE=postgres
-      - PG_PRIMARY_HOST=primary
-      - PG_PRIMARY_PORT=5432
-      - PG_PRIMARY_USER=primaryuser
-      - PG_PRIMARY_PASSWORD=password
-      - PG_DATABASE=postgresDatabase
-      - PG_USER=postgresUser
-      - PG_PASSWORD=postgresPassword
-      - PG_ROOT_PASSWORD=password
-    networks:
-      - crunchynet
-    ports:
-      - '5432'
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type != primary
-          - node.role == worker
-      replicas: 2
-    volumes:
-      - replica-vol:/pgdata
+  # Crunchy Data arent persistent
+  # primary:
+  #   image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+  #   environment:
+  #     - PGHOST=/tmp
+  #     - MAX_CONNECTIONS=10
+  #     - MAX_WAL_SENDERS=5
+  #     - PG_MODE=primary
+  #     - MODE=postgres
+  #     - PG_PRIMARY_USER=primaryuser
+  #     - PG_PRIMARY_PASSWORD=password
+  #     - PG_DATABASE=postgresDatabase
+  #     - PG_USER=postgresUser
+  #     - PG_PASSWORD=postgresPassword
+  #     - PG_ROOT_PASSWORD=password
+  #     - PG_PRIMARY_PORT=5432
+  #   networks:
+  #     - crunchynet
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type == primary
+  #         - node.role == worker
+  #   volumes:
+  #     - ./pgtest/data:/pgdata
+  #     - ./pgtest/conf:/pgconf
+  #   ports:
+  #     - '5432'
+  # replica:
+  #   image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
+  #   environment:
+  #     - PGHOST=/tmp
+  #     - MAX_CONNECTIONS=10
+  #     - MAX_WAL_SENDERS=5
+  #     - PG_MODE=replica
+  #     - MODE=postgres
+  #     - PG_PRIMARY_HOST=primary
+  #     - PG_PRIMARY_PORT=5432
+  #     - PG_PRIMARY_USER=primaryuser
+  #     - PG_PRIMARY_PASSWORD=password
+  #     - PG_DATABASE=postgresDatabase
+  #     - PG_USER=postgresUser
+  #     - PG_PASSWORD=postgresPassword
+  #     - PG_ROOT_PASSWORD=password
+  #   networks:
+  #     - crunchynet
+  #   ports:
+  #     - '5432'
+  #   deploy:
+  #     placement:
+  #       constraints:
+  #         - node.labels.type != primary
+  #         - node.role == worker
+  #     replicas: 2
+  #   volumes:
+  #     - replica-vol2:/pgdata
 
   redis:
     image: redis
     networks:
       - crunchynet
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - '5050:80'
+    networks:
+      - crunchynet
+    volumes:
+      - pgadmin-vol:/var/lib/pgadmin
 networks:
   crunchynet:
 
 volumes:
-  primary-vol:
-  replica-vol:
+  primary-vol2:
+  replica-vol2:
+  avatars:
+  pg-vol-neu4:
+  pgadmin-vol:
