@@ -87,6 +87,10 @@ app.use('/files/avatars', express.static('files/avatars'));
 import routes from './routes/index';
 app.use('/api/', routes);
 
+app.use('/', (req, res) => {
+  res.send('Hello World!');
+});
+
 // Start Server
 if (process.env.MODE !== 'Test') {
   app.listen(port, () => {
