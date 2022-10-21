@@ -14,3 +14,5 @@ services:
       - POSTGRES_DB=testdb
     volumes:
       - pg-vol-debug2:/var/lib/postgresql/data
+volumes:
+  pg-vol-debug2:
