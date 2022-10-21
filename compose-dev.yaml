@@ -4,9 +4,6 @@ services:
     build:
       context: server-nodejs
       dockerfile: Dockerfile.dev
-    entrypoint:
-      - sleep
-      - infinity
     depends_on:
       - primary
   primary:
