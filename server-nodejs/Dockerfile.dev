@@ -3,4 +3,6 @@ WORKDIR /app
 COPY package.json .
 RUN npm install
 COPY . .
-CMD ["npm", "run", "dev"]
+EXPOSE 5000
+# CMD ["npm", "run", "dev"]
+CMD ["sh", "-c", "echo hallo && npm run dev"]

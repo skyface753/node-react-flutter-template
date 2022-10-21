@@ -6,6 +6,14 @@ services:
       dockerfile: Dockerfile.dev
     depends_on:
       - primary
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST_PRIMARY=primary
+      - DB_HOST_REPLICA=primary
+      - DB_USER=testuser
+      - DB_PASSWORD=password
+      - DB_DATABASE=testdb
   primary:
     image: postgres
     environment:
