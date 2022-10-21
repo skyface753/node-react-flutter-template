@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  backend:
+    build:
+      context: server-nodejs
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+  primary:
+    image: postgres
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=testdb
+    volumes:
+      - pg-vol-debug2:/var/lib/postgresql/data
