@@ -22,4 +22,4 @@ docker-up:
 	@echo "Starting docker containers..."
 	@docker-compose up -d --build --remove-orphans
 
-build: build-frontend build-backend docker-up
+build: build-frontend build-backend

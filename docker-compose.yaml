@@ -29,8 +29,10 @@ services:
       - REDIS_PASSWORD=redisPassword
       - FRONTEND_URL=http://localhost:8080
     depends_on:
-      - redis
-      - primary
+      redis:
+        condition: service_healthy
+      primary:
+        condition: service_healthy
       # - replica
 
   primary:
@@ -43,6 +45,12 @@ services:
       - pg-vol-neu4:/var/lib/postgresql/data
     networks:
       - crunchynet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s 
   # Crunchy Data arent persistent
   # primary:
   #   image: crunchydata/crunchy-postgres:centos8-13.6-4.7.5
@@ -104,6 +112,9 @@ services:
     image: redis
     networks:
       - crunchynet
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+
 
   pgadmin:
     container_name: pgadmin4_container
