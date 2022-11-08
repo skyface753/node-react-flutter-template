@@ -2228,8 +2228,8 @@ proto.template.StatusResponse.prototype.hasUser = function() {
  * @enum {number}
  */
 proto.template.Role = {
-  ADMIN: 0,
-  USER: 1
+  USER: 0,
+  ADMIN: 1
 };
 
 goog.object.extend(exports, proto.template);

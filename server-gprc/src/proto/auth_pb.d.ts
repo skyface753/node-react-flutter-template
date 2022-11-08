@@ -288,6 +288,6 @@ export namespace StatusResponse {
 }
 
 export enum Role {
-    ADMIN = 0,
-    USER = 1,
+    USER = 0,
+    ADMIN = 1,
 }

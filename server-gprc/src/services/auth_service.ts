@@ -1,4 +1,7 @@
 import { handleUnaryCall, sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+
 import { IAuthServiceServer } from '../proto/auth_grpc_pb';
 import {
   LoginRequest,
@@ -12,6 +15,7 @@ import {
   StatusRequest,
   StatusResponse,
   User,
+  Role,
 } from '../proto/auth_pb';
 import * as redis from 'redis';
 import { BCRYPT_ROUNDS, JWT_SECRET, REDIS } from '../config';
@@ -122,15 +126,13 @@ export class AuthServer implements IAuthServiceServer {
       onLoginSuccess(remoteIp);
       // createAndSendTokens(res, user.id);
       const loginResponse = new LoginResponse();
+      const role = user.rolefk === 2 ? Role.ADMIN : Role.USER;
       const thisUser = new User()
         .setId(user.id)
         .setUsername(user.username)
-        .setRole(user.role);
+        .setRole(role);
       loginResponse.setUser(thisUser);
-      // TODO: Tokens
-
-      console.log('login');
-      callback(null, new LoginResponse());
+      createAndSendTokens(callback, user.id);
     } catch (err) {
       console.log(err);
       return callback(new Error('Server error'), null);
@@ -178,4 +180,56 @@ export class AuthServer implements IAuthServiceServer {
     console.log('status');
     callback(null, new StatusResponse());
   }
+}
+
+async function createAndSendTokens(callback: any, userId: number) {
+  if (!userId) {
+    return callback(new Error('Invalid user - Server error'), null);
+  }
+  const userDb = await db.queryPrimary(
+    // Primary because backend is too fast for replicadb to update
+    'SELECT * FROM testuser.user LEFT JOIN testuser.avatar ON avatar.userFk = testuser.user.id WHERE testuser.user.id = $1',
+    [userId]
+  );
+
+  if (userDb.length === 0) {
+    return callback(new Error('Invalid user - Server error'), null);
+  }
+  delete userDb[0].password;
+  const role = userDb[0].rolefk === 2 ? Role.ADMIN : Role.USER;
+  console.log('role', role, userDb[0].rolefk); // TODO: Avatar
+  const user = new User()
+    .setId(userDb[0].id)
+    .setUsername(userDb[0].username)
+    .setRole(role);
+  // const user: User = new User(
+  //   userDb[0].id,
+  //   userDb[0].username,
+  //   userDb[0].rolefk,
+  //   userDb[0].generatedpath
+  // );
+
+  // Create Access Token
+  const accessToken = jwt.sign(
+    { id: user.getId(), username: user.getUsername() },
+    JWT_SECRET,
+    {
+      // 10 minutes
+      expiresIn: 10 * 60,
+    }
+  );
+  // Create Refresh Token
+  const refreshToken = crypto.randomBytes(64).toString('hex');
+  // Store refresh token in redis
+  await redisClient.set(refreshToken, JSON.stringify(user.toObject()));
+  await redisClient.expire(refreshToken, 60 * 60 * 24 * 7);
+  const csrfToken = jwt.sign({ id: user.getId() }, JWT_SECRET, {
+    expiresIn: 60 * 60 * 24 * 7,
+  });
+  const loginResponse = new LoginResponse();
+  loginResponse.setAccessToken(accessToken);
+  loginResponse.setRefreshToken(refreshToken);
+  loginResponse.setCsrfToken(csrfToken);
+  loginResponse.setUser(user);
+  callback(null, loginResponse);
 }
