@@ -138,13 +138,7 @@ export class AuthServer implements IAuthServiceServer {
       return callback(new Error('Server error'), null);
     }
   }
-  refreshToken(
-    call: ServerUnaryCall<RefreshTokenRequest, RefreshTokenResponse>,
-    callback: sendUnaryData<RefreshTokenResponse>
-  ): void {
-    console.log('refreshToken');
-    callback(null, new RefreshTokenResponse());
-  }
+
   async logout(
     call: ServerUnaryCall<LogoutRequest, LogoutResponse>,
     callback: sendUnaryData<LogoutResponse>
@@ -163,6 +157,13 @@ export class AuthServer implements IAuthServiceServer {
 
     // console.log('logout');
     // callback(null, new LogoutResponse());
+  }
+  refreshToken(
+    call: ServerUnaryCall<RefreshTokenRequest, RefreshTokenResponse>,
+    callback: sendUnaryData<RefreshTokenResponse>
+  ): void {
+    console.log('refreshToken');
+    callback(null, new RefreshTokenResponse());
   }
   register(
     call: ServerUnaryCall<RegisterRequest, RegisterResponse>,

@@ -23,3 +23,5 @@ server.bindAsync(
     server.start();
   }
 );
+
+export default server;

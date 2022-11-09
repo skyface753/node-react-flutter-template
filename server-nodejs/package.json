@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "MODE=Test npm run mocha && npm run lint",
-    "mocha": "mocha --exit -r ts-node/register  ./src/test/*.ts",
+    "mocha": "mocha --exit -r ts-node/register  ./src/test/*.test.ts",
     "lint": "eslint .",
     "dev": "MODE=DEV nodemon -e ts,tsx,js,yaml src/index.ts",
     "sqldebug": "SQLDEBUG=true nodemon index.js",
