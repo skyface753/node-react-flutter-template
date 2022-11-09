@@ -138,6 +138,7 @@ describe('Login', () => {
 describe('Refresh', () => {
   describe('/POST refresh-token-success', () => {
     let refreshToken: string;
+    let accessToken: string;
     before((done) => {
       chai
         .request(server)
@@ -150,6 +151,7 @@ describe('Refresh', () => {
           expect(res.body.data).to.have.property('accessToken');
           expect(res.body.data).to.have.property('refreshToken');
           refreshToken = res.body.data.refreshToken;
+          accessToken = res.body.data.accessToken;
           expect(res.body.data).to.have.property('csrfToken');
           expect(res.body.data).to.have.property('user');
           expect(res.body.data.user).to.have.property('username');
@@ -174,6 +176,7 @@ describe('Refresh', () => {
           expect(res.body.data).to.have.property('accessToken');
           expect(res.body.data).to.have.property('refreshToken');
           expect(res.body.data.refreshToken).to.not.equal(refreshToken);
+          expect(res.body.data.accessToken).to.not.equal(accessToken);
           expect(res.body.data).to.have.property('csrfToken');
           expect(res.body.data).to.have.property('user');
           expect(res.body.data.user).to.have.property('username');

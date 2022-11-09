@@ -5,6 +5,17 @@ var grpc = require('@grpc/grpc-js');
 var auth_pb = require('./auth_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 
+function serialize_template_DefaultAuthResponse(arg) {
+  if (!(arg instanceof auth_pb.DefaultAuthResponse)) {
+    throw new Error('Expected argument of type template.DefaultAuthResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_DefaultAuthResponse(buffer_arg) {
+  return auth_pb.DefaultAuthResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_template_LoginRequest(arg) {
   if (!(arg instanceof auth_pb.LoginRequest)) {
     throw new Error('Expected argument of type template.LoginRequest');
@@ -14,17 +25,6 @@ function serialize_template_LoginRequest(arg) {
 
 function deserialize_template_LoginRequest(buffer_arg) {
   return auth_pb.LoginRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_template_LoginResponse(arg) {
-  if (!(arg instanceof auth_pb.LoginResponse)) {
-    throw new Error('Expected argument of type template.LoginResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_template_LoginResponse(buffer_arg) {
-  return auth_pb.LoginResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_template_LogoutRequest(arg) {
@@ -60,17 +60,6 @@ function deserialize_template_RefreshTokenRequest(buffer_arg) {
   return auth_pb.RefreshTokenRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_template_RefreshTokenResponse(arg) {
-  if (!(arg instanceof auth_pb.RefreshTokenResponse)) {
-    throw new Error('Expected argument of type template.RefreshTokenResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_template_RefreshTokenResponse(buffer_arg) {
-  return auth_pb.RefreshTokenResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 function serialize_template_RegisterRequest(arg) {
   if (!(arg instanceof auth_pb.RegisterRequest)) {
     throw new Error('Expected argument of type template.RegisterRequest');
@@ -80,17 +69,6 @@ function serialize_template_RegisterRequest(arg) {
 
 function deserialize_template_RegisterRequest(buffer_arg) {
   return auth_pb.RegisterRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_template_RegisterResponse(arg) {
-  if (!(arg instanceof auth_pb.RegisterResponse)) {
-    throw new Error('Expected argument of type template.RegisterResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_template_RegisterResponse(buffer_arg) {
-  return auth_pb.RegisterResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_template_StatusRequest(arg) {
@@ -122,22 +100,22 @@ var AuthServiceService = exports.AuthServiceService = {
     requestStream: false,
     responseStream: false,
     requestType: auth_pb.LoginRequest,
-    responseType: auth_pb.LoginResponse,
+    responseType: auth_pb.DefaultAuthResponse,
     requestSerialize: serialize_template_LoginRequest,
     requestDeserialize: deserialize_template_LoginRequest,
-    responseSerialize: serialize_template_LoginResponse,
-    responseDeserialize: deserialize_template_LoginResponse,
+    responseSerialize: serialize_template_DefaultAuthResponse,
+    responseDeserialize: deserialize_template_DefaultAuthResponse,
   },
   refreshToken: {
     path: '/template.AuthService/RefreshToken',
     requestStream: false,
     responseStream: false,
     requestType: auth_pb.RefreshTokenRequest,
-    responseType: auth_pb.RefreshTokenResponse,
+    responseType: auth_pb.DefaultAuthResponse,
     requestSerialize: serialize_template_RefreshTokenRequest,
     requestDeserialize: deserialize_template_RefreshTokenRequest,
-    responseSerialize: serialize_template_RefreshTokenResponse,
-    responseDeserialize: deserialize_template_RefreshTokenResponse,
+    responseSerialize: serialize_template_DefaultAuthResponse,
+    responseDeserialize: deserialize_template_DefaultAuthResponse,
   },
   logout: {
     path: '/template.AuthService/Logout',
@@ -155,11 +133,11 @@ var AuthServiceService = exports.AuthServiceService = {
     requestStream: false,
     responseStream: false,
     requestType: auth_pb.RegisterRequest,
-    responseType: auth_pb.RegisterResponse,
+    responseType: auth_pb.DefaultAuthResponse,
     requestSerialize: serialize_template_RegisterRequest,
     requestDeserialize: deserialize_template_RegisterRequest,
-    responseSerialize: serialize_template_RegisterResponse,
-    responseDeserialize: deserialize_template_RegisterResponse,
+    responseSerialize: serialize_template_DefaultAuthResponse,
+    responseDeserialize: deserialize_template_DefaultAuthResponse,
   },
   status: {
     path: '/template.AuthService/Status',

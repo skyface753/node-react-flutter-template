@@ -26,23 +26,23 @@ message LoginRequest{
     optional string totpCode = 3;
 }
 
-message LoginResponse{
-    string access_token = 1;
-    string refresh_token = 2;
-    string csrf_token = 3;
-    User user = 4;
-}
+// message LoginResponse{
+//     string access_token = 1;
+//     string refresh_token = 2;
+//     string csrf_token = 3;
+//     User user = 4;
+// }
 
 message RefreshTokenRequest{
     string refresh_token = 1;
 }
 
-message RefreshTokenResponse{
-    string access_token = 1;
-    string refresh_token = 2;
-    string csrf_token = 3;
-    User user = 4;
-}
+// message RefreshTokenResponse{
+//     string access_token = 1;
+//     string refresh_token = 2;
+//     string csrf_token = 3;
+//     User user = 4;
+// }
 
 message LogoutRequest{
     string refresh_token = 1;
@@ -57,9 +57,6 @@ message RegisterRequest{
     string password = 2;
 }
 
-message RegisterResponse{
-    User user = 1;
-}
 
 message StatusRequest{
     string access_token = 1;
@@ -69,10 +66,17 @@ message StatusResponse{
     User user = 1;
 }
 
+message DefaultAuthResponse{
+    string access_token = 1;
+    string refresh_token = 2;
+    string csrf_token = 3;
+    User user = 4;
+}
+
 service AuthService{
-    rpc Login(LoginRequest) returns (LoginResponse);
-    rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+    rpc Login(LoginRequest) returns (DefaultAuthResponse);
+    rpc RefreshToken(RefreshTokenRequest) returns (DefaultAuthResponse);
     rpc Logout(LogoutRequest) returns (LogoutResponse);
-    rpc Register(RegisterRequest) returns (RegisterResponse);
+    rpc Register(RegisterRequest) returns (DefaultAuthResponse);
     rpc Status(StatusRequest) returns (StatusResponse);
 }

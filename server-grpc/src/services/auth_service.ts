@@ -5,13 +5,11 @@ import crypto from 'crypto';
 import { IAuthServiceServer } from '../proto/auth_grpc_pb';
 import {
   LoginRequest,
-  LoginResponse,
+  DefaultAuthResponse,
   RefreshTokenRequest,
-  RefreshTokenResponse,
   LogoutRequest,
   LogoutResponse,
   RegisterRequest,
-  RegisterResponse,
   StatusRequest,
   StatusResponse,
   User,
@@ -19,7 +17,7 @@ import {
 } from '../proto/auth_pb';
 import * as redis from 'redis';
 import { BCRYPT_ROUNDS, JWT_SECRET, REDIS } from '../config';
-import { validateUsername } from '../helpers/validator';
+import { validatePassword, validateUsername } from '../helpers/validator';
 import bycrypt from 'bcrypt';
 import speakeasy from 'speakeasy';
 import db from './db';
@@ -78,8 +76,8 @@ setInterval(function () {
 export class AuthServer implements IAuthServiceServer {
   [name: string]: import('@grpc/grpc-js').UntypedHandleCall;
   async login(
-    call: ServerUnaryCall<LoginRequest, LoginResponse>,
-    callback: sendUnaryData<LoginResponse>
+    call: ServerUnaryCall<LoginRequest, DefaultAuthResponse>,
+    callback: sendUnaryData<DefaultAuthResponse>
   ): Promise<void> {
     // TODO: TOTP
     const { username, password, totpcode } = call.request.toObject();
@@ -125,7 +123,7 @@ export class AuthServer implements IAuthServiceServer {
 
       onLoginSuccess(remoteIp);
       // createAndSendTokens(res, user.id);
-      const loginResponse = new LoginResponse();
+      const loginResponse = new DefaultAuthResponse();
       const role = user.rolefk === 2 ? Role.ADMIN : Role.USER;
       const thisUser = new User()
         .setId(user.id)
@@ -158,22 +156,77 @@ export class AuthServer implements IAuthServiceServer {
     // console.log('logout');
     // callback(null, new LogoutResponse());
   }
-  refreshToken(
-    call: ServerUnaryCall<RefreshTokenRequest, RefreshTokenResponse>,
-    callback: sendUnaryData<RefreshTokenResponse>
-  ): void {
+  async refreshToken(
+    call: ServerUnaryCall<RefreshTokenRequest, DefaultAuthResponse>,
+    callback: sendUnaryData<DefaultAuthResponse>
+  ): Promise<void> {
+    const { refreshToken } = call.request.toObject();
+
     console.log('refreshToken');
-    callback(null, new RefreshTokenResponse());
+    if (!refreshToken || refreshToken === '') {
+      return callback(new Error('No refresh token provieded'), null);
+    }
+    const token = await redisClient.get(refreshToken);
+    if (!token) {
+      return callback(new Error('Invalid refresh token'), null);
+    }
+    const userFromRedis = JSON.parse(token);
+    const user = await db.queryReplica(
+      'SELECT * FROM testuser.user WHERE id = $1',
+      [userFromRedis.id]
+    );
+    if (user.length === 0) {
+      return callback(new Error('User not found'), null);
+    }
+    delete user[0].password;
+    createAndSendTokens(callback, user[0].id);
+    // Delete refresh token
+    await redisClient.del(refreshToken);
   }
-  register(
-    call: ServerUnaryCall<RegisterRequest, RegisterResponse>,
-    callback: sendUnaryData<RegisterResponse>
-  ): void {
-    console.log('register');
-    callback(null, new RegisterResponse());
+  async register(
+    call: ServerUnaryCall<RegisterRequest, DefaultAuthResponse>,
+    callback: sendUnaryData<DefaultAuthResponse>
+  ): Promise<void> {
+    const { username, password } = call.request.toObject();
+    if (!username || !password) {
+      console.log('Missing : ', username, password);
+      return callback(new Error('Missing username or password'), null);
+    }
+    // Check if user already exists
+    const user = await db.queryReplica(
+      'SELECT * FROM testuser.user WHERE LOWER(username) = LOWER($1)',
+      [username]
+    );
+    if (user.length > 0) {
+      return callback(new Error('User already exists'), null);
+    }
+
+    if (password.length < 8) {
+      return callback(new Error('Password too short'), null);
+    }
+
+    if (!validatePassword(password) || !validateUsername(username)) {
+      return callback(new Error('Invalid username or password'), null);
+    }
+
+    // Hash password
+    const hashedPassword = await bycrypt.hash(password, BCRYPT_ROUNDS);
+    // Create user
+    const userId = await db
+      .queryPrimary(
+        'INSERT INTO testuser.user (username, password, rolefk) VALUES ($1, $2, $3) RETURNING id',
+        [username, hashedPassword, 1]
+      )
+      .then((result) => {
+        return result[0].id;
+      });
+    if (!userId) {
+      return callback(new Error('Something went wrong'), null);
+    }
+
+    createAndSendTokens(callback, userId);
   }
 
-  // status: handleUnaryCall<StatusRequest, StatusResponse>;
   status(
     call: ServerUnaryCall<StatusRequest, StatusResponse>,
     callback: sendUnaryData<StatusResponse>
@@ -227,7 +280,7 @@ async function createAndSendTokens(callback: any, userId: number) {
   const csrfToken = jwt.sign({ id: user.getId() }, JWT_SECRET, {
     expiresIn: 60 * 60 * 24 * 7,
   });
-  const loginResponse = new LoginResponse();
+  const loginResponse = new DefaultAuthResponse();
   loginResponse.setAccessToken(accessToken);
   loginResponse.setRefreshToken(refreshToken);
   loginResponse.setCsrfToken(csrfToken);
