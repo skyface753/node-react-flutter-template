@@ -1,4 +1,10 @@
-import { handleUnaryCall, sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
+import {
+  handleUnaryCall,
+  Metadata,
+  sendUnaryData,
+  ServerUnaryCall,
+  status,
+} from '@grpc/grpc-js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
@@ -146,6 +152,7 @@ export class AuthServer implements IAuthServiceServer {
       return callback(new Error('No refresh token'), null);
     }
     const tokenInRedis = await redisClient.get(refreshToken);
+    console.log(tokenInRedis + ' ' + refreshToken);
     if (!tokenInRedis) {
       return callback(new Error('Invalid refresh token'), null);
     }
@@ -231,8 +238,77 @@ export class AuthServer implements IAuthServiceServer {
     call: ServerUnaryCall<StatusRequest, StatusResponse>,
     callback: sendUnaryData<StatusResponse>
   ): void {
-    console.log('status');
-    callback(null, new StatusResponse());
+    AuthServer.checkToken(call.metadata, false, callback).then(
+      (user: User | null) => {
+        if (!user) {
+          return callback({
+            code: status.NOT_FOUND,
+            message: 'User not found',
+          });
+        } else {
+          const statusResponse = new StatusResponse();
+          statusResponse.setUser(user);
+          callback(null, statusResponse);
+        }
+      }
+    );
+
+    // console.log('status');
+    // callback(null, new StatusResponse());
+  }
+
+  static async checkToken(
+    metadata: Metadata,
+    checkForAdmin: boolean = false,
+    callback: any
+  ): Promise<User | null> {
+    try {
+      // Bearer token
+      let token = metadata.get('authorization')[0];
+
+      if (!token) {
+        callback({
+          code: status.UNAUTHENTICATED,
+          message: 'No token provided',
+        });
+      }
+      if (token.toString().startsWith('Bearer ')) {
+        token = token.slice(7, token.length);
+      }
+      const payload = jwt.verify(
+        token.toString(),
+        JWT_SECRET
+      ) as unknown as User.AsObject;
+      console.log(payload);
+      if (checkForAdmin && payload.role !== Role.ADMIN) {
+        callback({
+          code: status.PERMISSION_DENIED,
+          message: 'Admin only',
+        });
+      }
+      const user = new User();
+      user.setId(payload.id);
+      user.setUsername(payload.username);
+      user.setRole(payload.role);
+      return user;
+    } catch (err) {
+      console.trace(err);
+      callback({
+        code: status.UNAUTHENTICATED,
+        message: 'Invalid token',
+      });
+      return null;
+    }
+
+    // const user = await redisClient.get(token);
+    // if (!user) {
+    //   throw new Error('Invalid token');
+    // }
+    // const userFromRedis = JSON.parse(user);
+    // if (checkForAdmin && userFromRedis.role !== Role.ADMIN) {
+    //   throw new Error('Not authorized');
+    // }
+    // return userFromRedis;
   }
 }
 
@@ -265,7 +341,8 @@ async function createAndSendTokens(callback: any, userId: number) {
 
   // Create Access Token
   const accessToken = jwt.sign(
-    { id: user.getId(), username: user.getUsername() },
+    user.toObject(),
+    // { id: user.getId(), username: user.getUsername() },
     JWT_SECRET,
     {
       // 10 minutes
