@@ -42,9 +42,9 @@ export const reducer = (state: IAuthState, action: IAction) => {
       const { user, accessToken, refreshToken, csrfToken } = payload;
       localStorage.setItem('isLoggedIn', JSON.stringify(true));
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('accessToken', JSON.stringify(accessToken));
-      localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
-      localStorage.setItem('csrfToken', JSON.stringify(csrfToken));
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('csrfToken', csrfToken);
       return {
         ...state,
         isLoggedIn: true,

@@ -115,7 +115,10 @@ export class AuthServer implements IAuthServiceServer {
       }
       if (user.secretbase32 && user.verified) {
         if (!totpcode) {
-          return callback(new Error('2FA required'), null);
+          return callback({
+            code: status.UNAUTHENTICATED,
+            message: 'TOTP code required',
+          });
         }
         const verified = speakeasy.totp.verify({
           secret: user.secretbase32,
@@ -169,7 +172,7 @@ export class AuthServer implements IAuthServiceServer {
   ): Promise<void> {
     const { refreshToken } = call.request.toObject();
 
-    console.log('refreshToken');
+    console.log('refreshToken', refreshToken);
     if (!refreshToken || refreshToken === '') {
       return callback(new Error('No refresh token provieded'), null);
     }
@@ -346,7 +349,7 @@ async function createAndSendTokens(callback: any, userId: number) {
     JWT_SECRET,
     {
       // 10 minutes
-      expiresIn: 10 * 60,
+      expiresIn: 10,
     }
   );
   // Create Refresh Token

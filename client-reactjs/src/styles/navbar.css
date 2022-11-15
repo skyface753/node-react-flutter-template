@@ -234,3 +234,14 @@
 .loggedInUserMenu:hover .loggedInUser-dropdown-content {
   display: block;
 }
+
+.logout-button {
+  background-color: #404040 !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  width: 100% !important;
+  text-align: left !important;
+}

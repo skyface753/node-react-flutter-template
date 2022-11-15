@@ -9,6 +9,9 @@ import VerificationInput from 'react-verification-input';
 import { AuthContext } from '../App';
 import { uninterceptedAxiosInstance } from '../services/api';
 import { ActionType } from '../store/reducer';
+import { grpcBaseAuthService } from '../grpc-client';
+import { DefaultAuthResponse, LoginRequest } from '../proto/auth_pb';
+import { RpcError, StatusCode } from 'grpc-web';
 // import api from '../services/api.js';
 // import ApiService from '../services/apiService';
 
@@ -26,38 +29,69 @@ export default function Login() {
       setError('Please fill in all fields');
       return;
     }
-    uninterceptedAxiosInstance
-      .post('auth/login', { username, password })
-      .then((res) => {
-        if (res.data.success) {
-          localStorage.setItem(
-            'token',
-            JSON.stringify(res.data.data.accessToken)
-          );
-          dispatch({
-            type: ActionType.LOGIN,
-            payload: {
-              user: res.data.data.user,
-              isLoggedIn: true,
-              accessToken: res.data.data.accessToken,
-              refreshToken: res.data.data.refreshToken,
-              csrfToken: res.data.data.csrfToken,
-            },
-          });
-          window.location.href = '/';
-        } else {
-          setError(res.data.message);
-        }
+    const loginRequest: LoginRequest = new LoginRequest();
+    loginRequest.setUsername(username);
+    loginRequest.setPassword(password);
+    grpcBaseAuthService
+      .login(loginRequest, null)
+      .then((response: DefaultAuthResponse) => {
+        console.log(response.toObject());
+        // localStorage.setItem('token', response.getAccessToken());
+        dispatch({
+          type: ActionType.LOGIN,
+          payload: {
+            user: response.getUser(),
+            isLoggedIn: true,
+
+            accessToken: response.getAccessToken(),
+            refreshToken: response.getRefreshToken(),
+            csrfToken: response.getCsrfToken(),
+          },
+        });
+        // window.location.href = '/';
       })
-      .catch((err) => {
+      .catch((error: RpcError) => {
         if (
-          err.response.status === 400 &&
-          err.response.data.message === '2FA required'
+          error.code === StatusCode.UNAUTHENTICATED &&
+          error.message === 'TOTP code required'
         ) {
           setRequired2FA(true);
         }
-        setError(err.response.data.message);
+        setError(error.message);
+        console.log(error);
       });
+    // uninterceptedAxiosInstance
+    //   .post('auth/login', { username, password })
+    //   .then((res) => {
+    //     if (res.data.success) {
+    //       localStorage.setItem(
+    //         'token',
+    //         JSON.stringify(res.data.data.accessToken)
+    //       );
+    //       dispatch({
+    //         type: ActionType.LOGIN,
+    //         payload: {
+    //           user: res.data.data.user,
+    //           isLoggedIn: true,
+    //           accessToken: res.data.data.accessToken,
+    //           refreshToken: res.data.data.refreshToken,
+    //           csrfToken: res.data.data.csrfToken,
+    //         },
+    //       });
+    //       window.location.href = '/';
+    //     } else {
+    //       setError(res.data.message);
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     if (
+    //       err.response.status === 400 &&
+    //       err.response.data.message === '2FA required'
+    //     ) {
+    //       setRequired2FA(true);
+    //     }
+    //     setError(err.response.data.message);
+    //   });
   }
 
   return (

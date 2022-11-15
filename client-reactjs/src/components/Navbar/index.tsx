@@ -110,9 +110,9 @@ export default function Navbar() {
                   <a
                     href='#'
                     onClick={async () => {
-                      const currentRefreshToken = JSON.parse(
-                        localStorage.getItem('refreshToken') || '{}'
-                      );
+                      const currentRefreshToken =
+                        localStorage.getItem('refreshToken') || '';
+
                       try {
                         await api
                           .post('/auth/logout', {
@@ -142,6 +142,39 @@ export default function Navbar() {
                   >
                     Logout
                   </a>
+                  <button
+                    className='logout-button'
+                    onClick={async () => {
+                      const currentRefreshToken =
+                        localStorage.getItem('refreshToken') || '';
+
+                      try {
+                        await api
+                          .post('/auth/logout', {
+                            refreshToken: currentRefreshToken, // To delete from redis
+                          })
+                          .then((res: AxiosResponse) => {
+                            if (res.data.success) {
+                              dispatch({
+                                type: ActionType.LOGOUT,
+                                payload: {},
+                              });
+                              window.location.href = '/';
+                              return;
+                            } else {
+                              console.log('Error');
+                              console.log(res.data);
+                            }
+                          });
+                        dispatch({ type: ActionType.LOGOUT, payload: {} });
+                        window.location.href = '/';
+                      } catch (err) {
+                        console.log(err);
+                        dispatch({ type: ActionType.LOGOUT, payload: {} });
+                        window.location.href = '/';
+                      }
+                    }}
+                  ></button>
                 </div>
               </div>
             </li>
