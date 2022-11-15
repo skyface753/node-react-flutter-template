@@ -48,7 +48,7 @@ export default function Login() {
             csrfToken: response.getCsrfToken(),
           },
         });
-        // window.location.href = '/';
+        window.location.href = '/';
       })
       .catch((error: RpcError) => {
         if (

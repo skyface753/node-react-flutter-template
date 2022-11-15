@@ -5,43 +5,40 @@ import {
   RefreshTokenRequest,
 } from './proto/auth_grpc_web_pb';
 
+import { AuthContext } from './App';
+import { useContext } from 'react';
+import { storeLogin } from './store/reducer';
+
 class AuthInterceptor {
   intercept(request: any, invoker: any) {
     const metadata = request.getMetadata();
     metadata.Authorization = 'Bearer ' + localStorage.getItem('accessToken');
     return invoker(request)
       .then((response: UnaryResponse<any, any>) => {
-        console.log('IN INTERCEPTOR - INVOKER: ' + response.getStatus().code);
         return response;
       })
-      .catch((error: RpcError) => {
-        console.log('IN INTERCEPTOR - ERROR: ' + error.code);
+      .catch(async (error: RpcError) => {
         // Error.code == 16 means UNAUTHENTICATED (see https://grpc.github.io/grpc/core/md_doc_statuscodes.html)
         if (error.code === 16) {
           // Refresh token
 
           const refreshTokenRequest = new RefreshTokenRequest();
-          refreshTokenRequest.setRefreshToken(
-            localStorage.getItem('refreshToken') || ''
-          );
-          console.log('IN INTERCEPTOR - REFRESH TOKEN');
-          grpcBaseAuthService
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (!refreshToken) {
+            throw error;
+          }
+          refreshTokenRequest.setRefreshToken(refreshToken);
+          // Use BaseClient to avoid infinite loop -> Refresh the token
+          return await grpcBaseAuthService
             .refreshToken(refreshTokenRequest, {})
-            .then((response: DefaultAuthResponse) => {
-              console.log(
-                'IN INTERCEPTOR - REFRESH TOKEN: ' + response.toObject()
-              );
-              localStorage.setItem('accessToken', response.getAccessToken());
-              localStorage.setItem('refreshToken', response.getRefreshToken());
-              const metadata = request.getMetadata();
+            .then(async (response: DefaultAuthResponse) => {
+              console.log('Refresh token success');
+              storeLogin(response.toObject());
+              const metadata = request.getMetadata(); // Retry the request with the new token
               metadata.Authorization = 'Bearer ' + response.getAccessToken();
               return invoker(request);
             })
             .catch((error: RpcError) => {
-              console.trace(error);
-              console.log(
-                'IN INTERCEPTOR - REFRESH TOKEN ERROR: ' + error.code
-              );
               throw error;
             });
         }

@@ -8,6 +8,7 @@ import api from '../../services/api';
 import { AxiosResponse } from 'axios';
 import { ActionType } from '../../store/reducer';
 import ProfilePictureComponent from '../ProfilePicture';
+import { Role } from '../../proto/auth_pb';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -55,7 +56,7 @@ export default function Navbar() {
             <a href='/status'>Auth Status (User Route)</a>
           </li>
           {state.isLoggedIn ? (
-            state.user?.roleFk === 2 ? (
+            state.user?.role === Role.ADMIN ? (
               <li>
                 <a href='/admin'>Admin</a>
               </li>
@@ -92,8 +93,9 @@ export default function Navbar() {
                     : 'loggedInUserMenu'
                 }
               >
+                {/* TODO: AVATAR */}
                 <div className='loggedInUserMenu-Button'>
-                  <ProfilePictureComponent avatarPath={state.user?.avatar} />
+                  <ProfilePictureComponent avatarPath={undefined} />
                 </div>
                 <div
                   className={
@@ -107,7 +109,7 @@ export default function Navbar() {
                   </a>
                   <a href='/settings'>Settings</a>
                   {/* Logout */}
-                  <a
+                  {/* <a
                     href='#'
                     onClick={async () => {
                       const currentRefreshToken =
@@ -141,7 +143,7 @@ export default function Navbar() {
                     }}
                   >
                     Logout
-                  </a>
+                  </a> */}
                   <button
                     className='logout-button'
                     onClick={async () => {
@@ -174,7 +176,9 @@ export default function Navbar() {
                         window.location.href = '/';
                       }
                     }}
-                  ></button>
+                  >
+                    Logout
+                  </button>
                 </div>
               </div>
             </li>

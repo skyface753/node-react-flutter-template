@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { AuthContext } from '../App';
+import { Role } from '../proto/auth_pb';
 
 export default function CheckIfAdmin() {
   const { state } = useContext(AuthContext);
@@ -9,7 +10,7 @@ export default function CheckIfAdmin() {
     return false;
   }
   if (isLoggedIn) {
-    if (user?.roleFk === 2) {
+    if (user?.role === Role.ADMIN) {
       return true;
     } else {
       return false;
