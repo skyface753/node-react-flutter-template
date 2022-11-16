@@ -3,13 +3,15 @@ import { addReflection } from 'grpc-server-reflection';
 import * as timestamp from 'google-protobuf/google/protobuf/timestamp_pb';
 import { AuthServiceService } from './proto/auth_grpc_pb';
 import { AuthServer } from './services/auth_service';
+import { AvatarServer } from './services/avatar_service';
+import { AvatarServiceService } from './proto/avatar_grpc_pb';
 
 const server = new grpc.Server();
 addReflection(server, './src/proto/descriptor_set.bin');
 
 // Add the Services
 server.addService(AuthServiceService, new AuthServer());
-
+server.addService(AvatarServiceService, new AvatarServer());
 // Start the server
 const port = process.env.PORT || 50051;
 server.bindAsync(

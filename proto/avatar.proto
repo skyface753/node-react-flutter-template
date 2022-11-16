@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package template;
+
+import "google/protobuf/empty.proto";
+
+message Avatar{
+    string generatedPath = 1;
+    string originalName = 2;
+    string type = 3;
+}
+
+message UploadRequest{
+    bytes binary = 1;
+}
+
+message UploadResponse{
+    Avatar avatar = 1;
+}
+
+
+service AvatarService{
+    rpc Upload(stream UploadRequest) returns (UploadResponse);
+    rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
