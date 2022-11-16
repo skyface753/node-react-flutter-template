@@ -8,6 +8,10 @@ import {
 import { AuthContext } from './App';
 import { useContext } from 'react';
 import { storeLogin } from './store/reducer';
+import {
+  AvatarServiceClient,
+  AvatarServicePromiseClient,
+} from './proto/avatar_grpc_web_pb';
 
 class AuthInterceptor {
   intercept(request: any, invoker: any) {
@@ -60,6 +64,8 @@ export const grpcAuthService = new AuthServicePromiseClient(
   null,
   options
 );
+
+export const grpcAvatarService = new AvatarServiceClient(host, null, options);
 
 export const grpcBaseAuthService = new AuthServicePromiseClient(
   host,
