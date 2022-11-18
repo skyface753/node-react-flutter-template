@@ -1,13 +1,15 @@
 import { AxiosResponse } from 'axios';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../../services/api';
+// import api from '../../services/api';
 import Disable2FA from './disable2FA';
 import Enable2FA from './enable2FA';
 import { AuthContext } from '../../App';
 import { useContext } from 'react';
 import AvatarUpload from './avatarUpload';
 import { ActionType } from '../../store/reducer';
+import { grpcAuthService } from '../../grpc-client';
+import { StatusRequest, StatusResponse } from '../../proto/auth_pb';
 
 interface IUserSettings {
   twoFactorEnabled: boolean;
@@ -23,17 +25,37 @@ export default function SettingsPage() {
 
   async function loadUserSettings() {
     try {
-      api
-        .get('/user/settings')
-        .then((res: AxiosResponse) => {
-          setUser(res.data.data);
+      grpcAuthService
+        .status(new StatusRequest(), null)
+        .then((response: StatusResponse) => {
+          console.log(response);
+          setUser({
+            twoFactorEnabled: false,
+            username: response.getUser()?.getUsername() || '',
+            email: response.getUser()?.getUsername() || '',
+            // twoFactorEnabled: response.getTwoFactorEnabled(),
+            // username: response.getUser()?.getUsername() || '',
+            // email: response.getUser()?.getEmail() || '',
+          });
         })
-        .catch((err: any) => {
-          setError(err.response.data.message);
+        .catch((err) => {
+          setError(err);
         });
     } catch (err) {
-      setError((err as any).response.data.data);
+      setError('Error loading user settings');
     }
+    // try {
+    //   api
+    //     .get('/user/settings')
+    //     .then((res: AxiosResponse) => {
+    //       setUser(res.data.data);
+    //     })
+    //     .catch((err: any) => {
+    //       setError(err.response.data.message);
+    //     });
+    // } catch (err) {
+    //   setError((err as any).response.data.data);
+    // }
   }
 
   React.useEffect(() => {
@@ -50,7 +72,7 @@ export default function SettingsPage() {
   } else if (settingSection === 'avatar') {
     return (
       <AvatarUpload
-        currentFile={null}
+        currentFile={undefined}
         progress={0}
         message={''}
         fileInfos={undefined}

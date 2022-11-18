@@ -1,10 +1,13 @@
 import React from 'react';
 import { grpcAvatarService } from '../../grpc-client';
-import { UploadResponse } from '../../proto/avatar_pb';
+// import { UploadResponse } from '../../proto/avatar_pb';
 import api from '../../services/api';
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
+import { UploadUrlRequest, UploadUrlResponse } from '../../proto/avatar_pb';
+import axios from 'axios';
 
 type Props = {
-  currentFile: File | null;
+  currentFile: File | undefined;
   progress: number;
   message: string;
   fileInfos: any;
@@ -12,7 +15,7 @@ type Props = {
 };
 
 type State = {
-  currentFile: File | null;
+  currentFile: File | undefined;
   progress: number;
   message: string;
   fileInfos: any;
@@ -22,7 +25,7 @@ export default class AvatarUpload extends React.Component<Props, State> {
   constructor(props: any) {
     super(props);
     this.state = {
-      currentFile: null,
+      currentFile: undefined,
       progress: 0,
       message: '',
 
@@ -57,53 +60,35 @@ export default class AvatarUpload extends React.Component<Props, State> {
       window.alert('Please select a file');
       return;
     }
-    let formData = new FormData();
-    formData.append('avatar', currentFile);
 
-    api
-      .put('avatar/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: this.onUploadProgress,
-      })
-      .then((response) => {
-        console.log(response.data);
-        let newAvatarPath = response.data.data.avatar.generatedPath;
-        this.props.changeAvatarCallback(newAvatarPath);
-
-        this.setState({
-          message: response.data.data.message,
-        });
+    grpcAvatarService
+      .requestAUploadURL(
+        new UploadUrlRequest().setFilename(currentFile!.name),
+        null
+      )
+      .then(async (response: UploadUrlResponse) => {
+        console.log(response.toObject());
+        let uploadURL = response.getUrl();
+        fetch(uploadURL, {
+          method: 'PUT',
+          body: currentFile,
+        })
+          .then((res) => {
+            console.log(res);
+            this.setState({
+              message: 'The file was uploaded successfully!',
+              currentFile: undefined,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            this.setState({
+              progress: 0,
+              message: 'Could not upload the file!',
+              // currentFile: undefined,
+            });
+          });
       });
-
-    // UploadService.upload(currentFile, (event) => {
-    //   this.setState({
-    //     progress: Math.round((100 * event.loaded) / event.total),
-    //   });
-    // })
-    //   .then((response) => {
-    //     this.setState({
-    //       message: response.data.message,
-    //     });
-    //     return UploadService.getFiles();
-    //   })
-    //   .then((files) => {
-    //     this.setState({
-    //       fileInfos: files.data,
-    //     });
-    //   })
-    //   .catch(() => {
-    //     this.setState({
-    //       progress: 0,
-    //       message: "Could not upload the file!",
-    //       currentFile: undefined,
-    //     });
-    //   });
-
-    this.setState({
-      currentFile: null,
-    });
   }
 
   componentDidMount() {

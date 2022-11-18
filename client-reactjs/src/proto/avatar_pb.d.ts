@@ -33,6 +33,26 @@ export namespace Avatar {
     }
 }
 
+export class UploadUrlRequest extends jspb.Message { 
+    getFilename(): string;
+    setFilename(value: string): UploadUrlRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UploadUrlRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: UploadUrlRequest): UploadUrlRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UploadUrlRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UploadUrlRequest;
+    static deserializeBinaryFromReader(message: UploadUrlRequest, reader: jspb.BinaryReader): UploadUrlRequest;
+}
+
+export namespace UploadUrlRequest {
+    export type AsObject = {
+        filename: string,
+    }
+}
+
 export class UploadUrlResponse extends jspb.Message { 
     getUrl(): string;
     setUrl(value: string): UploadUrlResponse;

@@ -16,6 +16,17 @@ function deserialize_google_protobuf_Empty(buffer_arg) {
   return google_protobuf_empty_pb.Empty.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_template_UploadUrlRequest(arg) {
+  if (!(arg instanceof avatar_pb.UploadUrlRequest)) {
+    throw new Error('Expected argument of type template.UploadUrlRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_UploadUrlRequest(buffer_arg) {
+  return avatar_pb.UploadUrlRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_template_UploadUrlResponse(arg) {
   if (!(arg instanceof avatar_pb.UploadUrlResponse)) {
     throw new Error('Expected argument of type template.UploadUrlResponse');
@@ -33,10 +44,10 @@ var AvatarServiceService = exports.AvatarServiceService = {
     path: '/template.AvatarService/RequestAUploadURL',
     requestStream: false,
     responseStream: false,
-    requestType: google_protobuf_empty_pb.Empty,
+    requestType: avatar_pb.UploadUrlRequest,
     responseType: avatar_pb.UploadUrlResponse,
-    requestSerialize: serialize_google_protobuf_Empty,
-    requestDeserialize: deserialize_google_protobuf_Empty,
+    requestSerialize: serialize_template_UploadUrlRequest,
+    requestDeserialize: deserialize_template_UploadUrlRequest,
     responseSerialize: serialize_template_UploadUrlResponse,
     responseDeserialize: deserialize_template_UploadUrlResponse,
   },

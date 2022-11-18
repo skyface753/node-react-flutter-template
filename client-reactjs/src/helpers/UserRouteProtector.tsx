@@ -3,19 +3,33 @@ import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../App';
 import React from 'react';
 import api from '../services/api';
+import { grpcAuthService } from '../grpc-client';
+import { StatusRequest, StatusResponse } from '../proto/auth_pb';
 
 const access = async () => {
-  const response = await api.get('auth/status');
-  console.log('After /auth/status');
-  if (!response) {
+  try {
+    const statusResponse = (await grpcAuthService.status(
+      new StatusRequest(),
+      null
+    )) as StatusResponse;
+    if (statusResponse.getUser() !== null) {
+      return true;
+    }
+  } catch (err) {
+    console.log(err);
     return false;
   }
-  console.log(response);
-  if (response.data.success) {
-    return true;
-  } else {
-    return false;
-  }
+  //   const response = await api.get('auth/status');
+  //   console.log('After /auth/status');
+  //   if (!response) {
+  //   return false;
+  // }
+  // console.log(response);
+  // if (response.data.success) {
+  //   return true;
+  // } else {
+  //   return false;
+  // }
   // return await axios.post(
   //   "http://localhost:5000/access",
   //   {},

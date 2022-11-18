@@ -79,16 +79,16 @@ proto.template.AvatarServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.google.protobuf.Empty,
+ *   !proto.template.UploadUrlRequest,
  *   !proto.template.UploadUrlResponse>}
  */
 const methodDescriptor_AvatarService_RequestAUploadURL = new grpc.web.MethodDescriptor(
   '/template.AvatarService/RequestAUploadURL',
   grpc.web.MethodType.UNARY,
-  google_protobuf_empty_pb.Empty,
+  proto.template.UploadUrlRequest,
   proto.template.UploadUrlResponse,
   /**
-   * @param {!proto.google.protobuf.Empty} request
+   * @param {!proto.template.UploadUrlRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
@@ -99,7 +99,7 @@ const methodDescriptor_AvatarService_RequestAUploadURL = new grpc.web.MethodDesc
 
 
 /**
- * @param {!proto.google.protobuf.Empty} request The
+ * @param {!proto.template.UploadUrlRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
@@ -120,7 +120,7 @@ proto.template.AvatarServiceClient.prototype.requestAUploadURL =
 
 
 /**
- * @param {!proto.google.protobuf.Empty} request The
+ * @param {!proto.template.UploadUrlRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
