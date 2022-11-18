@@ -80,6 +80,67 @@ proto.template.AvatarServicePromiseClient =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.google.protobuf.Empty,
+ *   !proto.template.UploadUrlResponse>}
+ */
+const methodDescriptor_AvatarService_RequestAUploadURL = new grpc.web.MethodDescriptor(
+  '/template.AvatarService/RequestAUploadURL',
+  grpc.web.MethodType.UNARY,
+  google_protobuf_empty_pb.Empty,
+  proto.template.UploadUrlResponse,
+  /**
+   * @param {!proto.google.protobuf.Empty} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.template.UploadUrlResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.template.UploadUrlResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.template.UploadUrlResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.template.AvatarServiceClient.prototype.requestAUploadURL =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/template.AvatarService/RequestAUploadURL',
+      request,
+      metadata || {},
+      methodDescriptor_AvatarService_RequestAUploadURL,
+      callback);
+};
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.template.UploadUrlResponse>}
+ *     Promise that resolves to the response
+ */
+proto.template.AvatarServicePromiseClient.prototype.requestAUploadURL =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/template.AvatarService/RequestAUploadURL',
+      request,
+      metadata || {},
+      methodDescriptor_AvatarService_RequestAUploadURL);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.google.protobuf.Empty,
  *   !proto.google.protobuf.Empty>}
  */
 const methodDescriptor_AvatarService_Delete = new grpc.web.MethodDescriptor(

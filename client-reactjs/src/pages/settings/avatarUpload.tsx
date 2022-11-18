@@ -1,5 +1,6 @@
 import React from 'react';
 import { grpcAvatarService } from '../../grpc-client';
+import { UploadResponse } from '../../proto/avatar_pb';
 import api from '../../services/api';
 
 type Props = {

@@ -9,17 +9,11 @@ message Avatar{
     string originalName = 2;
     string type = 3;
 }
-
-message UploadRequest{
-    bytes binary = 1;
+message UploadUrlResponse{
+    string url = 1;
 }
-
-message UploadResponse{
-    Avatar avatar = 1;
-}
-
 
 service AvatarService{
-    rpc Upload(stream UploadRequest) returns (UploadResponse);
+    rpc RequestAUploadURL(google.protobuf.Empty) returns (UploadUrlResponse);
     rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

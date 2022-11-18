@@ -16,40 +16,29 @@ function deserialize_google_protobuf_Empty(buffer_arg) {
   return google_protobuf_empty_pb.Empty.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_template_UploadRequest(arg) {
-  if (!(arg instanceof avatar_pb.UploadRequest)) {
-    throw new Error('Expected argument of type template.UploadRequest');
+function serialize_template_UploadUrlResponse(arg) {
+  if (!(arg instanceof avatar_pb.UploadUrlResponse)) {
+    throw new Error('Expected argument of type template.UploadUrlResponse');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_template_UploadRequest(buffer_arg) {
-  return avatar_pb.UploadRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_template_UploadResponse(arg) {
-  if (!(arg instanceof avatar_pb.UploadResponse)) {
-    throw new Error('Expected argument of type template.UploadResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_template_UploadResponse(buffer_arg) {
-  return avatar_pb.UploadResponse.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_template_UploadUrlResponse(buffer_arg) {
+  return avatar_pb.UploadUrlResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 
 var AvatarServiceService = exports.AvatarServiceService = {
-  upload: {
-    path: '/template.AvatarService/Upload',
-    requestStream: true,
+  requestAUploadURL: {
+    path: '/template.AvatarService/RequestAUploadURL',
+    requestStream: false,
     responseStream: false,
-    requestType: avatar_pb.UploadRequest,
-    responseType: avatar_pb.UploadResponse,
-    requestSerialize: serialize_template_UploadRequest,
-    requestDeserialize: deserialize_template_UploadRequest,
-    responseSerialize: serialize_template_UploadResponse,
-    responseDeserialize: deserialize_template_UploadResponse,
+    requestType: google_protobuf_empty_pb.Empty,
+    responseType: avatar_pb.UploadUrlResponse,
+    requestSerialize: serialize_google_protobuf_Empty,
+    requestDeserialize: deserialize_google_protobuf_Empty,
+    responseSerialize: serialize_template_UploadUrlResponse,
+    responseDeserialize: deserialize_template_UploadUrlResponse,
   },
   delete: {
     path: '/template.AvatarService/Delete',

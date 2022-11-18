@@ -65,7 +65,12 @@ export const grpcAuthService = new AuthServicePromiseClient(
   options
 );
 
-export const grpcAvatarService = new AvatarServiceClient(host, null, options);
+// export const grpcAvatarService = new AvatarServiceClient(host, null, options);
+export const grpcAvatarService = new AvatarServicePromiseClient(
+  host,
+  null,
+  options
+);
 
 export const grpcBaseAuthService = new AuthServicePromiseClient(
   host,

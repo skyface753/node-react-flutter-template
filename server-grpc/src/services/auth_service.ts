@@ -349,7 +349,7 @@ async function createAndSendTokens(callback: any, userId: number) {
     JWT_SECRET,
     {
       // 10 minutes
-      expiresIn: 10,
+      expiresIn: 10 * 60,
     }
   );
   // Create Refresh Token

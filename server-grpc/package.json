@@ -14,7 +14,10 @@
   "author": "Sebastian Joerz",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.212.0",
+    "@aws-sdk/s3-request-presigner": "^3.212.0",
     "@grpc/grpc-js": "^1.7.3",
+    "aws-sdk": "^2.1256.0",
     "bcrypt": "^5.1.0",
     "chance": "^1.1.9",
     "google-protobuf": "^3.21.2",

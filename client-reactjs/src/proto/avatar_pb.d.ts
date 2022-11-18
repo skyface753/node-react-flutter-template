@@ -33,47 +33,22 @@ export namespace Avatar {
     }
 }
 
-export class UploadRequest extends jspb.Message { 
-    getBinary(): Uint8Array | string;
-    getBinary_asU8(): Uint8Array;
-    getBinary_asB64(): string;
-    setBinary(value: Uint8Array | string): UploadRequest;
+export class UploadUrlResponse extends jspb.Message { 
+    getUrl(): string;
+    setUrl(value: string): UploadUrlResponse;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UploadRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: UploadRequest): UploadRequest.AsObject;
+    toObject(includeInstance?: boolean): UploadUrlResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: UploadUrlResponse): UploadUrlResponse.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UploadRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UploadRequest;
-    static deserializeBinaryFromReader(message: UploadRequest, reader: jspb.BinaryReader): UploadRequest;
+    static serializeBinaryToWriter(message: UploadUrlResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UploadUrlResponse;
+    static deserializeBinaryFromReader(message: UploadUrlResponse, reader: jspb.BinaryReader): UploadUrlResponse;
 }
 
-export namespace UploadRequest {
+export namespace UploadUrlResponse {
     export type AsObject = {
-        binary: Uint8Array | string,
-    }
-}
-
-export class UploadResponse extends jspb.Message { 
-
-    hasAvatar(): boolean;
-    clearAvatar(): void;
-    getAvatar(): Avatar | undefined;
-    setAvatar(value?: Avatar): UploadResponse;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UploadResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: UploadResponse): UploadResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UploadResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UploadResponse;
-    static deserializeBinaryFromReader(message: UploadResponse, reader: jspb.BinaryReader): UploadResponse;
-}
-
-export namespace UploadResponse {
-    export type AsObject = {
-        avatar?: Avatar.AsObject,
+        url: string,
     }
 }
