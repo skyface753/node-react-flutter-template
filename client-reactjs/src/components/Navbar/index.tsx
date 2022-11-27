@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { AuthContext } from '../../App';
 import defaultImage from '../../img/default-profile-pic.png';
 import config from '../../config.json';
-import api from '../../services/api';
+// import api from '../../services/api';
 import { AxiosResponse } from 'axios';
 import { ActionType } from '../../store/reducer';
 import ProfilePictureComponent from '../ProfilePicture';
-import { Role } from '../../proto/auth_pb';
+import { LogoutRequest, LogoutResponse, Role } from '../../proto/auth_pb';
+import { grpcApi } from '../../services/grpc-api/grpc-client';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 
 export default function Navbar() {
@@ -95,7 +96,11 @@ export default function Navbar() {
               >
                 {/* TODO: AVATAR */}
                 <div className='loggedInUserMenu-Button'>
-                  <ProfilePictureComponent avatarPath={undefined} />
+                  {state.user?.avatar ? (
+                    <ProfilePictureComponent avatarPath={state.user.avatar} />
+                  ) : (
+                    <ProfilePictureComponent avatarPath={undefined} />
+                  )}
                 </div>
                 <div
                   className={
@@ -151,30 +156,31 @@ export default function Navbar() {
                         localStorage.getItem('refreshToken') || '';
 
                       try {
-                        await api
-                          .post('/auth/logout', {
-                            refreshToken: currentRefreshToken, // To delete from redis
-                          })
-                          .then((res: AxiosResponse) => {
-                            if (res.data.success) {
+                        const logoutRequest = new LogoutRequest();
+                        logoutRequest.setRefreshToken(currentRefreshToken);
+                        await grpcApi.authService
+                          .logout(logoutRequest, {})
+                          .then((res: LogoutResponse) => {
+                            if (res.getSuccess()) {
                               dispatch({
                                 type: ActionType.LOGOUT,
-                                payload: {},
+                                payload: ActionType.LOGOUT,
                               });
                               window.location.href = '/';
                               return;
                             } else {
                               console.log('Error');
-                              console.log(res.data);
+                              console.log(res);
                             }
                           });
-                        dispatch({ type: ActionType.LOGOUT, payload: {} });
-                        window.location.href = '/';
                       } catch (err) {
                         console.log(err);
-                        dispatch({ type: ActionType.LOGOUT, payload: {} });
-                        window.location.href = '/';
                       }
+                      dispatch({
+                        type: ActionType.LOGOUT,
+                        payload: ActionType.LOGOUT,
+                      });
+                      window.location.href = '/';
                     }}
                   >
                     Logout

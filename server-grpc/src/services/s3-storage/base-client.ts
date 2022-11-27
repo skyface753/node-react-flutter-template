@@ -16,5 +16,5 @@ const config: S3ClientConfig = {
   // signatureVersion: 'v4',
 };
 // Create an Amazon S3 service client object.
-const s3Client = new S3Client(config);
-export { s3Client };
+export const s3Client = new S3Client(config);
+// export { s3Client };

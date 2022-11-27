@@ -7,6 +7,7 @@ export const REDIS = {
 };
 export const S3Config = {
   endpoint_url: process.env.S3_ENDPOINT_URL || 'http://localhost:9000',
+  bucket: process.env.S3_BUCKET || 'test-bucket',
   // endpoint_url: process.env.S3_ENDPOINT_URL || 'https://eu2.contabostorage.com',
   access_key: process.env.S3_ACCESS || 'minio-root-user',
   secret_key: process.env.S3_SECRET_KEY || 'minio-root-password',

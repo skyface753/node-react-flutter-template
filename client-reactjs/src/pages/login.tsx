@@ -7,9 +7,9 @@ import VerificationInput from 'react-verification-input';
 
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 import { AuthContext } from '../App';
-import { uninterceptedAxiosInstance } from '../services/api';
+// import { uninterceptedAxiosInstance } from '../services/api';
 import { ActionType } from '../store/reducer';
-import { grpcBaseAuthService } from '../grpc-client';
+import { grpcBaseAuthService } from '../services/grpc-api/grpc-client';
 import { DefaultAuthResponse, LoginRequest } from '../proto/auth_pb';
 import { RpcError, StatusCode } from 'grpc-web';
 // import api from '../services/api.js';
@@ -39,16 +39,17 @@ export default function Login() {
         // localStorage.setItem('token', response.getAccessToken());
         dispatch({
           type: ActionType.LOGIN,
-          payload: {
-            user: response.getUser(),
-            isLoggedIn: true,
+          payload: response.toObject(),
+          // payload: {
+          //   user: response.getUser()!,
+          //   isLoggedIn: true,
 
-            accessToken: response.getAccessToken(),
-            refreshToken: response.getRefreshToken(),
-            csrfToken: response.getCsrfToken(),
-          },
+          //   accessToken: response.getAccessToken(),
+          //   refreshToken: response.getRefreshToken(),
+          //   csrfToken: response.getCsrfToken(),
+          // },
         });
-        window.location.href = '/';
+        // window.location.href = '/';
       })
       .catch((error: RpcError) => {
         if (
@@ -107,34 +108,61 @@ export default function Login() {
             onChange={(value) => {
               setTwoFactorCode(value);
               if (value.length == 6) {
-                uninterceptedAxiosInstance
-                  .post('auth/login', { username, password, totpCode: value })
-                  .then((res) => {
-                    if (res.data.success) {
-                      localStorage.setItem(
-                        'token',
-                        JSON.stringify(res.data.data.accessToken)
-                      );
-                      dispatch({
-                        type: ActionType.LOGIN,
-                        payload: {
-                          user: res.data.data.user,
-                          isLoggedIn: true,
-                          accessToken: res.data.data.accessToken,
-                          refreshToken: res.data.data.refreshToken,
-                          csrfToken: res.data.data.csrfToken,
-                        },
-                      });
-                      window.location.href = '/';
-                    } else {
-                      setTwoFactorError(res.data.message);
-                      setTwoFactorCode('');
-                    }
+                const loginRequest: LoginRequest = new LoginRequest();
+                loginRequest.setUsername(username);
+                loginRequest.setPassword(password);
+                loginRequest.setTotpcode(value);
+                grpcBaseAuthService
+                  .login(loginRequest, null)
+                  .then((response: DefaultAuthResponse) => {
+                    console.log(response.toObject());
+                    // localStorage.setItem('token', response.getAccessToken());
+                    dispatch({
+                      type: ActionType.LOGIN,
+                      payload: response.toObject(),
+                      // payload: {
+                      //   user: response.getUser(),
+                      //   isLoggedIn: true,
+                      //   accessToken: response.getAccessToken(),
+                      //   refreshToken: response.getRefreshToken(),
+                      //   csrfToken: response.getCsrfToken(),
+                      // },
+                    });
+                    window.location.href = '/';
                   })
-                  .catch((err) => {
-                    setTwoFactorError(err.response.data.data);
-                    setTwoFactorCode('');
+                  .catch((error: RpcError) => {
+                    setTwoFactorError(error.message);
+                    console.log(error);
                   });
+
+                // uninterceptedAxiosInstance
+                //   .post('auth/login', { username, password, totpCode: value })
+                //   .then((res) => {
+                //     if (res.data.success) {
+                //       localStorage.setItem(
+                //         'token',
+                //         JSON.stringify(res.data.data.accessToken)
+                //       );
+                //       dispatch({
+                //         type: ActionType.LOGIN,
+                //         payload: {
+                //           user: res.data.data.user,
+                //           isLoggedIn: true,
+                //           accessToken: res.data.data.accessToken,
+                //           refreshToken: res.data.data.refreshToken,
+                //           csrfToken: res.data.data.csrfToken,
+                //         },
+                //       });
+                //       window.location.href = '/';
+                //     } else {
+                //       setTwoFactorError(res.data.message);
+                //       setTwoFactorCode('');
+                //     }
+                //   })
+                //   .catch((err) => {
+                //     setTwoFactorError(err.response.data.data);
+                //     setTwoFactorCode('');
+                //   });
               }
             }}
             length={6}
@@ -157,6 +185,7 @@ export default function Login() {
           placeholder='Enter Username'
           name='username'
           required
+          autoFocus
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           onKeyDown={(e) => {

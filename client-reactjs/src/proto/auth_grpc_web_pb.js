@@ -381,5 +381,188 @@ proto.template.AuthServicePromiseClient.prototype.status =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.template.DisableTOTPRequest,
+ *   !proto.template.DisableTOTPResponse>}
+ */
+const methodDescriptor_AuthService_DisableTOTP = new grpc.web.MethodDescriptor(
+  '/template.AuthService/DisableTOTP',
+  grpc.web.MethodType.UNARY,
+  proto.template.DisableTOTPRequest,
+  proto.template.DisableTOTPResponse,
+  /**
+   * @param {!proto.template.DisableTOTPRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.template.DisableTOTPResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.template.DisableTOTPRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.template.DisableTOTPResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.template.DisableTOTPResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.template.AuthServiceClient.prototype.disableTOTP =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/template.AuthService/DisableTOTP',
+      request,
+      metadata || {},
+      methodDescriptor_AuthService_DisableTOTP,
+      callback);
+};
+
+
+/**
+ * @param {!proto.template.DisableTOTPRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.template.DisableTOTPResponse>}
+ *     Promise that resolves to the response
+ */
+proto.template.AuthServicePromiseClient.prototype.disableTOTP =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/template.AuthService/DisableTOTP',
+      request,
+      metadata || {},
+      methodDescriptor_AuthService_DisableTOTP);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.template.EnableTOTPRequest,
+ *   !proto.template.EnableTOTPResponse>}
+ */
+const methodDescriptor_AuthService_EnableTOTP = new grpc.web.MethodDescriptor(
+  '/template.AuthService/EnableTOTP',
+  grpc.web.MethodType.UNARY,
+  proto.template.EnableTOTPRequest,
+  proto.template.EnableTOTPResponse,
+  /**
+   * @param {!proto.template.EnableTOTPRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.template.EnableTOTPResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.template.EnableTOTPRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.template.EnableTOTPResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.template.EnableTOTPResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.template.AuthServiceClient.prototype.enableTOTP =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/template.AuthService/EnableTOTP',
+      request,
+      metadata || {},
+      methodDescriptor_AuthService_EnableTOTP,
+      callback);
+};
+
+
+/**
+ * @param {!proto.template.EnableTOTPRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.template.EnableTOTPResponse>}
+ *     Promise that resolves to the response
+ */
+proto.template.AuthServicePromiseClient.prototype.enableTOTP =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/template.AuthService/EnableTOTP',
+      request,
+      metadata || {},
+      methodDescriptor_AuthService_EnableTOTP);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.template.VerifyTOTPRequest,
+ *   !proto.template.VerifyTOTPResponse>}
+ */
+const methodDescriptor_AuthService_VerifyTOTP = new grpc.web.MethodDescriptor(
+  '/template.AuthService/VerifyTOTP',
+  grpc.web.MethodType.UNARY,
+  proto.template.VerifyTOTPRequest,
+  proto.template.VerifyTOTPResponse,
+  /**
+   * @param {!proto.template.VerifyTOTPRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.template.VerifyTOTPResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.template.VerifyTOTPRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.template.VerifyTOTPResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.template.VerifyTOTPResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.template.AuthServiceClient.prototype.verifyTOTP =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/template.AuthService/VerifyTOTP',
+      request,
+      metadata || {},
+      methodDescriptor_AuthService_VerifyTOTP,
+      callback);
+};
+
+
+/**
+ * @param {!proto.template.VerifyTOTPRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.template.VerifyTOTPResponse>}
+ *     Promise that resolves to the response
+ */
+proto.template.AuthServicePromiseClient.prototype.verifyTOTP =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/template.AuthService/VerifyTOTP',
+      request,
+      metadata || {},
+      methodDescriptor_AuthService_VerifyTOTP);
+};
+
+
 module.exports = proto.template;
 

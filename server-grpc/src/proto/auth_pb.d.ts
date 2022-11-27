@@ -14,6 +14,8 @@ export class User extends jspb.Message {
     setUsername(value: string): User;
     getRole(): Role;
     setRole(value: Role): User;
+    getAvatar(): string;
+    setAvatar(value: string): User;
 
     hasCreatedAt(): boolean;
     clearCreatedAt(): void;
@@ -40,6 +42,7 @@ export namespace User {
         id: number,
         username: string,
         role: Role,
+        avatar: string,
         createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
         updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     }
@@ -157,49 +160,6 @@ export namespace RegisterRequest {
     }
 }
 
-export class StatusRequest extends jspb.Message { 
-    getAccessToken(): string;
-    setAccessToken(value: string): StatusRequest;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): StatusRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: StatusRequest): StatusRequest.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: StatusRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): StatusRequest;
-    static deserializeBinaryFromReader(message: StatusRequest, reader: jspb.BinaryReader): StatusRequest;
-}
-
-export namespace StatusRequest {
-    export type AsObject = {
-        accessToken: string,
-    }
-}
-
-export class StatusResponse extends jspb.Message { 
-
-    hasUser(): boolean;
-    clearUser(): void;
-    getUser(): User | undefined;
-    setUser(value?: User): StatusResponse;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): StatusResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: StatusResponse): StatusResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: StatusResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): StatusResponse;
-    static deserializeBinaryFromReader(message: StatusResponse, reader: jspb.BinaryReader): StatusResponse;
-}
-
-export namespace StatusResponse {
-    export type AsObject = {
-        user?: User.AsObject,
-    }
-}
-
 export class DefaultAuthResponse extends jspb.Message { 
     getAccessToken(): string;
     setAccessToken(value: string): DefaultAuthResponse;
@@ -229,6 +189,178 @@ export namespace DefaultAuthResponse {
         refreshToken: string,
         csrfToken: string,
         user?: User.AsObject,
+    }
+}
+
+export class DisableTOTPRequest extends jspb.Message { 
+    getPassword(): string;
+    setPassword(value: string): DisableTOTPRequest;
+    getTotpcode(): string;
+    setTotpcode(value: string): DisableTOTPRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DisableTOTPRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: DisableTOTPRequest): DisableTOTPRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: DisableTOTPRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DisableTOTPRequest;
+    static deserializeBinaryFromReader(message: DisableTOTPRequest, reader: jspb.BinaryReader): DisableTOTPRequest;
+}
+
+export namespace DisableTOTPRequest {
+    export type AsObject = {
+        password: string,
+        totpcode: string,
+    }
+}
+
+export class DisableTOTPResponse extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): DisableTOTPResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DisableTOTPResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: DisableTOTPResponse): DisableTOTPResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: DisableTOTPResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DisableTOTPResponse;
+    static deserializeBinaryFromReader(message: DisableTOTPResponse, reader: jspb.BinaryReader): DisableTOTPResponse;
+}
+
+export namespace DisableTOTPResponse {
+    export type AsObject = {
+        success: boolean,
+    }
+}
+
+export class EnableTOTPRequest extends jspb.Message { 
+    getPassword(): string;
+    setPassword(value: string): EnableTOTPRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EnableTOTPRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: EnableTOTPRequest): EnableTOTPRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EnableTOTPRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EnableTOTPRequest;
+    static deserializeBinaryFromReader(message: EnableTOTPRequest, reader: jspb.BinaryReader): EnableTOTPRequest;
+}
+
+export namespace EnableTOTPRequest {
+    export type AsObject = {
+        password: string,
+    }
+}
+
+export class EnableTOTPResponse extends jspb.Message { 
+    getSecret(): string;
+    setSecret(value: string): EnableTOTPResponse;
+    getUrl(): string;
+    setUrl(value: string): EnableTOTPResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EnableTOTPResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: EnableTOTPResponse): EnableTOTPResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EnableTOTPResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EnableTOTPResponse;
+    static deserializeBinaryFromReader(message: EnableTOTPResponse, reader: jspb.BinaryReader): EnableTOTPResponse;
+}
+
+export namespace EnableTOTPResponse {
+    export type AsObject = {
+        secret: string,
+        url: string,
+    }
+}
+
+export class VerifyTOTPRequest extends jspb.Message { 
+    getTotpcode(): string;
+    setTotpcode(value: string): VerifyTOTPRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): VerifyTOTPRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: VerifyTOTPRequest): VerifyTOTPRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: VerifyTOTPRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): VerifyTOTPRequest;
+    static deserializeBinaryFromReader(message: VerifyTOTPRequest, reader: jspb.BinaryReader): VerifyTOTPRequest;
+}
+
+export namespace VerifyTOTPRequest {
+    export type AsObject = {
+        totpcode: string,
+    }
+}
+
+export class VerifyTOTPResponse extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): VerifyTOTPResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): VerifyTOTPResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: VerifyTOTPResponse): VerifyTOTPResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: VerifyTOTPResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): VerifyTOTPResponse;
+    static deserializeBinaryFromReader(message: VerifyTOTPResponse, reader: jspb.BinaryReader): VerifyTOTPResponse;
+}
+
+export namespace VerifyTOTPResponse {
+    export type AsObject = {
+        success: boolean,
+    }
+}
+
+export class StatusRequest extends jspb.Message { 
+    getAccessToken(): string;
+    setAccessToken(value: string): StatusRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): StatusRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: StatusRequest): StatusRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: StatusRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): StatusRequest;
+    static deserializeBinaryFromReader(message: StatusRequest, reader: jspb.BinaryReader): StatusRequest;
+}
+
+export namespace StatusRequest {
+    export type AsObject = {
+        accessToken: string,
+    }
+}
+
+export class StatusResponse extends jspb.Message { 
+
+    hasUser(): boolean;
+    clearUser(): void;
+    getUser(): User | undefined;
+    setUser(value?: User): StatusResponse;
+    getTotpenabled(): boolean;
+    setTotpenabled(value: boolean): StatusResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): StatusResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: StatusResponse): StatusResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: StatusResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): StatusResponse;
+    static deserializeBinaryFromReader(message: StatusResponse, reader: jspb.BinaryReader): StatusResponse;
+}
+
+export namespace StatusResponse {
+    export type AsObject = {
+        user?: User.AsObject,
+        totpenabled: boolean,
     }
 }
 

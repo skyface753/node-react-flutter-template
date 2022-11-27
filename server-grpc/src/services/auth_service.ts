@@ -20,13 +20,23 @@ import {
   StatusResponse,
   User,
   Role,
+  EnableTOTPRequest,
+  EnableTOTPResponse,
+  VerifyTOTPRequest,
+  VerifyTOTPResponse,
+  DisableTOTPRequest,
+  DisableTOTPResponse,
 } from '../proto/auth_pb';
 import * as redis from 'redis';
-import { BCRYPT_ROUNDS, JWT_SECRET, REDIS } from '../config';
+import { BCRYPT_ROUNDS, JWT_SECRET, REDIS, S3Config } from '../config';
 import { validatePassword, validateUsername } from '../helpers/validator';
 import bycrypt from 'bcrypt';
 import speakeasy from 'speakeasy';
 import db from './db';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3Client } from './s3-storage/base-client';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { getAvatarUrl } from '../helpers/s3-helper';
 
 // TODO Export
 const redisClient = redis.createClient({
@@ -81,6 +91,7 @@ setInterval(function () {
 
 export class AuthServer implements IAuthServiceServer {
   [name: string]: import('@grpc/grpc-js').UntypedHandleCall;
+
   async login(
     call: ServerUnaryCall<LoginRequest, DefaultAuthResponse>,
     callback: sendUnaryData<DefaultAuthResponse>
@@ -237,12 +248,224 @@ export class AuthServer implements IAuthServiceServer {
     createAndSendTokens(callback, userId);
   }
 
+  async enableTOTP(
+    call: ServerUnaryCall<EnableTOTPRequest, EnableTOTPResponse>,
+    callback: sendUnaryData<EnableTOTPResponse>
+  ): Promise<void> {
+    AuthServer.checkToken(call.metadata, false, callback).then(
+      async (userReq: User | null) => {
+        const { password } = call.request.toObject();
+
+        // Check if user already has 2FA
+        const userDB = await db.queryReplica(
+          'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userfk = testuser.user.id WHERE testuser.user.id = $1',
+          [userReq?.getId()]
+        );
+        if (userDB.length === 0) {
+          return callback({
+            code: status.NOT_FOUND,
+            message: 'User not found',
+          });
+        }
+        const user = userDB[0];
+
+        // Verify password
+        const match = await bycrypt.compare(password, user.password as string);
+        if (!match) {
+          return callback({
+            code: status.UNAUTHENTICATED,
+            message: 'Invalid password',
+          });
+        }
+        if (user.secretbase32 && user.verified) {
+          return callback({
+            code: status.ALREADY_EXISTS,
+            message: 'User already has 2FA enabled',
+          });
+        } else if (user.secretbase32 && !user.verified) {
+          console.log(
+            'User has 2FA but not verified - deleting and re-creating'
+          );
+          await db.queryPrimary(
+            'DELETE FROM testuser.user_2fa WHERE userfk = $1',
+
+            [user.id]
+          );
+        }
+
+        const MFA_Issuer = process.env.MFA_ISSUER || 'MyApp';
+        const secret = speakeasy.generateSecret({
+          otpauth_url: true,
+          name: MFA_Issuer + ' (' + user.username + ')',
+        });
+        const url = secret.otpauth_url;
+        const secretbase32 = secret.base32;
+        const dbResult = await db.queryPrimary(
+          'INSERT INTO testuser.user_2fa (userfk, secretbase32) VALUES ($1, $2)',
+          [user.id, secretbase32]
+        );
+        if (!dbResult) {
+          return callback({
+            code: status.INTERNAL,
+            message: 'Something went wrong',
+          });
+          // sendResponse.error(res);
+          // return;
+        }
+        const enableTOTPResponse = new EnableTOTPResponse();
+        enableTOTPResponse.setUrl(url);
+        enableTOTPResponse.setSecret(secretbase32);
+        callback(null, enableTOTPResponse);
+        // sendResponse.success(res, {
+        //   url,
+        //   secretbase32,
+        // });
+      }
+    );
+  }
+
+  async verifyTOTP(
+    call: ServerUnaryCall<VerifyTOTPRequest, VerifyTOTPResponse>,
+    callback: sendUnaryData<VerifyTOTPResponse>
+  ): Promise<void> {
+    AuthServer.checkToken(call.metadata, false, callback).then(
+      async (userReq: User | null) => {
+        const { totpcode } = call.request.toObject();
+        if (!totpcode || totpcode.length === 0 || totpcode.length > 6) {
+          return callback({
+            code: status.INVALID_ARGUMENT,
+            message: 'Invalid TOTP code',
+          });
+        }
+        // Check if user already has 2FA
+
+        const userDB = (await db.queryReplica(
+          'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE testuser.user.id = $1',
+          [userReq?.getId()]
+        )) as any[];
+        if (userDB.length === 0) {
+          return callback({
+            code: status.NOT_FOUND,
+            message: 'User not found',
+          });
+        }
+        // user = user[0];
+        const user = userDB[0];
+        if (!user.secretbase32) {
+          return callback({
+            code: status.NOT_FOUND,
+            message: 'User does not have 2FA enabled',
+          });
+        }
+        if (user.verified) {
+          return callback({
+            code: status.ALREADY_EXISTS,
+            message: 'User already has 2FA enabled',
+          });
+        }
+        const verified = speakeasy.totp.verify({
+          secret: user.secretbase32,
+          encoding: 'base32',
+          token: totpcode,
+        });
+        if (!verified) {
+          return callback({
+            code: status.UNAUTHENTICATED,
+            message: 'Invalid TOTP code',
+          });
+        }
+        const dbResult = await db.queryPrimary(
+          'UPDATE testuser.user_2fa SET verified = true WHERE userFk = $1',
+          [user.id]
+        );
+        if (!dbResult) {
+          return callback({
+            code: status.INTERNAL,
+            message: 'Something went wrong',
+          });
+        }
+        const verifyTOTPResponse = new VerifyTOTPResponse();
+        verifyTOTPResponse.setSuccess(true);
+        callback(null, verifyTOTPResponse);
+      }
+    );
+  }
+  async disableTOTP(
+    call: ServerUnaryCall<DisableTOTPRequest, DisableTOTPResponse>,
+    callback: sendUnaryData<DisableTOTPResponse>
+  ): Promise<void> {
+    AuthServer.checkToken(call.metadata, false, callback).then(
+      async (userReq: User | null) => {
+        const { password, totpcode } = call.request.toObject();
+        console.log(call.request.toObject());
+        if (!totpcode || totpcode.length === 0 || totpcode.length > 6) {
+          return callback({
+            code: status.INVALID_ARGUMENT,
+            message: 'Invalid TOTP code',
+          });
+        }
+        // Check if user already has 2FA
+        const userDB = (await db.queryReplica(
+          'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE testuser.user.id = $1',
+          [userReq?.getId()]
+        )) as any[];
+
+        if (userDB.length === 0) {
+          return callback({
+            code: status.NOT_FOUND,
+            message: 'User not found',
+          });
+        }
+        const user = userDB[0];
+        if (!user.secretbase32 || !user.verified) {
+          return callback({
+            code: status.NOT_FOUND,
+            message: 'User does not have 2FA enabled',
+          });
+        }
+        // Verify password
+        const match = await bycrypt.compare(password, user.password as string);
+        if (!match) {
+          return callback({
+            code: status.UNAUTHENTICATED,
+            message: 'Invalid password',
+          });
+        }
+        // Verify 2FA
+        const verified = speakeasy.totp.verify({
+          secret: user.secretbase32,
+          encoding: 'base32',
+          token: totpcode,
+        });
+        if (!verified) {
+          return callback({
+            code: status.UNAUTHENTICATED,
+            message: 'Invalid TOTP code',
+          });
+        }
+        const dbResult = await db.queryPrimary(
+          'DELETE FROM testuser.user_2fa WHERE userfk = $1',
+          [user.id]
+        );
+        if (!dbResult) {
+          return callback({
+            code: status.INTERNAL,
+            message: 'Something went wrong',
+          });
+        }
+        const disableTOTPResponse = new DisableTOTPResponse();
+        disableTOTPResponse.setSuccess(true);
+        callback(null, disableTOTPResponse);
+      }
+    );
+  }
+
   status(
     call: ServerUnaryCall<StatusRequest, StatusResponse>,
     callback: sendUnaryData<StatusResponse>
   ): void {
     AuthServer.checkToken(call.metadata, false, callback).then(
-      (user: User | null) => {
+      async (user: User | null) => {
         if (!user) {
           return callback({
             code: status.NOT_FOUND,
@@ -250,14 +473,39 @@ export class AuthServer implements IAuthServiceServer {
           });
         } else {
           const statusResponse = new StatusResponse();
+
+          // TOTP Status & avatar (SELECT * FROM testuser.avatar WHERE userfk = $1)
+          const userDB = (await db.queryReplica(
+            'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id LEFT JOIN testuser.avatar ON testuser.avatar.userfk = testuser.user.id WHERE testuser.user.id = $1',
+            [user.getId()]
+          )) as any[];
+
+          //   'SELECT * FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userFk = testuser.user.id WHERE testuser.user.id = $1',
+          //   [user.getId()]
+          // )) as unknown as any[];
+          // console.log(userDB);
+          if (userDB.length === 0) {
+            return callback({
+              code: status.NOT_FOUND,
+              message: 'User not found',
+            });
+          }
+          if (userDB[0].generatedpath) {
+            const avatarUrl = await getAvatarUrl(userDB[0].generatedpath);
+            console.log('AVATAR', avatarUrl);
+            user.setAvatar(avatarUrl);
+          }
           statusResponse.setUser(user);
+          const user2FA = userDB[0];
+          if (user2FA.secretbase32 && user2FA.verified) {
+            statusResponse.setTotpenabled(true);
+          } else {
+            statusResponse.setTotpenabled(false);
+          }
           callback(null, statusResponse);
         }
       }
     );
-
-    // console.log('status');
-    // callback(null, new StatusResponse());
   }
 
   static async checkToken(
@@ -331,10 +579,14 @@ async function createAndSendTokens(callback: any, userId: number) {
   delete userDb[0].password;
   const role = userDb[0].rolefk === 2 ? Role.ADMIN : Role.USER;
   console.log('role', role, userDb[0].rolefk); // TODO: Avatar
+
+  const avatarUrl = await getAvatarUrl(userDb[0].generatedpath);
+
   const user = new User()
     .setId(userDb[0].id)
     .setUsername(userDb[0].username)
-    .setRole(role);
+    .setRole(role)
+    .setAvatar(avatarUrl);
   // const user: User = new User(
   //   userDb[0].id,
   //   userDb[0].username,
@@ -349,7 +601,7 @@ async function createAndSendTokens(callback: any, userId: number) {
     JWT_SECRET,
     {
       // 10 minutes
-      expiresIn: 10 * 60,
+      expiresIn: 10,
     }
   );
   // Create Refresh Token

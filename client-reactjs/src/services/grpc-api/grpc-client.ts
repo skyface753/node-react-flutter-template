@@ -3,15 +3,10 @@ import {
   AuthServicePromiseClient,
   DefaultAuthResponse,
   RefreshTokenRequest,
-} from './proto/auth_grpc_web_pb';
+} from '../../proto/auth_grpc_web_pb';
 
-import { AuthContext } from './App';
-import { useContext } from 'react';
-import { storeLogin } from './store/reducer';
-import {
-  AvatarServiceClient,
-  AvatarServicePromiseClient,
-} from './proto/avatar_grpc_web_pb';
+import { storeLogin } from '../../store/reducer';
+import { AvatarServicePromiseClient } from '../../proto/avatar_grpc_web_pb';
 
 class AuthInterceptor {
   intercept(request: any, invoker: any) {
@@ -59,18 +54,15 @@ const options = {
 };
 
 const host: string = 'http://localhost:8000';
-export const grpcAuthService = new AuthServicePromiseClient(
-  host,
-  null,
-  options
-);
+const grpcAuthService = new AuthServicePromiseClient(host, null, options);
 
 // export const grpcAvatarService = new AvatarServiceClient(host, null, options);
-export const grpcAvatarService = new AvatarServicePromiseClient(
-  host,
-  null,
-  options
-);
+const grpcAvatarService = new AvatarServicePromiseClient(host, null, options);
+
+export const grpcApi = {
+  authService: grpcAuthService,
+  avatarService: grpcAvatarService,
+};
 
 export const grpcBaseAuthService = new AuthServicePromiseClient(
   host,

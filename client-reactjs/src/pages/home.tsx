@@ -1,14 +1,15 @@
 import React from 'react';
 // import grpcClient from '../grpc-client';
-import { grpcAuthService } from '../grpc-client';
+// import { grpcAuthService } from '../services/grpc-api/grpc-client';
 import { StatusRequest, StatusResponse } from '../proto/auth_pb';
+import { grpcApi } from '../services/grpc-api/grpc-client';
 export default function Home() {
   const [status, setStatus] = React.useState<StatusResponse>();
 
   React.useEffect(() => {
     const statusRequest = new StatusRequest();
     async function getStatus() {
-      const statusResponse = await grpcAuthService
+      const statusResponse = await grpcApi.authService
         .status(statusRequest, null)
         .catch((error) => {
           console.trace(error);

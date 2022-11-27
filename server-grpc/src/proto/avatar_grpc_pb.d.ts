@@ -11,6 +11,7 @@ import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty
 interface IAvatarServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     requestAUploadURL: IAvatarServiceService_IRequestAUploadURL;
     delete: IAvatarServiceService_IDelete;
+    getAvatarView: IAvatarServiceService_IGetAvatarView;
 }
 
 interface IAvatarServiceService_IRequestAUploadURL extends grpc.MethodDefinition<avatar_pb.UploadUrlRequest, avatar_pb.UploadUrlResponse> {
@@ -31,12 +32,22 @@ interface IAvatarServiceService_IDelete extends grpc.MethodDefinition<google_pro
     responseSerialize: grpc.serialize<google_protobuf_empty_pb.Empty>;
     responseDeserialize: grpc.deserialize<google_protobuf_empty_pb.Empty>;
 }
+interface IAvatarServiceService_IGetAvatarView extends grpc.MethodDefinition<avatar_pb.GetAvatarViewRequest, avatar_pb.GetAvatarViewResponse> {
+    path: "/template.AvatarService/GetAvatarView";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avatar_pb.GetAvatarViewRequest>;
+    requestDeserialize: grpc.deserialize<avatar_pb.GetAvatarViewRequest>;
+    responseSerialize: grpc.serialize<avatar_pb.GetAvatarViewResponse>;
+    responseDeserialize: grpc.deserialize<avatar_pb.GetAvatarViewResponse>;
+}
 
 export const AvatarServiceService: IAvatarServiceService;
 
 export interface IAvatarServiceServer extends grpc.UntypedServiceImplementation {
     requestAUploadURL: grpc.handleUnaryCall<avatar_pb.UploadUrlRequest, avatar_pb.UploadUrlResponse>;
     delete: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, google_protobuf_empty_pb.Empty>;
+    getAvatarView: grpc.handleUnaryCall<avatar_pb.GetAvatarViewRequest, avatar_pb.GetAvatarViewResponse>;
 }
 
 export interface IAvatarServiceClient {
@@ -46,6 +57,9 @@ export interface IAvatarServiceClient {
     delete(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
+    getAvatarView(request: avatar_pb.GetAvatarViewRequest, callback: (error: grpc.ServiceError | null, response: avatar_pb.GetAvatarViewResponse) => void): grpc.ClientUnaryCall;
+    getAvatarView(request: avatar_pb.GetAvatarViewRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avatar_pb.GetAvatarViewResponse) => void): grpc.ClientUnaryCall;
+    getAvatarView(request: avatar_pb.GetAvatarViewRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avatar_pb.GetAvatarViewResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class AvatarServiceClient extends grpc.Client implements IAvatarServiceClient {
@@ -56,4 +70,7 @@ export class AvatarServiceClient extends grpc.Client implements IAvatarServiceCl
     public delete(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     public delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     public delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
+    public getAvatarView(request: avatar_pb.GetAvatarViewRequest, callback: (error: grpc.ServiceError | null, response: avatar_pb.GetAvatarViewResponse) => void): grpc.ClientUnaryCall;
+    public getAvatarView(request: avatar_pb.GetAvatarViewRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avatar_pb.GetAvatarViewResponse) => void): grpc.ClientUnaryCall;
+    public getAvatarView(request: avatar_pb.GetAvatarViewRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avatar_pb.GetAvatarViewResponse) => void): grpc.ClientUnaryCall;
 }

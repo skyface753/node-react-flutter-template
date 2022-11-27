@@ -1,20 +1,22 @@
 import React, { useContext } from 'react';
 import '../styles/sign-up-and-in.css';
 import { AuthContext } from '../App';
-import { uninterceptedAxiosInstance } from '../services/api';
+// import { uninterceptedAxiosInstance } from '../services/api';
 import { ActionType } from '../store/reducer';
+import { grpcApi, grpcBaseAuthService } from '../services/grpc-api/grpc-client';
+import { DefaultAuthResponse, RegisterRequest } from '../proto/auth_pb';
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 
 export default function Register() {
   const { dispatch } = useContext(AuthContext);
   var lastPage = document.referrer;
-  const [email, setEmail] = React.useState('');
+  const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [error, setError] = React.useState('');
 
   async function register() {
-    if (!email || !password || !confirmPassword) {
+    if (!username || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -36,31 +38,56 @@ export default function Register() {
       setError('Password must be at least 8 characters long');
       return;
     }
-    uninterceptedAxiosInstance
-      .put('auth/register', {
-        email,
-        password,
+    const registerReq = new RegisterRequest();
+    registerReq.setUsername(username);
+    registerReq.setPassword(password);
+    grpcBaseAuthService
+      .register(registerReq, null)
+      .then((response: DefaultAuthResponse) => {
+        console.log(response.toObject());
+        dispatch({
+          type: ActionType.LOGIN,
+          payload: response.toObject(),
+          // payload: {
+          //   user: response.getUser(),
+          //   isLoggedIn: true,
+          //   accessToken: response.getAccessToken(),
+          //   refreshToken: response.getRefreshToken(),
+          //   csrfToken: response.getCsrfToken(),
+          // },
+        });
+        window.location.href = lastPage;
       })
-      .then((res) => {
-        console.log(res);
-        if (res.data.success) {
-          console.log(res.data.data.user);
-          dispatch({
-            type: ActionType.LOGIN,
-            payload: {
-              user: res.data.data.user,
-              isLoggedIn: true,
-            },
-          });
-          window.alert('You have successfully registered!');
-          window.location.href = lastPage;
-        } else {
-          setError(res.data);
-        }
-      })
-      .catch((err) => {
-        setError(err.response.data.data);
+      .catch((error: any) => {
+        setError(error.message);
+        console.log(error);
       });
+
+    // uninterceptedAxiosInstance
+    //   .put('auth/register', {
+    //     email,
+    //     password,
+    //   })
+    //   .then((res) => {
+    //     console.log(res);
+    //     if (res.data.success) {
+    //       console.log(res.data.data.user);
+    //       dispatch({
+    //         type: ActionType.LOGIN,
+    //         payload: {
+    //           user: res.data.data.user,
+    //           isLoggedIn: true,
+    //         },
+    //       });
+    //       window.alert('You have successfully registered!');
+    //       window.location.href = lastPage;
+    //     } else {
+    //       setError(res.data);
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     setError(err.response.data.data);
+    //   });
   }
 
   return (
@@ -71,17 +98,17 @@ export default function Register() {
           <p>Please fill in this form to create an account.</p>
           <hr />
 
-          <label htmlFor='email'>
-            <b>Email</b>
+          <label htmlFor='username'>
+            <b>Username</b>
           </label>
           <input
             type='text'
-            placeholder='Enter Email'
-            name='email'
+            placeholder='Enter Username'
+            name='username'
             required
-            value={email}
+            value={username}
             onChange={(e) => {
-              setEmail(e.target.value);
+              setUsername(e.target.value);
               // TODO: check if email is free
             }}
             onKeyDown={(e) => {

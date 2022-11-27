@@ -17,7 +17,15 @@ message UploadUrlResponse{
     string url = 1;
 }
 
+message GetAvatarViewRequest{
+    int32 userId = 1;
+}
+message GetAvatarViewResponse{
+    string url = 1;
+}
+
 service AvatarService{
     rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
     rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc GetAvatarView(GetAvatarViewRequest) returns (GetAvatarViewResponse);
 }

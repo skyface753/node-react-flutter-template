@@ -1,10 +1,11 @@
 import React from 'react';
-import { grpcAvatarService } from '../../grpc-client';
+// import { grpcAvatarService } from '../../services/grpc-api/grpc-client';
 // import { UploadResponse } from '../../proto/avatar_pb';
-import api from '../../services/api';
+// import api from '../../services/api';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { UploadUrlRequest, UploadUrlResponse } from '../../proto/avatar_pb';
 import axios from 'axios';
+import { grpcApi } from '../../services/grpc-api/grpc-client';
 
 type Props = {
   currentFile: File | undefined;
@@ -60,8 +61,7 @@ export default class AvatarUpload extends React.Component<Props, State> {
       window.alert('Please select a file');
       return;
     }
-
-    grpcAvatarService
+    grpcApi.avatarService
       .requestAUploadURL(
         new UploadUrlRequest().setFilename(currentFile!.name),
         null

@@ -1,8 +1,15 @@
 import VerificationInput from 'react-verification-input';
 import React from 'react';
-import api from '../../services/api';
+// import api from '../../services/api';
 import QRCode from 'react-qr-code';
 import { AxiosResponse } from 'axios';
+import { grpcApi } from '../../services/grpc-api/grpc-client';
+import {
+  EnableTOTPRequest,
+  EnableTOTPResponse,
+  VerifyTOTPRequest,
+  VerifyTOTPResponse,
+} from '../../proto/auth_pb';
 
 var empty2FAData = {
   url: '',
@@ -27,18 +34,30 @@ export default function Enable2FA() {
         />
         <button
           onClick={() => {
-            api
-              .post('/auth/2fa/enable', { password })
-              .then((res: AxiosResponse) => {
-                if (res.data.success) {
-                  setTwoFactorData(res.data.data);
-                } else {
-                  setError(res.data.message);
-                }
+            const enableTotpReq = new EnableTOTPRequest();
+            enableTotpReq.setPassword(password);
+            grpcApi.authService
+              .enableTOTP(enableTotpReq, null)
+              .then((res: EnableTOTPResponse) => {
+                setTwoFactorData({
+                  url: res.getUrl(),
+                  secretbase32: res.getSecret(),
+                });
               })
-              .catch((err: any) => {
-                setError(err.response.data.data);
+              .catch((err) => {
+                setError(err.message);
               });
+            // .post('/auth/2fa/enable', { password })
+            // .then((res: AxiosResponse) => {
+            //   if (res.data.success) {
+            //     setTwoFactorData(res.data.data);
+            //   } else {
+            //     setError(res.data.message);
+            //   }
+            // })
+            // .catch((err: any) => {
+            //   setError(err.response.data.data);
+            // });
           }}
         >
           Enable
@@ -58,21 +77,37 @@ export default function Enable2FA() {
               onChange={(value) => {
                 setTwoFactorCode(value);
                 if (value.length == 6) {
-                  api
-                    .post('/auth/2fa/verify', { password, currentCode: value })
-                    .then((res: AxiosResponse) => {
-                      if (res.data.success) {
-                        window.alert('2FA has been enabled and verified!');
+                  const verifyTOTPReq = new VerifyTOTPRequest();
+                  verifyTOTPReq.setTotpcode(value);
+
+                  grpcApi.authService
+                    .verifyTOTP(verifyTOTPReq, null)
+                    .then((res: VerifyTOTPResponse) => {
+                      if (res.getSuccess()) {
+                        window.alert('2FA has been enabled for your account');
                         window.location.href = '/';
-                      } else {
-                        setTwoFactorError(res.data.message);
-                        setTwoFactorCode('');
                       }
                     })
-                    .catch((err: any) => {
-                      setTwoFactorError(err.response.data.data);
+                    .catch((err) => {
+                      setTwoFactorError(err.message);
                       setTwoFactorCode('');
                     });
+
+                  // api
+                  //   .post('/auth/2fa/verify', { password, currentCode: value })
+                  //   .then((res: AxiosResponse) => {
+                  //     if (res.data.success) {
+                  //       window.alert('2FA has been enabled and verified!');
+                  //       window.location.href = '/';
+                  //     } else {
+                  //       setTwoFactorError(res.data.message);
+                  //       setTwoFactorCode('');
+                  //     }
+                  //   })
+                  //   .catch((err: any) => {
+                  //     setTwoFactorError(err.response.data.data);
+                  //     setTwoFactorCode('');
+                  //   });
                 }
               }}
               length={6}

@@ -126,10 +126,16 @@ async function initDb() {
       'INSERT INTO testuser.user (username, password, roleFk) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
       ['admin', hashedAdminPassword, 2]
     );
+    // await queryPrimary(
+    //     'CREATE TABLE IF NOT EXISTS testuser.avatar (userFk INTEGER REFERENCES testuser.user(id) ON DELETE CASCADE, originalName VARCHAR(255) NOT NULL, generatedPath VARCHAR(255) NOT NULL, type VARCHAR(255) NOT NULL, CONSTRAINT avatar_pk PRIMARY KEY (userFk, generatedPath));',
+    //     []
+    //   );
+    // userfk as primary key
     await queryPrimary(
-      'CREATE TABLE IF NOT EXISTS testuser.avatar (userFk INTEGER REFERENCES testuser.user(id) ON DELETE CASCADE, originalName VARCHAR(255) NOT NULL, generatedPath VARCHAR(255) NOT NULL, type VARCHAR(255) NOT NULL, CONSTRAINT avatar_pk PRIMARY KEY (userFk, generatedPath));',
+      'CREATE TABLE IF NOT EXISTS testuser.avatar (userFk INTEGER REFERENCES testuser.user(id) ON DELETE CASCADE, originalName VARCHAR(255) NOT NULL, generatedPath VARCHAR(255) NOT NULL, type VARCHAR(255) NOT NULL, CONSTRAINT avatar_pk PRIMARY KEY (userFk));',
       []
     );
+
     await queryPrimary(
       'CREATE TABLE IF NOT EXISTS testuser.user_2fa (userFk INTEGER REFERENCES testuser.user(id) ON DELETE CASCADE, secretBase32 VARCHAR(255) NOT NULL, verified BOOLEAN NOT NULL DEFAULT FALSE, CONSTRAINT user_2fa_pk PRIMARY KEY (userFk));',
       []

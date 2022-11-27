@@ -8,8 +8,10 @@ import { AuthContext } from '../../App';
 import { useContext } from 'react';
 import AvatarUpload from './avatarUpload';
 import { ActionType } from '../../store/reducer';
-import { grpcAuthService } from '../../grpc-client';
+// import { grpcAuthService } from '../../services/grpc-api/grpc-client';
 import { StatusRequest, StatusResponse } from '../../proto/auth_pb';
+import { RpcError } from 'grpc-web';
+import { grpcApi } from '../../services/grpc-api/grpc-client';
 
 interface IUserSettings {
   twoFactorEnabled: boolean;
@@ -25,12 +27,12 @@ export default function SettingsPage() {
 
   async function loadUserSettings() {
     try {
-      grpcAuthService
+      grpcApi.authService
         .status(new StatusRequest(), null)
         .then((response: StatusResponse) => {
           console.log(response);
           setUser({
-            twoFactorEnabled: false,
+            twoFactorEnabled: response.getTotpenabled(),
             username: response.getUser()?.getUsername() || '',
             email: response.getUser()?.getUsername() || '',
             // twoFactorEnabled: response.getTwoFactorEnabled(),
@@ -38,8 +40,8 @@ export default function SettingsPage() {
             // email: response.getUser()?.getEmail() || '',
           });
         })
-        .catch((err) => {
-          setError(err);
+        .catch((err: RpcError) => {
+          setError(err.message);
         });
     } catch (err) {
       setError('Error loading user settings');

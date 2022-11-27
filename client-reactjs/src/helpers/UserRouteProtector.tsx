@@ -2,39 +2,25 @@ import { useState, useContext, useEffect } from 'react';
 import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../App';
 import React from 'react';
-import api from '../services/api';
-import { grpcAuthService } from '../grpc-client';
+// import api from '../services/api';
+// import { grpcAuthService } from '../services/grpc-api/grpc-client';
 import { StatusRequest, StatusResponse } from '../proto/auth_pb';
+import { grpcApi } from '../services/grpc-api/grpc-client';
 
 const access = async () => {
   try {
-    const statusResponse = (await grpcAuthService.status(
+    const statusResponse = (await grpcApi.authService.status(
       new StatusRequest(),
       null
     )) as StatusResponse;
     if (statusResponse.getUser() !== null) {
       return true;
     }
+    return false;
   } catch (err) {
     console.log(err);
     return false;
   }
-  //   const response = await api.get('auth/status');
-  //   console.log('After /auth/status');
-  //   if (!response) {
-  //   return false;
-  // }
-  // console.log(response);
-  // if (response.data.success) {
-  //   return true;
-  // } else {
-  //   return false;
-  // }
-  // return await axios.post(
-  //   "http://localhost:5000/access",
-  //   {},
-  //   { headers: { Authorization: `Bearer ${token}` } }
-  // );
 };
 
 export const UserProtectedRoute = () => {

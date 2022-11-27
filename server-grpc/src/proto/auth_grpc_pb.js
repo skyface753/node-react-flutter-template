@@ -16,6 +16,50 @@ function deserialize_template_DefaultAuthResponse(buffer_arg) {
   return auth_pb.DefaultAuthResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_template_DisableTOTPRequest(arg) {
+  if (!(arg instanceof auth_pb.DisableTOTPRequest)) {
+    throw new Error('Expected argument of type template.DisableTOTPRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_DisableTOTPRequest(buffer_arg) {
+  return auth_pb.DisableTOTPRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_template_DisableTOTPResponse(arg) {
+  if (!(arg instanceof auth_pb.DisableTOTPResponse)) {
+    throw new Error('Expected argument of type template.DisableTOTPResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_DisableTOTPResponse(buffer_arg) {
+  return auth_pb.DisableTOTPResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_template_EnableTOTPRequest(arg) {
+  if (!(arg instanceof auth_pb.EnableTOTPRequest)) {
+    throw new Error('Expected argument of type template.EnableTOTPRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_EnableTOTPRequest(buffer_arg) {
+  return auth_pb.EnableTOTPRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_template_EnableTOTPResponse(arg) {
+  if (!(arg instanceof auth_pb.EnableTOTPResponse)) {
+    throw new Error('Expected argument of type template.EnableTOTPResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_EnableTOTPResponse(buffer_arg) {
+  return auth_pb.EnableTOTPResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_template_LoginRequest(arg) {
   if (!(arg instanceof auth_pb.LoginRequest)) {
     throw new Error('Expected argument of type template.LoginRequest');
@@ -93,6 +137,28 @@ function deserialize_template_StatusResponse(buffer_arg) {
   return auth_pb.StatusResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_template_VerifyTOTPRequest(arg) {
+  if (!(arg instanceof auth_pb.VerifyTOTPRequest)) {
+    throw new Error('Expected argument of type template.VerifyTOTPRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_VerifyTOTPRequest(buffer_arg) {
+  return auth_pb.VerifyTOTPRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_template_VerifyTOTPResponse(arg) {
+  if (!(arg instanceof auth_pb.VerifyTOTPResponse)) {
+    throw new Error('Expected argument of type template.VerifyTOTPResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_VerifyTOTPResponse(buffer_arg) {
+  return auth_pb.VerifyTOTPResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 
 var AuthServiceService = exports.AuthServiceService = {
   login: {
@@ -149,6 +215,39 @@ var AuthServiceService = exports.AuthServiceService = {
     requestDeserialize: deserialize_template_StatusRequest,
     responseSerialize: serialize_template_StatusResponse,
     responseDeserialize: deserialize_template_StatusResponse,
+  },
+  disableTOTP: {
+    path: '/template.AuthService/DisableTOTP',
+    requestStream: false,
+    responseStream: false,
+    requestType: auth_pb.DisableTOTPRequest,
+    responseType: auth_pb.DisableTOTPResponse,
+    requestSerialize: serialize_template_DisableTOTPRequest,
+    requestDeserialize: deserialize_template_DisableTOTPRequest,
+    responseSerialize: serialize_template_DisableTOTPResponse,
+    responseDeserialize: deserialize_template_DisableTOTPResponse,
+  },
+  enableTOTP: {
+    path: '/template.AuthService/EnableTOTP',
+    requestStream: false,
+    responseStream: false,
+    requestType: auth_pb.EnableTOTPRequest,
+    responseType: auth_pb.EnableTOTPResponse,
+    requestSerialize: serialize_template_EnableTOTPRequest,
+    requestDeserialize: deserialize_template_EnableTOTPRequest,
+    responseSerialize: serialize_template_EnableTOTPResponse,
+    responseDeserialize: deserialize_template_EnableTOTPResponse,
+  },
+  verifyTOTP: {
+    path: '/template.AuthService/VerifyTOTP',
+    requestStream: false,
+    responseStream: false,
+    requestType: auth_pb.VerifyTOTPRequest,
+    responseType: auth_pb.VerifyTOTPResponse,
+    requestSerialize: serialize_template_VerifyTOTPRequest,
+    requestDeserialize: deserialize_template_VerifyTOTPRequest,
+    responseSerialize: serialize_template_VerifyTOTPResponse,
+    responseDeserialize: deserialize_template_VerifyTOTPResponse,
   },
 };
 

@@ -1,28 +1,45 @@
 import React from 'react';
 import ProfilePictureComponent from '../components/ProfilePicture';
-import api from '../services/api';
+import { StatusRequest, StatusResponse, User } from '../proto/auth_pb';
+import { grpcApi } from '../services/grpc-api/grpc-client';
+// import api from '../services/api';
 
+// interface IAuthStatusState {
+//   success: boolean;
+//   data: {
+//     id: number;
+//     username: string;
+//     email: string;
+//     avatar: string;
+//     roleFk: number;
+//   } | null;
+// }
 interface IAuthStatusState {
   success: boolean;
-  data: {
-    id: number;
-    username: string;
-    email: string;
-    avatar: string;
-    roleFk: number;
-  } | null;
+  user: User.AsObject | null;
 }
 
 export default function StatusPage() {
   const [authStatus, setAuthStatus] = React.useState<IAuthStatusState>({
     success: false,
-    data: null,
+    user: null,
   });
 
   React.useEffect(() => {
-    api.get('auth/status').then((res) => {
-      setAuthStatus(res.data);
+    const statusReq = new StatusRequest();
+    grpcApi.authService.status(statusReq, null).then((res: StatusResponse) => {
+      console.log(res.toObject());
+      setAuthStatus({
+        success: true,
+        user: res.getUser()?.toObject() || null,
+      });
     });
+    // const statusReq = new StatusRequest();
+    // statusReq.s
+    // grpcApi.authService.status()
+    // api.get('auth/status').then((res) => {
+    //   setAuthStatus(res.data);
+    // });
   }, []);
 
   if (!authStatus.success) {
@@ -33,12 +50,14 @@ export default function StatusPage() {
   return (
     <div className='status-container'>
       <h1>Status</h1>
-      <ProfilePictureComponent avatarPath={authStatus.data?.avatar} />
+      <ProfilePictureComponent avatarPath={authStatus.user?.avatar} />
       <p>Success: {authStatus.success ? 'true' : 'false'}</p>
-      <p>Username: {authStatus.data?.username}</p>
-      <p>Email: {authStatus.data?.email}</p>
-
-      <p>Role: {authStatus.data?.roleFk}</p>
+      <p>Username: {authStatus.user?.username}</p>
+      <p>
+        Email: {authStatus.user?.createdAt?.nanos} +{' '}
+        {authStatus.user?.createdAt?.seconds}
+      </p>
+      <p>Role: {authStatus.user?.role}</p>
     </div>
   );
 }

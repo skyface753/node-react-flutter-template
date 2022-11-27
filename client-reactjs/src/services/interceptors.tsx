@@ -62,8 +62,8 @@ const onResponseError = async (error: any) => {
   return Promise.reject(error);
 };
 
-export const setupInterceptorsTo = (axiosInstance: AxiosInstance) => {
-  axiosInstance.interceptors.request.use(onRequest, onRequestError);
-  axiosInstance.interceptors.response.use(onResponse, onResponseError);
-  return axiosInstance;
-};
+// export const setupInterceptorsTo = (axiosInstance: AxiosInstance) => {
+//   axiosInstance.interceptors.request.use(onRequest, onRequestError);
+//   axiosInstance.interceptors.response.use(onResponse, onResponseError);
+//   return axiosInstance;
+// };

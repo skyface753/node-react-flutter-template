@@ -17,8 +17,7 @@ export interface IAction {
     | {
         avatar: string;
       }
-    | {}
-    | any; // Empty object for logout
+    | ActionType.LOGOUT;
 }
 
 export interface IAuthState {
@@ -31,6 +30,7 @@ export interface IAuthState {
 
 export function storeLogin(userAndTokens: DefaultAuthResponse.AsObject) {
   localStorage.setItem('isLoggedIn', JSON.stringify(true));
+  console.log('User to Store: ', userAndTokens.user);
   localStorage.setItem('user', JSON.stringify(userAndTokens.user));
   localStorage.setItem('accessToken', userAndTokens.accessToken);
   localStorage.setItem('refreshToken', userAndTokens.refreshToken);

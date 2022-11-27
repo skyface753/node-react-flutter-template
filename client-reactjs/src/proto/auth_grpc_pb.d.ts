@@ -14,6 +14,9 @@ interface IAuthServiceService extends grpc.ServiceDefinition<grpc.UntypedService
     logout: IAuthServiceService_ILogout;
     register: IAuthServiceService_IRegister;
     status: IAuthServiceService_IStatus;
+    disableTOTP: IAuthServiceService_IDisableTOTP;
+    enableTOTP: IAuthServiceService_IEnableTOTP;
+    verifyTOTP: IAuthServiceService_IVerifyTOTP;
 }
 
 interface IAuthServiceService_ILogin extends grpc.MethodDefinition<auth_pb.LoginRequest, auth_pb.DefaultAuthResponse> {
@@ -61,6 +64,33 @@ interface IAuthServiceService_IStatus extends grpc.MethodDefinition<auth_pb.Stat
     responseSerialize: grpc.serialize<auth_pb.StatusResponse>;
     responseDeserialize: grpc.deserialize<auth_pb.StatusResponse>;
 }
+interface IAuthServiceService_IDisableTOTP extends grpc.MethodDefinition<auth_pb.DisableTOTPRequest, auth_pb.DisableTOTPResponse> {
+    path: "/template.AuthService/DisableTOTP";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<auth_pb.DisableTOTPRequest>;
+    requestDeserialize: grpc.deserialize<auth_pb.DisableTOTPRequest>;
+    responseSerialize: grpc.serialize<auth_pb.DisableTOTPResponse>;
+    responseDeserialize: grpc.deserialize<auth_pb.DisableTOTPResponse>;
+}
+interface IAuthServiceService_IEnableTOTP extends grpc.MethodDefinition<auth_pb.EnableTOTPRequest, auth_pb.EnableTOTPResponse> {
+    path: "/template.AuthService/EnableTOTP";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<auth_pb.EnableTOTPRequest>;
+    requestDeserialize: grpc.deserialize<auth_pb.EnableTOTPRequest>;
+    responseSerialize: grpc.serialize<auth_pb.EnableTOTPResponse>;
+    responseDeserialize: grpc.deserialize<auth_pb.EnableTOTPResponse>;
+}
+interface IAuthServiceService_IVerifyTOTP extends grpc.MethodDefinition<auth_pb.VerifyTOTPRequest, auth_pb.VerifyTOTPResponse> {
+    path: "/template.AuthService/VerifyTOTP";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<auth_pb.VerifyTOTPRequest>;
+    requestDeserialize: grpc.deserialize<auth_pb.VerifyTOTPRequest>;
+    responseSerialize: grpc.serialize<auth_pb.VerifyTOTPResponse>;
+    responseDeserialize: grpc.deserialize<auth_pb.VerifyTOTPResponse>;
+}
 
 export const AuthServiceService: IAuthServiceService;
 
@@ -70,6 +100,9 @@ export interface IAuthServiceServer extends grpc.UntypedServiceImplementation {
     logout: grpc.handleUnaryCall<auth_pb.LogoutRequest, auth_pb.LogoutResponse>;
     register: grpc.handleUnaryCall<auth_pb.RegisterRequest, auth_pb.DefaultAuthResponse>;
     status: grpc.handleUnaryCall<auth_pb.StatusRequest, auth_pb.StatusResponse>;
+    disableTOTP: grpc.handleUnaryCall<auth_pb.DisableTOTPRequest, auth_pb.DisableTOTPResponse>;
+    enableTOTP: grpc.handleUnaryCall<auth_pb.EnableTOTPRequest, auth_pb.EnableTOTPResponse>;
+    verifyTOTP: grpc.handleUnaryCall<auth_pb.VerifyTOTPRequest, auth_pb.VerifyTOTPResponse>;
 }
 
 export interface IAuthServiceClient {
@@ -88,6 +121,15 @@ export interface IAuthServiceClient {
     status(request: auth_pb.StatusRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.StatusResponse) => void): grpc.ClientUnaryCall;
     status(request: auth_pb.StatusRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.StatusResponse) => void): grpc.ClientUnaryCall;
     status(request: auth_pb.StatusRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.StatusResponse) => void): grpc.ClientUnaryCall;
+    disableTOTP(request: auth_pb.DisableTOTPRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.DisableTOTPResponse) => void): grpc.ClientUnaryCall;
+    disableTOTP(request: auth_pb.DisableTOTPRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.DisableTOTPResponse) => void): grpc.ClientUnaryCall;
+    disableTOTP(request: auth_pb.DisableTOTPRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.DisableTOTPResponse) => void): grpc.ClientUnaryCall;
+    enableTOTP(request: auth_pb.EnableTOTPRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.EnableTOTPResponse) => void): grpc.ClientUnaryCall;
+    enableTOTP(request: auth_pb.EnableTOTPRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.EnableTOTPResponse) => void): grpc.ClientUnaryCall;
+    enableTOTP(request: auth_pb.EnableTOTPRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.EnableTOTPResponse) => void): grpc.ClientUnaryCall;
+    verifyTOTP(request: auth_pb.VerifyTOTPRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.VerifyTOTPResponse) => void): grpc.ClientUnaryCall;
+    verifyTOTP(request: auth_pb.VerifyTOTPRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.VerifyTOTPResponse) => void): grpc.ClientUnaryCall;
+    verifyTOTP(request: auth_pb.VerifyTOTPRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.VerifyTOTPResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class AuthServiceClient extends grpc.Client implements IAuthServiceClient {
@@ -107,4 +149,13 @@ export class AuthServiceClient extends grpc.Client implements IAuthServiceClient
     public status(request: auth_pb.StatusRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.StatusResponse) => void): grpc.ClientUnaryCall;
     public status(request: auth_pb.StatusRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.StatusResponse) => void): grpc.ClientUnaryCall;
     public status(request: auth_pb.StatusRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.StatusResponse) => void): grpc.ClientUnaryCall;
+    public disableTOTP(request: auth_pb.DisableTOTPRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.DisableTOTPResponse) => void): grpc.ClientUnaryCall;
+    public disableTOTP(request: auth_pb.DisableTOTPRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.DisableTOTPResponse) => void): grpc.ClientUnaryCall;
+    public disableTOTP(request: auth_pb.DisableTOTPRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.DisableTOTPResponse) => void): grpc.ClientUnaryCall;
+    public enableTOTP(request: auth_pb.EnableTOTPRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.EnableTOTPResponse) => void): grpc.ClientUnaryCall;
+    public enableTOTP(request: auth_pb.EnableTOTPRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.EnableTOTPResponse) => void): grpc.ClientUnaryCall;
+    public enableTOTP(request: auth_pb.EnableTOTPRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.EnableTOTPResponse) => void): grpc.ClientUnaryCall;
+    public verifyTOTP(request: auth_pb.VerifyTOTPRequest, callback: (error: grpc.ServiceError | null, response: auth_pb.VerifyTOTPResponse) => void): grpc.ClientUnaryCall;
+    public verifyTOTP(request: auth_pb.VerifyTOTPRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: auth_pb.VerifyTOTPResponse) => void): grpc.ClientUnaryCall;
+    public verifyTOTP(request: auth_pb.VerifyTOTPRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: auth_pb.VerifyTOTPResponse) => void): grpc.ClientUnaryCall;
 }

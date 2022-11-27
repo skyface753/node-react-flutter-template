@@ -16,8 +16,9 @@ message User{
     int32 id = 1;
     string username = 2;
     Role role = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
+    string avatar = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
 }
 
 message LoginRequest{
@@ -58,13 +59,7 @@ message RegisterRequest{
 }
 
 
-message StatusRequest{
-    string access_token = 1;
-}
 
-message StatusResponse{
-    User user = 1;
-}
 
 message DefaultAuthResponse{
     string access_token = 1;
@@ -73,10 +68,50 @@ message DefaultAuthResponse{
     User user = 4;
 }
 
+// TOTP
+
+message DisableTOTPRequest{
+    string password = 1;
+    string totpCode = 2;
+}
+
+message DisableTOTPResponse{
+    bool success = 1;
+}
+
+message EnableTOTPRequest{
+    string password = 1;
+}
+
+message EnableTOTPResponse{
+    string secret = 1;
+    string url = 2; // QR code url
+}
+
+message VerifyTOTPRequest{
+    string totpCode = 1;
+}
+
+message VerifyTOTPResponse{
+    bool success = 1;
+}
+
+message StatusRequest{
+    string access_token = 1;
+}
+
+message StatusResponse{
+    User user = 1;
+    bool totpEnabled = 2;   
+}
+
 service AuthService{
     rpc Login(LoginRequest) returns (DefaultAuthResponse);
     rpc RefreshToken(RefreshTokenRequest) returns (DefaultAuthResponse);
     rpc Logout(LogoutRequest) returns (LogoutResponse);
     rpc Register(RegisterRequest) returns (DefaultAuthResponse);
     rpc Status(StatusRequest) returns (StatusResponse);
+    rpc DisableTOTP(DisableTOTPRequest) returns (DisableTOTPResponse);
+    rpc EnableTOTP(EnableTOTPRequest) returns (EnableTOTPResponse);
+    rpc VerifyTOTP(VerifyTOTPRequest) returns (VerifyTOTPResponse);
 }

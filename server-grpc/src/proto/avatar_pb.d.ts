@@ -72,3 +72,43 @@ export namespace UploadUrlResponse {
         url: string,
     }
 }
+
+export class GetAvatarViewRequest extends jspb.Message { 
+    getUserid(): number;
+    setUserid(value: number): GetAvatarViewRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetAvatarViewRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: GetAvatarViewRequest): GetAvatarViewRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetAvatarViewRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetAvatarViewRequest;
+    static deserializeBinaryFromReader(message: GetAvatarViewRequest, reader: jspb.BinaryReader): GetAvatarViewRequest;
+}
+
+export namespace GetAvatarViewRequest {
+    export type AsObject = {
+        userid: number,
+    }
+}
+
+export class GetAvatarViewResponse extends jspb.Message { 
+    getUrl(): string;
+    setUrl(value: string): GetAvatarViewResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetAvatarViewResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: GetAvatarViewResponse): GetAvatarViewResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetAvatarViewResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetAvatarViewResponse;
+    static deserializeBinaryFromReader(message: GetAvatarViewResponse, reader: jspb.BinaryReader): GetAvatarViewResponse;
+}
+
+export namespace GetAvatarViewResponse {
+    export type AsObject = {
+        url: string,
+    }
+}
