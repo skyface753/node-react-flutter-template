@@ -2,10 +2,18 @@
 
 ## Contains
 
-- NodeJs (server)
-- ReactJs (client)
-- Flutter (client)
-- Database (PostgreSQL Cluster)
+### HTTP (JSON API)
+
+- [x] NodeJs (server)
+- [x] ReactJs (client)
+- [x] Flutter (client)
+- [x] Database (PostgreSQL Cluster)
+
+### GRPC (gRPC API)
+
+- [x] NodeJs (server)
+- [x] ReactJs (client)
+- [] Flutter (client)
 
 ## First steps
 
@@ -37,7 +45,8 @@
 
 ## Volumes
 
-Server
+### Server
+
 /app/files/avatars/
 
 ## TODO

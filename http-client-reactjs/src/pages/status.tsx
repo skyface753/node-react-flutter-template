@@ -7,9 +7,8 @@ interface IAuthStatusState {
   data: {
     id: number;
     username: string;
-    email: string;
     avatar: string;
-    roleFk: number;
+    rolefk: number;
   } | null;
 }
 
@@ -36,9 +35,8 @@ export default function StatusPage() {
       <ProfilePictureComponent avatarPath={authStatus.data?.avatar} />
       <p>Success: {authStatus.success ? 'true' : 'false'}</p>
       <p>Username: {authStatus.data?.username}</p>
-      <p>Email: {authStatus.data?.email}</p>
 
-      <p>Role: {authStatus.data?.roleFk}</p>
+      <p>Role: {authStatus.data?.rolefk}</p>
     </div>
   );
 }

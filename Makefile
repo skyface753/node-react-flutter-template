@@ -1,25 +1,36 @@
 PROJECT = "Template Project"
 NAME = "template"
-clientFolder = "client-reactjs"
-serverFolder = "server-nodejs"
 
+# GRPC Definitions
+grpcClientDir = "grpc-client-reactjs"
+grpcServerDir = "grpc-server-nodejs"
 
-install-depenencies:
+# HTTP Definitions
+httpClientDir = "http-client-reactjs"
+httpServerDir = "http-server-nodejs"
+
+# Docker Definitions
+dockerUser = "skyface753"
+
+# Install dependencies
+install:
 	@echo "Installing dependencies..."
-	@cd $(clientFolder) && npm install
-	@cd $(serverFolder) && npm install
+	@cd $(grpcClientDir) && npm install
+	@cd $(grpcServerDir) && npm install
+	@cd $(httpClientDir) && npm install
+	@cd $(httpServerDir) && npm install
 
+# Build frontend Docker
 build-frontend:
-	@echo "Building frontend..."
-	@cd $(clientFolder) && docker build -t skyface753/$(NAME)-frontend:latest .
+	@echo "Building frontend Docker..."
+	@cd $(grpcClientDir) && docker build -t $(dockerUser)/$(NAME)-grpc-client:latest .
+	@cd $(httpClientDir) && docker build -t $(dockerUser)/$(NAME)-http-client:latest .
 
-
+# Build backend Docker
 build-backend:
-	@echo "Building backend..."
-	@cd $(serverFolder) && docker build -t skyface753/$(NAME)-backend:latest .
+	@echo "Building backend Docker..."
+	@cd $(grpcServerDir) && docker build -t $(dockerUser)/$(NAME)-grpc-server:latest .
+	@cd $(httpServerDir) && docker build -t $(dockerUser)/$(NAME)-http-server:latest .
 
-docker-up:
-	@echo "Starting docker containers..."
-	@docker-compose up -d --build --remove-orphans
-
+# Build all Docker
 build: build-frontend build-backend

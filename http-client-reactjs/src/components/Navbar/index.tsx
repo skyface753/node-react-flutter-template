@@ -110,10 +110,10 @@ export default function Navbar() {
                   <a
                     href='#'
                     onClick={async () => {
-                      const currentRefreshToken = JSON.parse(
-                        localStorage.getItem('refreshToken') || '{}'
-                      );
                       try {
+                        const currentRefreshToken = JSON.parse(
+                          localStorage.getItem('refreshToken') || '{}'
+                        );
                         await api
                           .post('/auth/logout', {
                             refreshToken: currentRefreshToken, // To delete from redis
