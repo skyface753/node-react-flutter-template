@@ -1,5 +1,8 @@
 server-nodejs/node_modules
 data/db
-server-nodejs/files/avatars/**
-server-nodejs/dist/**
-server-nodejs/build/**
+server-nodejs-grpc/files/avatars/**
+server-nodejs-grpc/dist/**
+server-nodejs-grpc/build/**
+server-nodejs-http/files/avatars/**
+server-nodejs-http/dist/**
+server-nodejs-http/build/**
