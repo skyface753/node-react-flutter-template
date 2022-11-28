@@ -30,6 +30,7 @@
     "start": "react-scripts start",
     "proto:build": "sh ./scripts/build-protos.sh",
     "proto:clear": "rm -rf ./src/proto",
+    "proto": "npm run proto:clear && npm run proto:build",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

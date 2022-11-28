@@ -4,18 +4,23 @@
 
 ### HTTP (JSON API)
 
-- [x] NodeJs (server)
-- [x] ReactJs (client)
+- [x] NodeJs (server) with Express, Typescript and plain SQL
+- [x] ReactJs (client) with Typescript and Axios
 - [x] Flutter (client)
 - [x] Database (PostgreSQL Cluster)
 
 ### GRPC (gRPC API)
 
-- [x] NodeJs (server)
-- [x] ReactJs (client)
-- [] Flutter (client)
+- [x] NodeJs (server) with Typescript, gRPC and prisma (ORM)
+- [x] ReactJs (client) with Typescript and gRPC
+- [] Flutter (client) (not yet)
 
 ## First steps
+
+### GRPC Info
+
+- server and client uses the .proto files from grpc-proto (`npm run proto`)
+- server uses prisma to generate the ORM (`npm run prisma`)
 
 1. Use this repository as template
 2. (optional) Change environment Variables of the database and the the server in docker-compose.yml

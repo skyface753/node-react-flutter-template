@@ -15,5 +15,5 @@ yarn run grpc_tools_node_protoc \
     --grpc_out=grpc_js:${PROTO_DEST} \
     --descriptor_set_out=${PROTO_DEST}/descriptor_set.bin \
     --include_imports \
-    -I ../proto \
-    ../proto/*.proto
+    -I ../grpc-proto \
+    ../grpc-proto/*.proto

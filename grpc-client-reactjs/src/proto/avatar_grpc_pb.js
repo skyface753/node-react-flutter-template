@@ -16,6 +16,28 @@ function deserialize_google_protobuf_Empty(buffer_arg) {
   return google_protobuf_empty_pb.Empty.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_template_GetAvatarViewRequest(arg) {
+  if (!(arg instanceof avatar_pb.GetAvatarViewRequest)) {
+    throw new Error('Expected argument of type template.GetAvatarViewRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_GetAvatarViewRequest(buffer_arg) {
+  return avatar_pb.GetAvatarViewRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_template_GetAvatarViewResponse(arg) {
+  if (!(arg instanceof avatar_pb.GetAvatarViewResponse)) {
+    throw new Error('Expected argument of type template.GetAvatarViewResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_GetAvatarViewResponse(buffer_arg) {
+  return avatar_pb.GetAvatarViewResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_template_UploadUrlRequest(arg) {
   if (!(arg instanceof avatar_pb.UploadUrlRequest)) {
     throw new Error('Expected argument of type template.UploadUrlRequest');
@@ -61,6 +83,17 @@ var AvatarServiceService = exports.AvatarServiceService = {
     requestDeserialize: deserialize_google_protobuf_Empty,
     responseSerialize: serialize_google_protobuf_Empty,
     responseDeserialize: deserialize_google_protobuf_Empty,
+  },
+  getAvatarView: {
+    path: '/template.AvatarService/GetAvatarView',
+    requestStream: false,
+    responseStream: false,
+    requestType: avatar_pb.GetAvatarViewRequest,
+    responseType: avatar_pb.GetAvatarViewResponse,
+    requestSerialize: serialize_template_GetAvatarViewRequest,
+    requestDeserialize: deserialize_template_GetAvatarViewRequest,
+    responseSerialize: serialize_template_GetAvatarViewResponse,
+    responseDeserialize: deserialize_template_GetAvatarViewResponse,
   },
 };
 

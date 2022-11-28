@@ -198,5 +198,66 @@ proto.template.AvatarServicePromiseClient.prototype.delete =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.template.GetAvatarViewRequest,
+ *   !proto.template.GetAvatarViewResponse>}
+ */
+const methodDescriptor_AvatarService_GetAvatarView = new grpc.web.MethodDescriptor(
+  '/template.AvatarService/GetAvatarView',
+  grpc.web.MethodType.UNARY,
+  proto.template.GetAvatarViewRequest,
+  proto.template.GetAvatarViewResponse,
+  /**
+   * @param {!proto.template.GetAvatarViewRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.template.GetAvatarViewResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.template.GetAvatarViewRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.template.GetAvatarViewResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.template.GetAvatarViewResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.template.AvatarServiceClient.prototype.getAvatarView =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/template.AvatarService/GetAvatarView',
+      request,
+      metadata || {},
+      methodDescriptor_AvatarService_GetAvatarView,
+      callback);
+};
+
+
+/**
+ * @param {!proto.template.GetAvatarViewRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.template.GetAvatarViewResponse>}
+ *     Promise that resolves to the response
+ */
+proto.template.AvatarServicePromiseClient.prototype.getAvatarView =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/template.AvatarService/GetAvatarView',
+      request,
+      metadata || {},
+      methodDescriptor_AvatarService_GetAvatarView);
+};
+
+
 module.exports = proto.template;
 
