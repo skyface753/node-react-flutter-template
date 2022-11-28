@@ -2,18 +2,32 @@
 
 ## Contains
 
-- NodeJs (server)
-- ReactJs (client)
-- Flutter (client)
-- Database (PostgreSQL Cluster)
+### HTTP (REST API)
+
+- [x] NodeJs (server) with Express, Typescript and plain SQL
+- [x] ReactJs (client) with Typescript and Axios
+- [x] Flutter (client)
+- [x] Database (PostgreSQL Cluster)
+
+### GRPC (gRPC API)
+
+- [x] NodeJs (server) with Typescript, gRPC and prisma (ORM)
+- [x] ReactJs (client) with Typescript and gRPC
+- [] Flutter (client) (not yet)
 
 ## First steps
+
+### GRPC
+
+- server and client uses the .proto files from grpc-proto (`npm run proto` in both directories)
+- server uses prisma to generate the ORM (`npm run prisma`)
+- - .env file is used to configure the database connection (see .env.example)
 
 1. Use this repository as template
 2. (optional) Change environment Variables of the database and the the server in docker-compose.yml
 3. Change the name of the project in package.json (server and clients)
 4. Change the name of the project in pubspec.yaml (client-flutter)
-5. Follow the steps in the README of the [server](server-nodejs/README.md) and [client-reactjs](client-reactjs/README.md) and [client-flutter](client-flutter/README.md)
+5. Follow the steps in the README of the [server](http-server-nodejs/README.md) and [client-reactjs](http-client-reactjs/README.md) and [client-flutter](client-flutter/README.md)
 
 ## Environment variables
 
@@ -37,7 +51,8 @@
 
 ## Volumes
 
-Server
+### Server
+
 /app/files/avatars/
 
 ## TODO

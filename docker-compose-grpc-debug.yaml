@@ -1,0 +1,50 @@
+services:
+  primary:
+    image: postgres
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=testdb
+    volumes:
+      - grpc-pg-vol-debug:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - '5050:80'
+    volumes:
+      - grpc-pgadmin-data:/var/lib/pgadmin
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+  minio:
+    image: docker.io/bitnami/minio:2022
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      - MINIO_ROOT_USER=minio-root-user
+      - MINIO_ROOT_PASSWORD=minio-root-password
+    volumes:
+      - grpc-minio_data:/data
+  envoy:
+    build:
+      context: ./grpc-envoy-proxy
+      dockerfile: Dockerfile.macos
+    ports:
+      - 8000:8000
+
+volumes:
+  grpc-pg-vol-debug:
+  grpc-pgadmin-data:
+  grpc-minio_data:
