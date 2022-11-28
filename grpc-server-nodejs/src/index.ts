@@ -1,6 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
 import { addReflection } from 'grpc-server-reflection';
-import * as timestamp from 'google-protobuf/google/protobuf/timestamp_pb';
 import { AuthServiceService } from './proto/auth_grpc_pb';
 import { AuthServer } from './services/auth_service';
 import { AvatarServer } from './services/avatar_service';

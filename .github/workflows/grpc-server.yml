@@ -1,14 +1,13 @@
-name: Node.js CI
+name: Node GRPC Server CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -22,8 +21,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
-        working-directory: server-nodejs
+        working-directory: grpc-server-nodejs
       - run: npm run build --if-present
-        working-directory: server-nodejs
+        working-directory: grpc-server-nodejs
       - run: npm run lint
-        working-directory: server-nodejs
+        working-directory: grpc-server-nodejs

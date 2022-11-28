@@ -23,15 +23,15 @@ const pgConfigPrimary: PoolConfig = {
   password: dbConf.password,
   database: dbConf.database,
 };
-const pgConfigReplica: PoolConfig = {
-  host: dbConf.replicaHost,
-  port: dbConf.replicaPort,
-  user: dbConf.user,
-  password: dbConf.password,
-  database: dbConf.database,
-};
+// const pgConfigReplica: PoolConfig = {
+//   host: dbConf.replicaHost,
+//   port: dbConf.replicaPort,
+//   user: dbConf.user,
+//   password: dbConf.password,
+//   database: dbConf.database,
+// };
 const poolPrimay = new Pool(pgConfigPrimary);
-const poolReplica = new Pool(pgConfigReplica);
+// const poolReplica = new Pool(pgConfigReplica);
 
 /**
  * Primary query

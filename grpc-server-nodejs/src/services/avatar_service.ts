@@ -1,12 +1,5 @@
-import {
-  handleUnaryCall,
-  sendUnaryData,
-  ServerReadableStream,
-  ServerUnaryCall,
-  status,
-} from '@grpc/grpc-js';
+import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
-import { FilesHelper } from '../helpers/files';
 import { IAvatarServiceServer } from '../proto/avatar_grpc_pb';
 import {
   GetAvatarViewRequest,
@@ -14,12 +7,9 @@ import {
   UploadUrlRequest,
   UploadUrlResponse,
 } from '../proto/avatar_pb';
-import { READABLE_STREAM_EVENT } from '../types/stream';
-// import { S3Connect } from './s3-storage/connector';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './s3-storage/base-client';
 import {
-  CreateBucketCommand,
   PutObjectCommand,
   PutObjectCommandInput,
   GetObjectCommand,
@@ -27,19 +17,10 @@ import {
 import { AuthServer } from './auth_service';
 import { User } from '../proto/auth_pb';
 
-import db, { prismaClient } from './db';
+import { prismaClient } from './db';
 import { S3Config, ttl } from '../config';
 import { getAvatarKey } from '../helpers/s3-helper';
 import { Prisma } from '@prisma/client';
-
-// async function testPrisma() {
-//   setTimeout(async () => {
-//     const allUsers = await prisma.user.findMany();
-
-//     console.log(allUsers);
-//   }, 1000);
-// }
-// testPrisma();
 
 export class AvatarServer implements IAvatarServiceServer {
   [name: string]: import('@grpc/grpc-js').UntypedHandleCall;
@@ -89,6 +70,7 @@ export class AvatarServer implements IAvatarServiceServer {
           .create({
             data: {
               originalname: filename,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               generatedpath: params.Key!,
               type: 'image/' + fileExtension,
               userfk: user.getId(),
@@ -103,6 +85,7 @@ export class AvatarServer implements IAvatarServiceServer {
                   },
                   data: {
                     originalname: filename,
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     generatedpath: params.Key!,
                     type: 'image/' + fileExtension,
                   },
@@ -110,16 +93,6 @@ export class AvatarServer implements IAvatarServiceServer {
               }
             }
           });
-
-        // await db.queryPrimary(
-        //   `INSERT INTO testuser.avatar (originalname, generatedpath, type, userfk) VALUES ($1, $2, $3, $4) ON CONFLICT (userfk) DO UPDATE SET originalname = $1, generatedpath = $2, type = $3`,
-        //   [
-        //     filename,
-        //     params.Key,
-        //     'image/' + fileExtension,
-        //     user.getId().toString(),
-        //   ]
-        // );
         callback(null, res);
       }
     );

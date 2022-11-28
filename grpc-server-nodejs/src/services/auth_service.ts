@@ -1,5 +1,4 @@
 import {
-  handleUnaryCall,
   Metadata,
   sendUnaryData,
   ServerUnaryCall,
@@ -28,14 +27,11 @@ import {
   DisableTOTPResponse,
 } from '../proto/auth_pb';
 import * as redis from 'redis';
-import { BCRYPT_ROUNDS, JWT_SECRET, REDIS, S3Config, ttl } from '../config';
+import { BCRYPT_ROUNDS, JWT_SECRET, REDIS, ttl } from '../config';
 import { validatePassword, validateUsername } from '../helpers/validator';
 import bycrypt from 'bcrypt';
 import speakeasy from 'speakeasy';
-import db, { prismaClient } from './db';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { s3Client } from './s3-storage/base-client';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { prismaClient } from './db';
 import { getAvatarUrl } from '../helpers/s3-helper';
 
 // TODO Export
@@ -641,7 +637,8 @@ export class AuthServer implements IAuthServiceServer {
 
   static async checkToken(
     metadata: Metadata,
-    checkForAdmin: boolean = false,
+    checkForAdmin = false,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: any
   ): Promise<User | null> {
     try {
@@ -694,6 +691,7 @@ export class AuthServer implements IAuthServiceServer {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function createAndSendTokens(callback: any, userId: number) {
   if (!userId) {
     return callback(new Error('Invalid user - Server error'), null);
