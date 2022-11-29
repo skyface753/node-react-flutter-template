@@ -4,6 +4,8 @@ package template;
 
 import "google/protobuf/empty.proto";
 
+option go_package = "pb/template";
+
 message Avatar{
     string generatedPath = 1;
     string originalName = 2;

@@ -5,6 +5,7 @@ package template;
 import "google/protobuf/timestamp.proto";
 // import "google/protobuf/empty.proto";
 
+option go_package = "pb/template";
 
 
 enum Role{
