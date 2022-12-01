@@ -1,8 +1,8 @@
 import chai from 'chai';
 import { describe } from 'mocha';
 import { expect } from 'chai';
-import db from '../services/db';
-import server from '../index';
+import { prismaClient } from '../services/db';
+// import server from '../index';
 import client from './client';
 import {
   LoginRequest,
@@ -14,11 +14,11 @@ import {
 
 chai.should();
 
-describe('Server', () => {
-  it('should be running', () => {
-    expect(server).to.be.an('object');
-  });
-});
+// describe('Server', () => {
+//   it('should be running', () => {
+//     expect(server).to.be.an('object');
+//   });
+// });
 
 describe('Auth Service', () => {
   describe('Login', () => {
@@ -97,12 +97,15 @@ describe('Auth Service', () => {
     const username = 'test';
     const password = 'Test123sadw@';
     after((done) => {
-      db.queryPrimary(
-        'DELETE FROM testuser.user WHERE LOWER(username) = LOWER($1)',
-        [username]
-      ).then(() => {
-        done();
-      });
+      prismaClient.user
+        .delete({
+          where: {
+            username,
+          },
+        })
+        .then(() => {
+          done();
+        });
     });
     it('should register', (done) => {
       const registerRequest = new RegisterRequest();

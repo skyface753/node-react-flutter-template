@@ -157,7 +157,7 @@ export class AuthServer implements IAuthServiceServer {
       onLoginSuccess(remoteIp);
       // createAndSendTokens(res, user.id);
       const loginResponse = new DefaultAuthResponse();
-      const role = user.rolefk === 2 ? Role.ADMIN : Role.USER;
+      const role = user.rolefk === 1 ? Role.ADMIN : Role.USER;
       const thisUser = new User()
         .setId(user.id)
         .setUsername(user.username)

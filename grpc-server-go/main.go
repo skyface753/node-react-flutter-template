@@ -3,10 +3,13 @@ package main
 import (
 	"log"
 	"net"
+	db "template/server/helper/db"
 	pb "template/server/pb/template"
 
 	dbPrisma "template/server/prisma/db"
 	services "template/server/services"
+
+	"template/server/helper/redis"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -27,11 +30,15 @@ const (
 
 func main() {
 	godotenv.Load()
+
 	listener, err := net.Listen("tcp", "localhost"+port)
 	if err != nil {
 		panic(err)
 	}
 	log.Printf("Server listening on port %v", port)
+	db.InitDB()
+	redis.InitRedis()
+	defer db.CloseDB()
 
 	prismaClient = dbPrisma.NewClient()
 	if err := prismaClient.Prisma.Connect(); err != nil {

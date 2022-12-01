@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"log"
+	db "template/server/helper/db"
 	pb "template/server/pb/template"
 	dbPrisma "template/server/prisma/db"
 )
@@ -20,6 +21,28 @@ func NewAvatarServer(prismaClient *dbPrisma.PrismaClient) *avatarServer {
 }
 
 func (s *avatarServer) GetAvatarView(ctx context.Context, in *pb.GetAvatarViewRequest) (*pb.GetAvatarViewResponse, error) {
+	rows, err := db.DB.Query("SELECT id, username FROM testuser.user")
+	if err != nil {
+		log.Printf("Error: %v", err)
+	}
+	defer rows.Close()
+	var (
+		id int
+		username string
+	)
+	for rows.Next() {
+		err := rows.Scan(&id, &username)
+		if err != nil {
+			log.Printf("Error: %v", err)
+		}
+		log.Printf("ID: %v", id)
+		log.Printf("Username: %v", username)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Printf("Error: %v", err)
+	}
+	
 
 	avatar, err := s.prismaClient.Avatar.FindMany(
 		dbPrisma.Avatar.Userfk.Equals(int(in.UserId)),
@@ -44,3 +67,5 @@ func (s *avatarServer) GetAvatarView(ctx context.Context, in *pb.GetAvatarViewRe
 		Url: "url",
 	}, nil
 }
+
+
