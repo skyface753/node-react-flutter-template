@@ -4,6 +4,7 @@ package template;
 
 import "google/protobuf/timestamp.proto";
 // import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 option go_package = "pb/template";
 
@@ -107,7 +108,12 @@ message StatusResponse{
 }
 
 service AuthService{
-    rpc Login(LoginRequest) returns (DefaultAuthResponse);
+    rpc Login(LoginRequest) returns (DefaultAuthResponse) {
+        option (google.api.http) = {
+            post: "/login/{username}"
+            body: "*"
+        };
+    }
     rpc RefreshToken(RefreshTokenRequest) returns (DefaultAuthResponse);
     rpc Logout(LogoutRequest) returns (LogoutResponse);
     rpc Register(RegisterRequest) returns (DefaultAuthResponse);

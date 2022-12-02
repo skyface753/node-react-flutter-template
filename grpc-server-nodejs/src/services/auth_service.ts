@@ -155,13 +155,14 @@ export class AuthServer implements IAuthServiceServer {
       }
 
       onLoginSuccess(remoteIp);
+
       // createAndSendTokens(res, user.id);
       const loginResponse = new DefaultAuthResponse();
-      const role = user.rolefk === 1 ? Role.ADMIN : Role.USER;
+      // const role = user.rolefk === 1 ? Role.ADMIN : Role.USER;
       const thisUser = new User()
         .setId(user.id)
         .setUsername(user.username)
-        .setRole(role);
+        .setRole(user.rolefk);
       loginResponse.setUser(thisUser);
       createAndSendTokens(callback, user.id);
     } catch (err) {
@@ -274,7 +275,7 @@ export class AuthServer implements IAuthServiceServer {
         data: {
           username: username,
           password: hashedPassword,
-          rolefk: 1,
+          rolefk: Role.USER,
         },
       })
       .then((result) => {
@@ -723,7 +724,7 @@ async function createAndSendTokens(callback: any, userId: number) {
   const user = new User()
     .setId(userDb.id)
     .setUsername(userDb.username)
-    .setRole(userDb.rolefk === 2 ? Role.ADMIN : Role.USER);
+    .setRole(userDb.rolefk);
   if (userDb.avatar?.generatedpath) {
     const avatarUrl = await getAvatarUrl(userDb.avatar.generatedpath);
     user.setAvatar(avatarUrl);

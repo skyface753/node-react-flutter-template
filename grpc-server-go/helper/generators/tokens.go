@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 /*
@@ -38,7 +40,8 @@ func generateRefreshToken() string {
 func GenerateJwt(id int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id": id,
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+		// "exp":  time.Now().Add(time.Hour * 24).Unix(),
+		"exp":  time.Now().Add(time.Minute * 5).Unix(),
 	})
 
 
@@ -52,4 +55,26 @@ func GenerateJwt(id int) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
+}
+
+func VerifyJwt(tokenString string) (int, error) {
+	var jwtSecret string = os.Getenv("JWT_SECRET")
+	if(jwtSecret == "") {
+		jwtSecret = "secret"
+	}
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, status.Error(codes.Unauthenticated, "Invalid token")
+		}
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return 0, status.Error(codes.Unauthenticated, "Invalid token")
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// interface {} is float64, not int
+		userId := int(claims["id"].(float64))
+		return userId, nil
+	}
+	return 0, status.Error(codes.Unauthenticated, "Invalid token")
 }

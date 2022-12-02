@@ -10,7 +10,10 @@ import {
   RegisterRequest,
   DefaultAuthResponse,
   Role,
+  EnableTOTPRequest,
+  EnableTOTPResponse,
 } from '../proto/auth_pb';
+import { Metadata, ServerErrorResponse, ServiceError } from '@grpc/grpc-js';
 
 chai.should();
 
@@ -122,6 +125,45 @@ describe('Auth Service', () => {
         expect(res.getUser()?.getUsername()).to.be.equal(username);
         done();
       });
+    });
+  });
+});
+
+describe('TOTP', () => {
+  it('should start enabling TOTP for user (get secret)', (done) => {
+    const loginAdminRequest = new LoginRequest();
+    loginAdminRequest.setUsername('admin');
+    loginAdminRequest.setPassword('Admin123');
+    client.login(loginAdminRequest, (err, res: DefaultAuthResponse) => {
+      if (err) {
+        throw err;
+      }
+      console.log(res.toObject());
+      expect(res).to.be.an('object');
+      expect(res.getAccessToken()).to.be.a('string');
+      expect(res.getUser()?.getRole()).to.be.equal(Role.ADMIN);
+      const accessToken = res.getAccessToken(); // Need in metadata
+
+      const enableTOTPRequest = new EnableTOTPRequest();
+      enableTOTPRequest.setPassword('Admin123');
+      const metadata = new Metadata();
+      metadata.add('authorization', `Bearer ${accessToken}`);
+      client.enableTOTP(
+        enableTOTPRequest,
+        metadata,
+        (err: ServiceError | null, res: EnableTOTPResponse) => {
+          if (err) {
+            throw err;
+          }
+          console.log(res.toObject());
+          expect(res).to.be.an('object');
+          expect(res.getSecret()).to.be.a('string');
+          expect(res.getUrl()).to.be.a('string');
+          expect(res.getSecret()).to.not.be.equal('');
+          expect(res.getUrl()).to.not.be.equal('');
+          done();
+        }
+      );
     });
   });
 });

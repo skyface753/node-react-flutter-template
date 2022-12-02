@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"strconv"
 	db "template/server/helper/db"
@@ -14,6 +15,7 @@ import (
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -85,10 +87,8 @@ func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 	if(avatarPath != nil){
 		avatarPathStr = *avatarPath
 	}
-	var userRole = pb.Role(pb.Role_USER)
-	if(rolefk == 2){
-		userRole = pb.Role(pb.Role_ADMIN)
-	}
+	var userRole = pb.Role(rolefk)
+	
 	log.Printf("User role: %v", userRole)
 
 	return &pb.DefaultAuthResponse{
@@ -126,7 +126,7 @@ func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 	}
 	// Create the user
 	var id int
-	const role = 1 // User
+	const role = pb.Role_USER // User
 	err = db.DB.QueryRow("INSERT INTO testuser.user (username, password, rolefk) VALUES ($1, $2, $3) RETURNING id", usernameIn, hashedPassword, role).Scan(&id)
 	if err != nil {
 		return nil, status.Error(codes.AlreadyExists, "Username already exists")
@@ -140,7 +140,7 @@ func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 	return &pb.DefaultAuthResponse{
 		AccessToken: accessToken,
 		RefreshToken: refreshToken,
-		User: &pb.User{ Id: int32(id), Username: usernameIn, Role: pb.Role(pb.Role_USER)},
+		User: &pb.User{ Id: int32(id), Username: usernameIn, Role: role},
 	}, nil
 }
 
@@ -201,4 +201,79 @@ func (s *authServer) Logout (ctx context.Context, in *pb.LogoutRequest) (*pb.Log
 	return &pb.LogoutResponse{
 		Success: true,
 	}, nil
+}
+
+func (s *authServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (*pb.EnableTOTPResponse, error){
+	var ( // Incoming
+		passwordIn string = in.Password
+	)
+	_ = passwordIn
+	id, username, _, err := verifyInMetadataAuthToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// Check if the user already has TOTP enabled
+	var totpEnabled bool
+	err = db.DB.QueryRow("SELECT verified FROM testuser.user_2fa INNER JOIN testuser.user ON user_2fa.userfk = testuser.user.id WHERE testuser.user.id = $1", id).Scan(&totpEnabled)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// User does not have TOTP enabled	
+		} else {
+			log.Printf("Error checking if user has TOTP enabled: %v", err)
+			return nil, status.Error(codes.Internal, "Something went wrong")
+		}
+	}
+	if totpEnabled {
+		return nil, status.Error(codes.AlreadyExists, "TOTP already enabled")
+	}
+	// Generate a secret
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:  "GO-GRPC-Auth",
+		AccountName: 		*username,
+	})
+	if err != nil {
+		log.Printf("Error generating TOTP secret: %v", err)
+		return nil, status.Error(codes.Internal, "Something went wrong")
+	}
+	// Insert the secret into the database
+	_, err = db.DB.Exec("INSERT INTO testuser.user_2fa (userfk, secretbase32) VALUES ($1, $2)", id, key.Secret())
+	if err != nil {
+		log.Printf("Error inserting TOTP secret into database: %v", err)
+		return nil, status.Error(codes.Internal, "Something went wrong")
+	}
+
+
+	return &pb.EnableTOTPResponse{
+		Secret: key.Secret(),
+		Url: key.URL(),
+	}, nil
+}
+
+func verifyInMetadataAuthToken(ctx context.Context) (*int, *string, *pb.Role, error){
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, nil,nil, status.Error(codes.Unauthenticated, "No metadata found")
+	}
+	authToken := md.Get("authorization")
+	if len(authToken) == 0 {
+		return nil, nil,nil, status.Error(codes.Unauthenticated, "No authorization token found")
+	}
+	log.Printf("Auth token: %v", authToken[0])
+	// Verify the token
+	userId, err := generators.VerifyJwt(authToken[0])
+	if err != nil {
+		log.Printf("Error verifying jwt: %v", err)
+		return nil, nil,nil, status.Error(codes.Unauthenticated, "Invalid token")
+	}
+	// Get the username and role
+	var username string
+	var roleInt int
+	err = db.DB.QueryRow("SELECT username, rolefk FROM testuser.user WHERE id = $1", userId).Scan(&username, &roleInt)
+	if err != nil {
+		log.Printf("Error getting user role: %v", err)
+		return nil, nil,nil, status.Error(codes.Internal, "Something went wrong")
+	}
+	log.Printf("ID: %v, Role: %v", userId, roleInt)
+	var role = pb.Role(roleInt)
+	return &userId, &username, &role, nil
 }
