@@ -17,25 +17,53 @@ import (
 RefreshToken
 Random string length 32
 */
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+// const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 
 func GetARefreshToken(id int) string {
 	//TODO: REDIS
-	rToken := generateRefreshToken()
+	rToken := randStringBytesMaskImpr(64)
 	redis.RedisClient.Set(context.Background(), rToken, id, time.Hour*24*7) // 7 days
 	return rToken
 }
 
-func generateRefreshToken() string {
-	const length = 64
-    b := make([]byte, length)
-    for i := range b {
-        b[i] = letterBytes[rand.Intn(len(letterBytes))]
+// func generateRefreshToken() string {
+// 	const length = 64
+//     b := make([]byte, length)
+//     for i := range b {
+//         b[i] = letterBytes[rand.Intn(len(letterBytes))]
+//     }
+//     return string(b)
+// }
+
+//
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+    letterIdxBits = 6                    // 6 bits to represent a letter index
+    letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+    letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+func randStringBytesMaskImpr(n int) string {
+    b := make([]byte, n)
+    // A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
+	rand.Seed(time.Now().UnixNano())
+    for i, cache, remain := n-1, rand.Int63(), letterIdxMax; i >= 0; {
+        if remain == 0 {
+            cache, remain = rand.Int63(), letterIdxMax
+        }
+        if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+            b[i] = letterBytes[idx]
+            i--
+        }
+        cache >>= letterIdxBits
+        remain--
     }
+
     return string(b)
 }
+//
 
 func GenerateJwt(id int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

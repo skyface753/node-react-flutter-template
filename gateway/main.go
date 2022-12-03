@@ -7,10 +7,12 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	gw "gateway/proxy/gen/template" // Update
+	// helloworldpb "github.com/myuser/myrepo/proto/helloworld"
+	gw "gateway/proxy/pb/template"
 )
 
 var (
@@ -19,8 +21,6 @@ var (
   grpcServerEndpoint = flag.String("grpc-server-endpoint",  "localhost:50051", "gRPC server endpoint")
 )
 
-
-
 func run() error {
   ctx := context.Background()
   ctx, cancel := context.WithCancel(ctx)
@@ -28,18 +28,7 @@ func run() error {
 
   // Register gRPC server endpoint
   // Note: Make sure the gRPC server is running properly and accessible
-
-  //Log all requests
-  // mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
-  //   log.Printf("Incoming header: %s", key)
-  //   return key, true
-  // }), runtime.WithOutgoingHeaderMatcher(func(key string) (string, bool) {
-  //   log.Printf("Outgoing Header: %s", key)
-  //   return key, true
-  // }))
-  // Debug
   mux := runtime.NewServeMux()
-  
   opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
   err := gw.RegisterAuthServiceHandlerFromEndpoint(ctx, mux,  *grpcServerEndpoint, opts)
   if err != nil {
@@ -47,7 +36,8 @@ func run() error {
   }
 
   // Start HTTP server (and proxy calls to gRPC server endpoint)
-  return http.ListenAndServe(":8080", mux)
+  return http.ListenAndServe("localhost:8081", mux)
+  
 }
 
 func main() {
@@ -58,4 +48,3 @@ func main() {
     glog.Fatal(err)
   }
 }
-

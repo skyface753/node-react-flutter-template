@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+	"strings"
 	db "template/server/helper/db"
 	"template/server/helper/generators"
 	"template/server/helper/redis"
@@ -33,7 +34,7 @@ func NewAuthServer(prismaClient *dbPrisma.PrismaClient) *authServer {
 func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.DefaultAuthResponse, error) {
 	
 
-	log.Printf("Received: %v", in)
+	////log.Printf("Received: %v", in)
 
 	var ( // Incoming 
 		usernameIn string = in.Username
@@ -43,24 +44,24 @@ func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 	)
 	var ( // From the db
 		id int
-		username string
+		// username string
 		password string
-		rolefk int
+		// rolefk int
 		secretbase32 *string
 		verified *bool
-		avatarPath *string
+		// avatarPath *string
 	)
 	
-	err := db.DB.QueryRow("SELECT id, username, password, rolefk, secretbase32, verified, generatedPath FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user.id = testuser.user_2fa.userfk LEFT JOIN testuser.avatar ON testuser.avatar.userfk = testuser.user.id WHERE username = $1", usernameIn).Scan(&id, &username, &password, &rolefk, &secretbase32, &verified, &avatarPath)
+	err := db.DB.QueryRow("SELECT id, password, secretbase32, verified FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user.id = testuser.user_2fa.userfk LEFT JOIN testuser.avatar ON testuser.avatar.userfk = testuser.user.id WHERE LOWER(username) = LOWER($1)", usernameIn).Scan(&id, &password, &secretbase32, &verified)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "User not found")
 	}
 	
-	_ = totpIn
+	// _ = totpIn
 	// Compare the stored hashed password, with the hashed version of the password that was received
 	err = bcrypt.CompareHashAndPassword([]byte(password), []byte(passwordIn))
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, "Wrong password")
 	}
 	if(verified != nil && *verified) {
 		if(totpIn == nil){
@@ -78,10 +79,37 @@ func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 		
 
 	}
+	// accessToken, errJwt := generators.GenerateJwt(id)
+	// refreshToken := generators.GetARefreshToken(id)
+	// if errJwt != nil {
+	// 	return nil, errJwt
+	// }
+	
+	defaultAuthResponse, err := createDefaultAuthResponse(id)
+	if err != nil {
+		return nil, err
+	}	
+	return defaultAuthResponse, nil
+}
+
+/*
+Creates the access token and refresh token for the user
+Gets the user data (id, username, role, generatedPath?) from the db
+*/
+func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 	accessToken, errJwt := generators.GenerateJwt(id)
 	refreshToken := generators.GetARefreshToken(id)
 	if errJwt != nil {
 		return nil, errJwt
+	}
+	var ( // From the db
+		username string
+		rolefk int
+		avatarPath *string
+	)
+	err := db.DB.QueryRow("SELECT username, rolefk, generatedPath FROM testuser.user LEFT JOIN testuser.avatar ON testuser.avatar.userfk = testuser.user.id WHERE id = $1", id).Scan(&username, &rolefk, &avatarPath)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "User not found")
 	}
 	var avatarPathStr string
 	if(avatarPath != nil){
@@ -89,7 +117,7 @@ func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 	}
 	var userRole = pb.Role(rolefk)
 	
-	log.Printf("User role: %v", userRole)
+	////log.Printf("User role: %v", userRole)
 
 	return &pb.DefaultAuthResponse{
 		AccessToken: accessToken,
@@ -97,15 +125,11 @@ func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 		
 		User: &pb.User{ Id: int32(id), Username: username, Avatar: avatarPathStr, Role: userRole},
 	}, nil
-
-	
-	
 }
 
 
-
 func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.DefaultAuthResponse, error) {
-	log.Printf("Received: %v", in)
+	////log.Printf("Received: %v", in)
 	var ( // Incoming
 		usernameIn string = in.Username
 		passwordIn string = in.Password
@@ -121,7 +145,7 @@ func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(passwordIn), 8)
 	if err != nil {
-		log.Printf("Error hashing password: %v", err)
+		////log.Printf("Error hashing password: %v", err)
 		return nil, status.Error(codes.Internal, "Something went wrong")
 	}
 	// Create the user
@@ -131,59 +155,53 @@ func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 	if err != nil {
 		return nil, status.Error(codes.AlreadyExists, "Username already exists")
 	}
-	accessToken, errJwt := generators.GenerateJwt(id)
-	refreshToken := generators.GetARefreshToken(id)
-	if errJwt != nil {
-		log.Printf("Error generating jwt: %v", errJwt)
-		return nil, status.Error(codes.Internal, "Something went wrong")
+	defaultAuthResponse, err := createDefaultAuthResponse(id)
+	if err != nil {
+		return nil, err
 	}
-	return &pb.DefaultAuthResponse{
-		AccessToken: accessToken,
-		RefreshToken: refreshToken,
-		User: &pb.User{ Id: int32(id), Username: usernameIn, Role: role},
-	}, nil
+	return defaultAuthResponse, nil
 }
 
-
 func (s *authServer) RefreshToken (ctx context.Context, in *pb.RefreshTokenRequest) (*pb.DefaultAuthResponse, error) {
-	log.Printf("Received: %v", in)
+	////log.Printf("Received: %v", in)
 	var ( // Incoming
 		refreshTokenIn string = in.RefreshToken
 	)
 	// RefreshToken is a 64 byte string
 	if len(refreshTokenIn) != 64 {
+		////log.Printf("Refresh token is not 64 bytes")
 		return nil, status.Error(codes.InvalidArgument, "Invalid refresh token")
 	}
 	// Check if the refresh token exists in redis
 	userId, err := redis.RedisClient.Get(context.Background(), refreshTokenIn).Result()
 	if err != nil {
+		////log.Printf("Error getting refresh token from redis: %v", err)
 		return nil, status.Error(codes.Unauthenticated, "Invalid refresh token")
 	}
+	// log.Printf("Looked for refresh token %v and found user id %v", refreshTokenIn, userId)
+
+
 	userIdInt, err := strconv.Atoi(userId)
 	if err != nil {
+		////log.Printf("Error converting userId to int: %v", err)
 		return nil, status.Error(codes.Internal, "Something went wrong")
 	}
-	// Generate a new access token
-	accessToken, errJwt := generators.GenerateJwt(userIdInt)
-	if errJwt != nil {
-		return nil, errJwt
-	}
-	// Generate a new refresh token
-	refreshToken := generators.GetARefreshToken(userIdInt)
-	// Delete the old refresh token
 	_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
 	if err != nil {
 		log.Fatalf("Error deleting refresh token: %v", err)
 		return nil, status.Error(codes.Internal, "Something went wrong")
 	}
-	return &pb.DefaultAuthResponse{
-		AccessToken: accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+
+	defaultAuthResponse, err := createDefaultAuthResponse(userIdInt)
+	if err != nil {
+		////log.Printf("Error creating default auth response: %v", err)
+		return nil, err
+	}
+	return defaultAuthResponse, nil
 }
 
 func (s *authServer) Logout (ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutResponse, error) {
-	log.Printf("Received: %v", in)
+	////log.Printf("Received: %v", in)
 	var ( // Incoming
 		refreshTokenIn string = in.RefreshToken
 	)
@@ -207,38 +225,51 @@ func (s *authServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (
 	var ( // Incoming
 		passwordIn string = in.Password
 	)
-	_ = passwordIn
+	// _ = passwordIn
 	id, username, _, err := verifyInMetadataAuthToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 	// Check if the user already has TOTP enabled
-	var totpEnabled bool
-	err = db.DB.QueryRow("SELECT verified FROM testuser.user_2fa INNER JOIN testuser.user ON user_2fa.userfk = testuser.user.id WHERE testuser.user.id = $1", id).Scan(&totpEnabled)
+	var totpEnabled sql.NullBool
+	var secret sql.NullString
+	var password string
+	err = db.DB.QueryRow("SELECT password, verified, secretbase32 FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user_2fa.userfk = testuser.user.id WHERE testuser.user.id = $1", id).Scan(&password, &totpEnabled, &secret)
+	
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// User does not have TOTP enabled	
 		} else {
-			log.Printf("Error checking if user has TOTP enabled: %v", err)
+			//log.Printf("Error checking if user has TOTP enabled: %v", err)
 			return nil, status.Error(codes.Internal, "Something went wrong")
 		}
 	}
-	if totpEnabled {
+	// Check if the password is correct
+	err = bcrypt.CompareHashAndPassword([]byte(password), []byte(passwordIn))
+	if err != nil {
+		//log.Printf("Error comparing password hashes: %v", err)
+		return nil, status.Error(codes.Unauthenticated, "Invalid password")
+	}
+	if totpEnabled.Valid {
+		//log.Printf("User already has TOTP enabled")
 		return nil, status.Error(codes.AlreadyExists, "TOTP already enabled")
 	}
+
 	// Generate a secret
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:  "GO-GRPC-Auth",
 		AccountName: 		*username,
 	})
 	if err != nil {
-		log.Printf("Error generating TOTP secret: %v", err)
+		////log.Printf("Error generating TOTP secret: %v", err)
 		return nil, status.Error(codes.Internal, "Something went wrong")
 	}
 	// Insert the secret into the database
-	_, err = db.DB.Exec("INSERT INTO testuser.user_2fa (userfk, secretbase32) VALUES ($1, $2)", id, key.Secret())
+	// _, err = db.DB.Exec("INSERT INTO testuser.user_2fa (userfk, secretbase32) VALUES ($1, $2)", id, key.Secret())
+	_, err = db.DB.Exec("INSERT INTO testuser.user_2fa (userfk, secretbase32) VALUES ($1, $2) ON CONFLICT (userfk) DO UPDATE SET secretbase32 = $2", id, key.Secret())
+
 	if err != nil {
-		log.Printf("Error inserting TOTP secret into database: %v", err)
+		////log.Printf("Error inserting TOTP secret into database: %v", err)
 		return nil, status.Error(codes.Internal, "Something went wrong")
 	}
 
@@ -249,6 +280,131 @@ func (s *authServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (
 	}, nil
 }
 
+func (s *authServer) VerifyTOTP(ctx context.Context, in *pb.VerifyTOTPRequest) (*pb.VerifyTOTPResponse, error){
+	var ( //incoming
+		totpIn string = in.TotpCode
+	)
+	userId, _, _, err := verifyInMetadataAuthToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(totpIn) != 6 {
+		return nil, status.Error(codes.InvalidArgument, "Invalid TOTP code")
+	}
+	// Check if the user has TOTP enabled
+	var alreadyVerified sql.NullBool
+	var secret string
+	err = db.DB.QueryRow("SELECT verified, secretbase32 FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user.id = user_2fa.userfk WHERE testuser.user.id = $1", userId).Scan(&alreadyVerified, &secret)
+	// Secret should not be empty, but veified should be false
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Error(codes.NotFound, "TOTP not enabled")
+		} else {
+		////log.Printf("Error checking if user has TOTP enabled: %v", err)
+		return nil, status.Error(codes.Internal, "Something went wrong")
+		}
+	}
+	if alreadyVerified.Bool { 
+			return nil, status.Error(codes.AlreadyExists, "TOTP already verified")
+	}
+	// Verify the TOTP code
+	valid := totp.Validate(totpIn, secret)
+	if !valid {
+		return nil, status.Error(codes.Unauthenticated, "Invalid TOTP code")
+	}
+	// Update the database to set verified to true
+	_, err = db.DB.Exec("UPDATE testuser.user_2fa SET verified = true WHERE userfk = $1", userId)
+	if err != nil {
+		////log.Printf("Error updating TOTP verification status: %v", err)
+		return nil, status.Error(codes.Internal, "Something went wrong")
+	}
+	return &pb.VerifyTOTPResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *authServer) DisableTOTP(ctx context.Context, in *pb.DisableTOTPRequest) (*pb.DisableTOTPResponse, error){
+	userId, _, _, err := verifyInMetadataAuthToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	
+	var (
+		passwordIn string = in.Password
+		totpIn string = in.TotpCode
+	)
+    //Verify the password and TOTP code
+	var passwordHash string
+	var totpEnabled bool
+	var secret string
+	err = db.DB.QueryRow("SELECT password, verified, secretbase32 FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user.id = user_2fa.userfk WHERE testuser.user.id = $1", userId).Scan(&passwordHash, &totpEnabled, &secret)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Error(codes.NotFound, "User not found")
+		} else {
+			////log.Printf("Error checking if user has TOTP enabled: %v", err)
+			return nil, status.Error(codes.Internal, "Something went wrong")
+		}
+	}
+	if !totpEnabled {
+		return nil, status.Error(codes.NotFound, "TOTP not enabled")
+	}
+	if !totp.Validate(totpIn, secret) {
+		return nil, status.Error(codes.InvalidArgument, "Invalid TOTP code")
+	}
+	// bcrypt.CompareHashAndPassword()
+	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(passwordIn))
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "Invalid password")
+	}
+	// Delete the TOTP secret from the database
+	_, err = db.DB.Exec("DELETE FROM testuser.user_2fa WHERE userfk = $1", userId)
+	if err != nil {
+		////log.Printf("Error deleting TOTP secret from database: %v", err)
+		return nil, status.Error(codes.Internal, "Something went wrong")
+	}
+	return &pb.DisableTOTPResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *authServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusResponse, error){
+	userId, _, _, err := verifyInMetadataAuthToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// Check if totp is enabled and get user
+	var totpEnabled sql.NullBool
+	var username string
+	var rolefk int
+	// Nullable string avatar
+	var avatar sql.NullString
+	// var avatar string
+	err = db.DB.QueryRow("SELECT verified, username, rolefk, generatedPath FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user.id = user_2fa.userfk LEFT JOIN testuser.avatar ON testuser.user.id = avatar.userfk WHERE testuser.user.id = $1", userId).Scan(&totpEnabled, &username, &rolefk, &avatar)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Error(codes.NotFound, "User not found")
+		} else {
+			////log.Printf("Error checking if user has TOTP enabled: %v", err)
+			return nil, status.Error(codes.Internal, "Something went wrong")
+		}
+	}
+	// userIdInt := int32(userId)
+	return &pb.StatusResponse{
+		User: &pb.User{
+			Id: int32(*userId),
+			Username: username,
+			Role: pb.Role(rolefk),
+			Avatar: avatar.String,
+		},
+		TotpEnabled: totpEnabled.Bool,
+
+	}, nil
+}
+
+
+
+// verifyInMetadataAuthToken verifies the auth token in the metadata and returns the user id, username, role OR error
 func verifyInMetadataAuthToken(ctx context.Context) (*int, *string, *pb.Role, error){
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -258,11 +414,13 @@ func verifyInMetadataAuthToken(ctx context.Context) (*int, *string, *pb.Role, er
 	if len(authToken) == 0 {
 		return nil, nil,nil, status.Error(codes.Unauthenticated, "No authorization token found")
 	}
-	log.Printf("Auth token: %v", authToken[0])
+	////log.Printf("Auth token: %v", authToken[0])
+	// Cut off the "Bearer " part if it exists
+	authTokenString :=	strings.TrimPrefix(authToken[0], "Bearer ")
 	// Verify the token
-	userId, err := generators.VerifyJwt(authToken[0])
+	userId, err := generators.VerifyJwt(authTokenString)
 	if err != nil {
-		log.Printf("Error verifying jwt: %v", err)
+		////log.Printf("Error verifying jwt: %v", err)
 		return nil, nil,nil, status.Error(codes.Unauthenticated, "Invalid token")
 	}
 	// Get the username and role
@@ -270,10 +428,10 @@ func verifyInMetadataAuthToken(ctx context.Context) (*int, *string, *pb.Role, er
 	var roleInt int
 	err = db.DB.QueryRow("SELECT username, rolefk FROM testuser.user WHERE id = $1", userId).Scan(&username, &roleInt)
 	if err != nil {
-		log.Printf("Error getting user role: %v", err)
+		////log.Printf("Error getting user role: %v", err)
 		return nil, nil,nil, status.Error(codes.Internal, "Something went wrong")
 	}
-	log.Printf("ID: %v, Role: %v", userId, roleInt)
+	////log.Printf("ID: %v, Role: %v", userId, roleInt)
 	var role = pb.Role(roleInt)
 	return &userId, &username, &role, nil
 }

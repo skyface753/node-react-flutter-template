@@ -4,7 +4,7 @@ package template;
 
 import "google/protobuf/timestamp.proto";
 // import "google/protobuf/empty.proto";
-import "google/api/annotations.proto";
+import "grpc-proto/google/api/annotations.proto";
 
 option go_package = "pb/template";
 
@@ -110,15 +110,50 @@ message StatusResponse{
 service AuthService{
     rpc Login(LoginRequest) returns (DefaultAuthResponse) {
         option (google.api.http) = {
-            post: "/login/{username}"
+            post: "/v1/auth/login"
             body: "*"
         };
     }
-    rpc RefreshToken(RefreshTokenRequest) returns (DefaultAuthResponse);
-    rpc Logout(LogoutRequest) returns (LogoutResponse);
-    rpc Register(RegisterRequest) returns (DefaultAuthResponse);
-    rpc Status(StatusRequest) returns (StatusResponse);
-    rpc DisableTOTP(DisableTOTPRequest) returns (DisableTOTPResponse);
-    rpc EnableTOTP(EnableTOTPRequest) returns (EnableTOTPResponse);
-    rpc VerifyTOTP(VerifyTOTPRequest) returns (VerifyTOTPResponse);
+    rpc RefreshToken(RefreshTokenRequest) returns (DefaultAuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/refresh"
+            body: "*"
+        };
+    }
+    rpc Logout(LogoutRequest) returns (LogoutResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/logout"
+            body: "*"
+        };
+    }
+    rpc Register(RegisterRequest) returns (DefaultAuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/register"
+            body: "*"
+        };
+    }
+    rpc Status(StatusRequest) returns (StatusResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/status"
+            body: "*"
+        };
+    }
+    rpc DisableTOTP(DisableTOTPRequest) returns (DisableTOTPResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/totp/disable"
+            body: "*"
+        };
+    }
+    rpc EnableTOTP(EnableTOTPRequest) returns (EnableTOTPResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/totp/enable"
+            body: "*"
+        };
+    }
+    rpc VerifyTOTP(VerifyTOTPRequest) returns (VerifyTOTPResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/totp/verify"
+            body: "*"
+        };
+    }
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.9
-// source: avatar.proto
+// source: grpc-proto/avatar.proto
 
 package template
 
@@ -174,5 +174,5 @@ var AvatarService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "avatar.proto",
+	Metadata: "grpc-proto/avatar.proto",
 }

@@ -135,7 +135,10 @@ export class AuthServer implements IAuthServiceServer {
 
       if (!match) {
         onLoginFail(remoteIp);
-        return callback(new Error('Invalid username or password 2'), null);
+        return callback({
+          message: 'Invalid password',
+          code: status.UNAUTHENTICATED,
+        })
       }
       if (user.user_2fa?.secretbase32 && user.user_2fa?.verified) {
         if (!totpcode) {

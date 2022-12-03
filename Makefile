@@ -34,20 +34,3 @@ build-backend:
 
 # Build all Docker
 build: build-frontend build-backend
-
-gen-gateway:
-	protoc -I ./grpc-proto --grpc-gateway_out ./gateway/gen/template \
-    --grpc-gateway_opt logtostderr=true \
-    --grpc-gateway_opt paths=source_relative \
-    --grpc-gateway_opt generate_unbound_methods=true \
-    ./grpc-proto/*.proto
-
-gen-gateway-proto:
-	protoc --proto_path=./grpc-proto ./grpc-proto/*.proto --go_out=./gateway/gen/template --go-grpc_out=./gateway/gen/template \
-	--go_opt paths=source_relative \
-	--go-grpc_opt paths=source_relative
-
-gen-swagger:
-	protoc -I ./grpc-proto --openapiv2_out ./openapiv2 \
-    --openapiv2_opt logtostderr=true \
-    ./grpc-proto/*.proto

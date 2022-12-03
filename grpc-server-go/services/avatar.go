@@ -21,6 +21,8 @@ func NewAvatarServer(prismaClient *dbPrisma.PrismaClient) *avatarServer {
 }
 
 func (s *avatarServer) GetAvatarView(ctx context.Context, in *pb.GetAvatarViewRequest) (*pb.GetAvatarViewResponse, error) {
+	// Unimplemented
+	return nil, nil
 	rows, err := db.DB.Query("SELECT id, username FROM testuser.user")
 	if err != nil {
 		log.Printf("Error: %v", err)
