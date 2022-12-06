@@ -165,7 +165,7 @@ async function initDb() {
   }
 }
 
-// initDb();
+initDb();
 // async function initDb() {
 //   // Create Tables
 //   const avatar =

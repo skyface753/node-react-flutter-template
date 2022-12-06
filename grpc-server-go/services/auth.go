@@ -5,13 +5,14 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+
 	"strings"
 	db "template/server/helper/db"
 	"template/server/helper/generators"
 	"template/server/helper/redis"
+	s3Client "template/server/helper/s3"
 	"template/server/helper/validator"
 	pb "template/server/pb/template"
-	dbPrisma "template/server/prisma/db"
 
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
@@ -20,18 +21,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type authServer struct {
+type AuthServer struct {
 	pb.UnimplementedAuthServiceServer
-	prismaClient *dbPrisma.PrismaClient
 } 
 
-func NewAuthServer(prismaClient *dbPrisma.PrismaClient) *authServer {
-	return &authServer{
-		prismaClient: prismaClient,
-	}
-}
 
-func (s *authServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.DefaultAuthResponse, error) {
+
+func (s *AuthServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.DefaultAuthResponse, error) {
 	
 
 	////log.Printf("Received: %v", in)
@@ -113,7 +109,12 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 	}
 	var avatarPathStr string
 	if(avatarPath != nil){
-		avatarPathStr = *avatarPath
+		url, errS := s3Client.SignedGetURL(*avatarPath)
+		if errS == nil {
+			avatarPathStr = url.String()
+		}
+		
+		
 	}
 	var userRole = pb.Role(rolefk)
 	
@@ -128,7 +129,7 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 }
 
 
-func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.DefaultAuthResponse, error) {
+func (s *AuthServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.DefaultAuthResponse, error) {
 	////log.Printf("Received: %v", in)
 	var ( // Incoming
 		usernameIn string = in.Username
@@ -162,7 +163,7 @@ func (s *authServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 	return defaultAuthResponse, nil
 }
 
-func (s *authServer) RefreshToken (ctx context.Context, in *pb.RefreshTokenRequest) (*pb.DefaultAuthResponse, error) {
+func (s *AuthServer) RefreshToken (ctx context.Context, in *pb.RefreshTokenRequest) (*pb.DefaultAuthResponse, error) {
 	////log.Printf("Received: %v", in)
 	var ( // Incoming
 		refreshTokenIn string = in.RefreshToken
@@ -186,21 +187,24 @@ func (s *authServer) RefreshToken (ctx context.Context, in *pb.RefreshTokenReque
 		////log.Printf("Error converting userId to int: %v", err)
 		return nil, status.Error(codes.Internal, "Something went wrong")
 	}
-	_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
-	if err != nil {
-		log.Fatalf("Error deleting refresh token: %v", err)
-		return nil, status.Error(codes.Internal, "Something went wrong")
-	}
-
+	
 	defaultAuthResponse, err := createDefaultAuthResponse(userIdInt)
 	if err != nil {
 		////log.Printf("Error creating default auth response: %v", err)
 		return nil, err
 	}
+	// Delete the old refresh token from redis after 1 Minute
+	redis.RedisClient.Del(context.Background(), refreshTokenIn)
+
+	_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
+	if err != nil {
+		log.Fatalf("Error deleting refresh token: %v", err)
+		return nil, status.Error(codes.Internal, "Something went wrong")
+	}
 	return defaultAuthResponse, nil
 }
 
-func (s *authServer) Logout (ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutResponse, error) {
+func (s *AuthServer) Logout (ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutResponse, error) {
 	////log.Printf("Received: %v", in)
 	var ( // Incoming
 		refreshTokenIn string = in.RefreshToken
@@ -221,7 +225,7 @@ func (s *authServer) Logout (ctx context.Context, in *pb.LogoutRequest) (*pb.Log
 	}, nil
 }
 
-func (s *authServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (*pb.EnableTOTPResponse, error){
+func (s *AuthServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (*pb.EnableTOTPResponse, error){
 	var ( // Incoming
 		passwordIn string = in.Password
 	)
@@ -280,7 +284,7 @@ func (s *authServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (
 	}, nil
 }
 
-func (s *authServer) VerifyTOTP(ctx context.Context, in *pb.VerifyTOTPRequest) (*pb.VerifyTOTPResponse, error){
+func (s *AuthServer) VerifyTOTP(ctx context.Context, in *pb.VerifyTOTPRequest) (*pb.VerifyTOTPResponse, error){
 	var ( //incoming
 		totpIn string = in.TotpCode
 	)
@@ -323,7 +327,7 @@ func (s *authServer) VerifyTOTP(ctx context.Context, in *pb.VerifyTOTPRequest) (
 	}, nil
 }
 
-func (s *authServer) DisableTOTP(ctx context.Context, in *pb.DisableTOTPRequest) (*pb.DisableTOTPResponse, error){
+func (s *AuthServer) DisableTOTP(ctx context.Context, in *pb.DisableTOTPRequest) (*pb.DisableTOTPResponse, error){
 	userId, _, _, err := verifyInMetadataAuthToken(ctx)
 	if err != nil {
 		return nil, err
@@ -368,7 +372,7 @@ func (s *authServer) DisableTOTP(ctx context.Context, in *pb.DisableTOTPRequest)
 	}, nil
 }
 
-func (s *authServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusResponse, error){
+func (s *AuthServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusResponse, error){
 	userId, _, _, err := verifyInMetadataAuthToken(ctx)
 	if err != nil {
 		return nil, err

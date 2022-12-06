@@ -2,72 +2,100 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"strconv"
 	db "template/server/helper/db"
+	s3Client "template/server/helper/s3"
 	pb "template/server/pb/template"
-	dbPrisma "template/server/prisma/db"
+
+	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type avatarServer struct {
+type AvatarServer struct {
 	pb.UnimplementedAvatarServiceServer
-
-	prismaClient *dbPrisma.PrismaClient
 }
 
-func NewAvatarServer(prismaClient *dbPrisma.PrismaClient) *avatarServer {
-	return &avatarServer{
-		prismaClient: prismaClient,
-	}
-}
 
-func (s *avatarServer) GetAvatarView(ctx context.Context, in *pb.GetAvatarViewRequest) (*pb.GetAvatarViewResponse, error) {
-	// Unimplemented
-	return nil, nil
-	rows, err := db.DB.Query("SELECT id, username FROM testuser.user")
-	if err != nil {
-		log.Printf("Error: %v", err)
-	}
-	defer rows.Close()
-	var (
-		id int
-		username string
+
+
+
+
+func (s *AvatarServer) RequestAUploadURL(ctx context.Context, in *pb.UploadUrlRequest) (*pb.UploadUrlResponse, error) {
+	var ( //Incoming
+		orgName string = in.Filename
 	)
-	for rows.Next() {
-		err := rows.Scan(&id, &username)
-		if err != nil {
-			log.Printf("Error: %v", err)
-		}
-		log.Printf("ID: %v", id)
-		log.Printf("Username: %v", username)
-	}
-	err = rows.Err()
+	id, _, _, err := verifyInMetadataAuthToken(ctx)
 	if err != nil {
-		log.Printf("Error: %v", err)
-	}
-	
-
-	avatar, err := s.prismaClient.Avatar.FindMany(
-		dbPrisma.Avatar.Userfk.Equals(int(in.UserId)),
-	).Exec(context.Background())
-
-	if err != nil {
-		log.Fatalf("Error querying db")
 		return nil, err
 	}
-	log.Printf("Avatar: %v", avatar)
+	idString := strconv.Itoa(*id)
+	res, key, err := s3Client.SignedPutURL(idString + "-" + orgName)
 
-	// Create a test avatar
-	// a, err := prismaClient.Avatar.CreateOne(
-	// 	dbPrisma.Avatar.Userfk.Set(int(in.UserId)),
-	// ).Exec(context.Background())
 	if err != nil {
-		log.Fatalf("Error creating avatar")
+		log.Printf("Error: %v", err)
+		return nil, err
+	}
+	log.Printf("Signed URL: %v", res)
+	// Save to DB (userfk, originalname, generatedpath, type)
+	sqlInsert, err := db.DB.Query("INSERT INTO testuser.avatar (userfk, originalname, generatedpath, type) VALUES ($1, $2, $3, $4) ON CONFLICT (userfk) DO UPDATE SET originalname = $2, generatedpath = $3, type = $4", id, orgName, key, "image")
+	if err != nil {
+		log.Printf("Error: %v", err)
+		return nil, err
+	}
+	defer sqlInsert.Close()
+
+			return &pb.UploadUrlResponse{
+		Url: res.String(),
+	}, nil
+}
+
+func (s *AvatarServer) Delete (ctx context.Context, in *empty.Empty) (*empty.Empty, error) {
+	id, _, _, err := verifyInMetadataAuthToken(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "Invalid token")
+	}
+	sqlDelete, err := db.DB.Query("DELETE FROM testuser.avatar WHERE userfk = $1", *id)
+	log.Printf("Deleted avatar for user %v", *id)
+	if err != nil {
+		log.Printf("Error: %v", err)
+		return nil, status.Error(codes.NotFound, "Avatar not found")
+	}
+	defer sqlDelete.Close()
+	return &empty.Empty{}, nil
+
+}
+
+func (s *AvatarServer) GetAvatarView(ctx context.Context, in *pb.GetAvatarViewRequest) (*pb.GetAvatarViewResponse, error) {
+	var ( //Incoming
+		id int32 = in.UserId
+	)
+	// Get from DB (userfk, originalname, generatedpath, type)
+	var (
+		originalName sql.NullString
+		generatedPath sql.NullString
+		avatarType sql.NullString
+	)
+	
+	err := db.DB.QueryRow("SELECT originalname, generatedpath, type FROM testuser.avatar WHERE userfk = $1", id).Scan(&originalName, &generatedPath, &avatarType)
+	if err != nil {
+		log.Printf("Error: %v, %v", err, id)
+		return nil, status.Error(codes.NotFound, "Avatar not found")
+	}
+	if !originalName.Valid || !generatedPath.Valid || !avatarType.Valid {
+		return nil, status.Error(codes.NotFound, "Avatar not found")
+	}
+	
+	
+	s3Url, err := s3Client.SignedGetURL(generatedPath.String)
+	if err != nil {
+		log.Printf("Error: %v", err)
 		return nil, err
 	}
 
 	return &pb.GetAvatarViewResponse{
-		Url: "url",
+	Url: s3Url.String(),
 	}, nil
 }
-
-
