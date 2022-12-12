@@ -1,12 +1,14 @@
-import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
+import { handleUnaryCall, sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
-import { IAvatarServiceServer } from '../proto/avatar_grpc_pb';
+import { IAvatarServiceServer } from '../proto/grpc-proto/avatar_grpc_pb';
 import {
+  ConfirmUploadRequest,
+  ConfirmUploadResponse,
   GetAvatarViewRequest,
   GetAvatarViewResponse,
   UploadUrlRequest,
   UploadUrlResponse,
-} from '../proto/avatar_pb';
+} from '../proto/grpc-proto/avatar_pb';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './s3-storage/base-client';
 import {
@@ -15,7 +17,7 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { AuthServer } from './auth_service';
-import { User } from '../proto/auth_pb';
+import { User } from '../proto/grpc-proto/auth_pb';
 
 import { prismaClient } from './db';
 import { S3Config, ttl } from '../config';
@@ -23,6 +25,7 @@ import { getAvatarKey } from '../helpers/s3-helper';
 import { Prisma } from '@prisma/client';
 
 export class AvatarServer implements IAvatarServiceServer {
+  // confirmUpload: handleUnaryCall<ConfirmUploadRequest, ConfirmUploadResponse>;
   [name: string]: import('@grpc/grpc-js').UntypedHandleCall;
 
   delete(
@@ -32,6 +35,14 @@ export class AvatarServer implements IAvatarServiceServer {
     throw new Error('Method not implemented.');
     console.log('delete');
     callback(null, new Empty());
+  }
+  confirmUpload(
+    call: ServerUnaryCall<ConfirmUploadRequest, ConfirmUploadResponse>,
+    callback: sendUnaryData<ConfirmUploadResponse>
+  ): void {
+    console.log('confirmUpload'); 
+    throw new Error('Method not implemented.');
+    // callback(null, new ConfirmUploadResponse());
   }
   async requestAUploadURL(
     call: ServerUnaryCall<UploadUrlRequest, UploadUrlResponse>,

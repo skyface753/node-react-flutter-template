@@ -9,7 +9,7 @@ import { useContext } from 'react';
 import AvatarUpload from './avatarUpload';
 import { ActionType } from '../../store/reducer';
 // import { grpcAuthService } from '../../services/grpc-api/grpc-client';
-import { StatusRequest, StatusResponse } from '../../proto/auth_pb';
+import { StatusRequest, StatusResponse } from '../../proto/grpc-proto/auth_pb';
 import { RpcError } from 'grpc-web';
 import { grpcApi } from '../../services/grpc-api/grpc-client';
 

@@ -10,7 +10,9 @@ import (
 	db "template/server/helper/db"
 	"template/server/helper/generators"
 	"template/server/helper/redis"
-	s3Client "template/server/helper/s3"
+	"template/server/helper/s3aws"
+
+	// s3Client "template/server/helper/s3"
 	"template/server/helper/validator"
 	pb "template/server/pb/template"
 
@@ -109,10 +111,16 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 	}
 	var avatarPathStr string
 	if(avatarPath != nil){
-		url, errS := s3Client.SignedGetURL(*avatarPath)
-		if errS == nil {
-			avatarPathStr = url.String()
+		resS3, err :=		s3aws.PresignedGet(*avatarPath)
+		if err != nil {
+			log.Printf("Error getting the avatar from s3: %v", err)
 		}
+		avatarPathStr = resS3.URL
+		// TODO: Get the avatar from the s3 bucket
+		// url, errS := s3Client.SignedGetURL(*avatarPath)
+		// if errS == nil {
+		// 	avatarPathStr = url.String()
+		// }
 		
 		
 	}

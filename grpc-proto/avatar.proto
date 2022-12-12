@@ -26,8 +26,16 @@ message GetAvatarViewResponse{
     string url = 1;
 }
 
+message ConfirmUploadRequest{
+    
+}
+message ConfirmUploadResponse{
+    string url = 1;
+}
+
 service AvatarService{
     rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
+    rpc ConfirmUpload(ConfirmUploadRequest) returns (ConfirmUploadResponse); // confirm upload and save to db
     rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc GetAvatarView(GetAvatarViewRequest) returns (GetAvatarViewResponse);
 }

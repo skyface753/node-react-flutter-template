@@ -3,9 +3,9 @@ import { describe } from 'mocha';
 import { expect } from 'chai';
 import fs from 'fs';
 import client, { avatarClient } from './client';
-import { GetAvatarViewRequest, GetAvatarViewResponse, UploadUrlRequest, UploadUrlResponse } from '../proto/avatar_pb';
+import { GetAvatarViewRequest, GetAvatarViewResponse, UploadUrlRequest, UploadUrlResponse } from '../proto/grpc-proto/avatar_pb';
 import { Metadata,  ServiceError, status } from '@grpc/grpc-js';
-import { DefaultAuthResponse, LoginRequest } from '../proto/auth_pb';
+import { DefaultAuthResponse, LoginRequest } from '../proto/grpc-proto/auth_pb';
 import fetch from 'node-fetch';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 chai.should();
@@ -37,6 +37,7 @@ describe('AvatarService', () => {
                 throw err;
             }
             expect(res.getUrl()).to.be.a('string');
+            console.log("UPLOAD URL" + res.getUrl());
             // Upload avatar.png to the URL
             fetch(res.getUrl(), {
                 method: 'PUT',
@@ -45,8 +46,11 @@ describe('AvatarService', () => {
                     'Content-Type': 'image/png',
                 },
             }).then((res) => {
+                console.log("UPLOAD STATUS: " + res.status)
                 expect(res.status).to.equal(200);
                 done();
+            }).catch((err) => {
+                throw err;
             });
 
         });
@@ -54,7 +58,7 @@ describe('AvatarService', () => {
     it('should error when getting upload URL without metadata', (done) => {
         const uploadUrlRequest = new UploadUrlRequest();
         uploadUrlRequest.setFilename('test.jpg');
-        avatarClient.requestAUploadURL(uploadUrlRequest, (err: ServiceError | null, res: UploadUrlResponse) => {
+        avatarClient.requestAUploadURL(uploadUrlRequest, (err: ServiceError | null) => {
             expect(err?.code).to.equal(status.UNAUTHENTICATED);
             if(!err){
                 throw new Error('Should have errored');
@@ -83,22 +87,64 @@ describe('AvatarService', () => {
                     const hashFile = crypto.createHash('sha256').update(fs.readFileSync('./src/test/avatar.png')).digest('hex');
                     const hashDownloadedFile = crypto.createHash('sha256').update(fs.readFileSync('./src/test/avatar-downloaded.png')).digest('hex');
                     expect(hashFile).to.equal(hashDownloadedFile);
-                    console.log(hashFile);
+                    // console.log(hashFile);
+                    // Delete the downloaded avatar
+                    fs.unlinkSync('./src/test/avatar-downloaded.png');
+
+                    done();
+                    
+                });
+                file.on('error', (err) => {
+                    throw err;
+                });
+
+            }).catch((err) => {
+                throw err;
+            })
+        });
+    }).timeout(5000);
+    it('should get the correct avatr on login', (done) => {
+        const loginRequest = new LoginRequest();
+        loginRequest.setUsername('user');
+        loginRequest.setPassword('User123');
+        client.login(loginRequest, (err: ServiceError | null, res: DefaultAuthResponse) => {
+            if (err){
+                throw err;
+            }
+            expect(res.getUser()?.getUsername()).to.equal('user');
+            expect(res.getUser()?.getAvatar()).to.be.a('string');
+            // Download avatar.png from the URL
+            fetch(res.getUser()?.getAvatar() || '', {
+                method: 'GET',
+            }).then((res) => {
+                expect(res.status).to.equal(200);
+                // Compare the downloaded avatar with the uploaded avatar
+                const file = fs.createWriteStream('./src/test/avatar-downloaded.png');
+                res.body.pipe(file);
+                file.on('finish', () => {
+                    file.close();
+                    const hashFile = crypto.createHash('sha256').update(fs.readFileSync('./src/test/avatar.png')).digest('hex');
+                    const hashDownloadedFile = crypto.createHash('sha256').update(fs.readFileSync('./src/test/avatar-downloaded.png')).digest('hex');
+                    expect(hashFile).to.equal(hashDownloadedFile);
+                    // console.log(hashFile);
                     // Delete the downloaded avatar
                     fs.unlinkSync('./src/test/avatar-downloaded.png');
                     
                     done();
-                    
+                });
+                file.on('error', (err) => {
+                    throw err;
                 });
 
-
-            });
+            }).catch((err) => {
+                throw err;
+            })
         });
     }).timeout(5000);
     it('should error when getting avatar of user that does not exist', (done) => {
         const getAvatarViewRequest = new GetAvatarViewRequest();
         getAvatarViewRequest.setUserid(999999);
-        avatarClient.getAvatarView(getAvatarViewRequest, (err: ServiceError | null, res: GetAvatarViewResponse) => {
+        avatarClient.getAvatarView(getAvatarViewRequest, (err: ServiceError | null) => {
             expect(err?.code).to.equal(status.NOT_FOUND);
             if(!err){
                 throw new Error('Should have errored');
@@ -107,7 +153,7 @@ describe('AvatarService', () => {
         });
     });
     it('should error when deleting avatar of user without metadata', (done) => {
-        avatarClient.delete(new Empty(), (err: ServiceError | null, res: Empty) => {
+        avatarClient.delete(new Empty(), (err: ServiceError | null) => {
             expect(err?.code).to.equal(status.UNAUTHENTICATED);
             if(!err){
                 throw new Error('Should have errored');

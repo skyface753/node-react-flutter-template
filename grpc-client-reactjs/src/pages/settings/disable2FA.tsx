@@ -3,7 +3,7 @@ import React from 'react';
 // import api from '../../services/api';
 import { AxiosError, AxiosResponse } from 'axios';
 import { grpcApi } from '../../services/grpc-api/grpc-client';
-import { DisableTOTPRequest, DisableTOTPResponse } from '../../proto/auth_pb';
+import { DisableTOTPRequest, DisableTOTPResponse } from '../../proto/grpc-proto/auth_pb';
 import { RpcError } from 'grpc-web';
 
 interface disabel2FAError extends AxiosError {

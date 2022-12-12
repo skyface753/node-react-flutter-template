@@ -10,7 +10,7 @@ import { AuthContext } from '../App';
 // import { uninterceptedAxiosInstance } from '../services/api';
 import { ActionType } from '../store/reducer';
 import { grpcBaseAuthService } from '../services/grpc-api/grpc-client';
-import { DefaultAuthResponse, LoginRequest } from '../proto/auth_pb';
+import { DefaultAuthResponse, LoginRequest } from '../proto/grpc-proto/auth_pb';
 import { RpcError, StatusCode } from 'grpc-web';
 // import api from '../services/api.js';
 // import ApiService from '../services/apiService';

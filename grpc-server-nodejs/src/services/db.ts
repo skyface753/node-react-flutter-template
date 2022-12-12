@@ -3,7 +3,7 @@ import { Pool, PoolConfig } from 'pg';
 import { isProduction } from '../config';
 
 import { PrismaClient } from '@prisma/client';
-import { Role } from '../proto/auth_pb';
+import { Role } from '../proto//grpc-proto/auth_pb';
 export const prismaClient = new PrismaClient();
 
 const dbConf = {

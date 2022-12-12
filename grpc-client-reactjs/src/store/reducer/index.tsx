@@ -1,4 +1,4 @@
-import { DefaultAuthResponse, User } from '../../proto/auth_pb';
+import { DefaultAuthResponse, User } from '../../proto/grpc-proto/auth_pb';
 
 export enum ActionType {
   LOGIN = 'LOGIN',

@@ -7,7 +7,7 @@ import {
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-import { IAuthServiceServer } from '../proto/auth_grpc_pb';
+import { IAuthServiceServer } from '../proto/grpc-proto/auth_grpc_pb';
 import {
   LoginRequest,
   DefaultAuthResponse,
@@ -25,7 +25,7 @@ import {
   VerifyTOTPResponse,
   DisableTOTPRequest,
   DisableTOTPResponse,
-} from '../proto/auth_pb';
+} from '../proto/grpc-proto/auth_pb';
 import * as redis from 'redis';
 import { BCRYPT_ROUNDS, JWT_SECRET, REDIS, ttl } from '../config';
 import { validatePassword, validateUsername } from '../helpers/validator';

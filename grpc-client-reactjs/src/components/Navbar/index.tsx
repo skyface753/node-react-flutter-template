@@ -8,7 +8,7 @@ import config from '../../config.json';
 import { AxiosResponse } from 'axios';
 import { ActionType } from '../../store/reducer';
 import ProfilePictureComponent from '../ProfilePicture';
-import { LogoutRequest, LogoutResponse, Role } from '../../proto/auth_pb';
+import { LogoutRequest, LogoutResponse, Role } from '../../proto/grpc-proto/auth_pb';
 import { grpcApi } from '../../services/grpc-api/grpc-client';
 // import { ReactComponent as Logo } from "../../img/SkyBlog-Logo.svg";
 

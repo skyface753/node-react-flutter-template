@@ -1,5 +1,5 @@
 // package: template
-// file: avatar.proto
+// file: grpc-proto/avatar.proto
 
 /* tslint:disable */
 /* eslint-disable */
@@ -108,6 +108,43 @@ export class GetAvatarViewResponse extends jspb.Message {
 }
 
 export namespace GetAvatarViewResponse {
+    export type AsObject = {
+        url: string,
+    }
+}
+
+export class ConfirmUploadRequest extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ConfirmUploadRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: ConfirmUploadRequest): ConfirmUploadRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ConfirmUploadRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ConfirmUploadRequest;
+    static deserializeBinaryFromReader(message: ConfirmUploadRequest, reader: jspb.BinaryReader): ConfirmUploadRequest;
+}
+
+export namespace ConfirmUploadRequest {
+    export type AsObject = {
+    }
+}
+
+export class ConfirmUploadResponse extends jspb.Message { 
+    getUrl(): string;
+    setUrl(value: string): ConfirmUploadResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ConfirmUploadResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: ConfirmUploadResponse): ConfirmUploadResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ConfirmUploadResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ConfirmUploadResponse;
+    static deserializeBinaryFromReader(message: ConfirmUploadResponse, reader: jspb.BinaryReader): ConfirmUploadResponse;
+}
+
+export namespace ConfirmUploadResponse {
     export type AsObject = {
         url: string,
     }

@@ -20,7 +20,7 @@ import {
   DisableTOTPResponse,
   LogoutRequest,
   LogoutResponse,
-} from '../proto/auth_pb';
+} from '../proto/grpc-proto/auth_pb';
 import { Metadata,  ServiceError, status } from '@grpc/grpc-js';
 
 chai.should();

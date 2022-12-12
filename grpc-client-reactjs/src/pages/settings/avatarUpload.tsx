@@ -1,5 +1,5 @@
 import React from 'react';
-import { UploadUrlRequest, UploadUrlResponse } from '../../proto/avatar_pb';
+import { ConfirmUploadRequest, ConfirmUploadResponse, UploadUrlRequest, UploadUrlResponse } from '../../proto/grpc-proto/avatar_pb';
 import { grpcApi } from '../../services/grpc-api/grpc-client';
 
 type Props = {
@@ -74,8 +74,11 @@ export default class AvatarUpload extends React.Component<Props, State> {
               message: 'The file was uploaded successfully!',
               currentFile: undefined,
             });
+            grpcApi.avatarService.confirmUpload(new ConfirmUploadRequest(), null).then((response: ConfirmUploadResponse) => {
+              console.log("New avatar: path: " +response.getUrl());
+            });
             // TODO: Update the avatar in the user settings (url from the response currently not exposed)
-            this.props.changeAvatarCallback(uploadURL);
+            this.props.changeAvatarCallback(response.getUrl());
           })
           .catch((err) => {
             console.log(err);

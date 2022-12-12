@@ -1,9 +1,9 @@
 import * as grpc from '@grpc/grpc-js';
 import { addReflection } from 'grpc-server-reflection';
-import { AuthServiceService } from './proto/auth_grpc_pb';
+import { AuthServiceService } from './proto/grpc-proto/auth_grpc_pb';
 import { AuthServer } from './services/auth_service';
 import { AvatarServer } from './services/avatar_service';
-import { AvatarServiceService } from './proto/avatar_grpc_pb';
+import { AvatarServiceService } from './proto/grpc-proto/avatar_grpc_pb';
 
 const server = new grpc.Server();
 addReflection(server, './src/proto/descriptor_set.bin');

@@ -14,7 +14,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	s3Client "template/server/helper/s3"
+	// s3Client "template/server/helper/s3"
+	awsS3Client "template/server/helper/s3aws"
 )
 
 //	func (s *server) GetBookList(ctx context.Context, in *pb.GetBookListRequest) (*pb.GetBookListResponse, error) {
@@ -30,16 +31,26 @@ const (
 func main() {
 	godotenv.Load()
 
-	listener, err := net.Listen("tcp", "localhost"+port)
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		panic(err)
 	}
 	log.Printf("Server listening on port %v", port)
+	
+	// resS3 := awsS3Client.Test()
+	// log.Printf("S3: %v", resS3)
 	db.InitDB()
 	redis.InitRedis()
 	defer db.CloseDB()
 
-	s3Client.NewClient()
+	// s3Client.NewClient()
+	awsS3Client.NewClient()
+	// log.Printf("S3: %v", awsS3Client.Test())
+	// url, error := awsS3Client.GetPresignedURL("TWESTFOFIKDFK")
+	// if error != nil {
+	// 	log.Printf("Error: %v", error)
+	// }
+	// log.Printf("URL: %v", url)
 
 	
 
@@ -52,18 +63,4 @@ func main() {
 	}
 }
 
-// func getSampleBooks() []*pb.Book {
-// 	sampleBooks := []*pb.Book{
-// 		{
-// 			Title:     "The Hitchhiker's Guide to the Galaxy",
-// 			Author:    "Douglas Adams",
-// 			PageCount: 42,
-// 		},
-// 		{
-// 			Title:     "The Lord of the Rings",
-// 			Author:    "J.R.R. Tolkien",
-// 			PageCount: 1234,
-// 		},
-// 	}
-// 	return sampleBooks
-// }
+

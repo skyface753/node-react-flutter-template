@@ -8,7 +8,7 @@
 // versions:
 // 	protoc-gen-grpc-web v1.4.1
 // 	protoc              v3.20.3
-// source: avatar.proto
+// source: grpc-proto/avatar.proto
 
 
 /* eslint-disable */
@@ -134,6 +134,67 @@ proto.template.AvatarServicePromiseClient.prototype.requestAUploadURL =
       request,
       metadata || {},
       methodDescriptor_AvatarService_RequestAUploadURL);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.template.ConfirmUploadRequest,
+ *   !proto.template.ConfirmUploadResponse>}
+ */
+const methodDescriptor_AvatarService_ConfirmUpload = new grpc.web.MethodDescriptor(
+  '/template.AvatarService/ConfirmUpload',
+  grpc.web.MethodType.UNARY,
+  proto.template.ConfirmUploadRequest,
+  proto.template.ConfirmUploadResponse,
+  /**
+   * @param {!proto.template.ConfirmUploadRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.template.ConfirmUploadResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.template.ConfirmUploadRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.template.ConfirmUploadResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.template.ConfirmUploadResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.template.AvatarServiceClient.prototype.confirmUpload =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/template.AvatarService/ConfirmUpload',
+      request,
+      metadata || {},
+      methodDescriptor_AvatarService_ConfirmUpload,
+      callback);
+};
+
+
+/**
+ * @param {!proto.template.ConfirmUploadRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.template.ConfirmUploadResponse>}
+ *     Promise that resolves to the response
+ */
+proto.template.AvatarServicePromiseClient.prototype.confirmUpload =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/template.AvatarService/ConfirmUpload',
+      request,
+      metadata || {},
+      methodDescriptor_AvatarService_ConfirmUpload);
 };
 
 

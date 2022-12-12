@@ -4,7 +4,7 @@ import { AuthContext } from '../App';
 // import { uninterceptedAxiosInstance } from '../services/api';
 import { ActionType } from '../store/reducer';
 import { grpcApi, grpcBaseAuthService } from '../services/grpc-api/grpc-client';
-import { DefaultAuthResponse, RegisterRequest } from '../proto/auth_pb';
+import { DefaultAuthResponse, RegisterRequest } from '../proto/grpc-proto/auth_pb';
 // import GitHubLoginButton from "../components/GitHubLoginButton";
 
 export default function Register() {
