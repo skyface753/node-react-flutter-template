@@ -1,7 +1,7 @@
 import React from 'react';
 // import grpcClient from '../grpc-client';
 // import { grpcAuthService } from '../services/grpc-api/grpc-client';
-import { StatusRequest, StatusResponse } from '../proto/auth_pb';
+import { StatusRequest, StatusResponse } from '../proto/grpc-proto/auth_pb';
 import { grpcApi } from '../services/grpc-api/grpc-client';
 export default function Home() {
   const [status, setStatus] = React.useState<StatusResponse>();

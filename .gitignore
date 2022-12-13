@@ -6,3 +6,4 @@ server-nodejs-grpc/build/**
 server-nodejs-http/files/avatars/**
 server-nodejs-http/dist/**
 server-nodejs-http/build/**
+.DS_Store

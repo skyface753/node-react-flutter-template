@@ -3,10 +3,10 @@ import {
   AuthServicePromiseClient,
   DefaultAuthResponse,
   RefreshTokenRequest,
-} from '../../proto/auth_grpc_web_pb';
+} from '../../proto/grpc-proto/auth_grpc_web_pb';
 
 import { storeLogin } from '../../store/reducer';
-import { AvatarServicePromiseClient } from '../../proto/avatar_grpc_web_pb';
+import { AvatarServicePromiseClient } from '../../proto/grpc-proto/avatar_grpc_web_pb';
 
 class AuthInterceptor {
   intercept(request: any, invoker: any) {

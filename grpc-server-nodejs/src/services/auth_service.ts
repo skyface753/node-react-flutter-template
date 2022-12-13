@@ -7,7 +7,7 @@ import {
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-import { IAuthServiceServer } from '../proto/auth_grpc_pb';
+import { IAuthServiceServer } from '../proto/grpc-proto/auth_grpc_pb';
 import {
   LoginRequest,
   DefaultAuthResponse,
@@ -25,7 +25,7 @@ import {
   VerifyTOTPResponse,
   DisableTOTPRequest,
   DisableTOTPResponse,
-} from '../proto/auth_pb';
+} from '../proto/grpc-proto/auth_pb';
 import * as redis from 'redis';
 import { BCRYPT_ROUNDS, JWT_SECRET, REDIS, ttl } from '../config';
 import { validatePassword, validateUsername } from '../helpers/validator';
@@ -135,7 +135,10 @@ export class AuthServer implements IAuthServiceServer {
 
       if (!match) {
         onLoginFail(remoteIp);
-        return callback(new Error('Invalid username or password 2'), null);
+        return callback({
+          message: 'Invalid password',
+          code: status.UNAUTHENTICATED,
+        })
       }
       if (user.user_2fa?.secretbase32 && user.user_2fa?.verified) {
         if (!totpcode) {
@@ -155,13 +158,14 @@ export class AuthServer implements IAuthServiceServer {
       }
 
       onLoginSuccess(remoteIp);
+
       // createAndSendTokens(res, user.id);
       const loginResponse = new DefaultAuthResponse();
-      const role = user.rolefk === 2 ? Role.ADMIN : Role.USER;
+      // const role = user.rolefk === 1 ? Role.ADMIN : Role.USER;
       const thisUser = new User()
         .setId(user.id)
         .setUsername(user.username)
-        .setRole(role);
+        .setRole(user.rolefk);
       loginResponse.setUser(thisUser);
       createAndSendTokens(callback, user.id);
     } catch (err) {
@@ -274,7 +278,7 @@ export class AuthServer implements IAuthServiceServer {
         data: {
           username: username,
           password: hashedPassword,
-          rolefk: 1,
+          rolefk: Role.USER,
         },
       })
       .then((result) => {
@@ -723,7 +727,7 @@ async function createAndSendTokens(callback: any, userId: number) {
   const user = new User()
     .setId(userDb.id)
     .setUsername(userDb.username)
-    .setRole(userDb.rolefk === 2 ? Role.ADMIN : Role.USER);
+    .setRole(userDb.rolefk);
   if (userDb.avatar?.generatedpath) {
     const avatarUrl = await getAvatarUrl(userDb.avatar.generatedpath);
     user.setAvatar(avatarUrl);

@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package template;
+
+import "google/protobuf/empty.proto";
+import "grpc-proto/google/api/annotations.proto";
+option go_package = "pb/template";
+
+message Avatar{
+    string generatedPath = 1;
+    string originalName = 2;
+    string type = 3;
+}
+
+message UploadUrlRequest{
+    string filename = 1;
+}
+message UploadUrlResponse{
+    string url = 1;
+}
+
+
+message GetAvatarViewRequest{
+    int32 userId = 1;
+}
+message GetAvatarViewResponse{
+    string url = 1;
+}
+
+message ConfirmUploadRequest{
+    
+}
+message ConfirmUploadResponse{
+    string url = 1;
+}
+
+message UploadImageRequest {
+    oneof data {
+      ImageInfo info = 1;
+      bytes chunk_data = 2;
+    };
+  }
+
+  message ImageInfo {
+    string type = 1;
+    string filename = 2;
+  }
+
+  message UploadImageResponse {
+    string generatedPath = 1;  
+  }
+
+service AvatarService{
+    rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse){
+        option (google.api.http) = {
+            get: "/api/v1/avatar/upload/url"
+         
+        };
+    }
+    rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse){
+        option (google.api.http) = {
+            post: "/api/v1/avatar/upload"
+            body: "*"
+        };
+    }
+    rpc ConfirmUpload(ConfirmUploadRequest) returns (ConfirmUploadResponse){
+        option (google.api.http) = {
+            post: "/api/v1/avatar/confirm"
+            body: "*"
+        };
+    }
+    rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            delete: "/api/v1/avatar"
+        };
+    }
+    rpc GetAvatarView(GetAvatarViewRequest) returns (GetAvatarViewResponse){
+        option (google.api.http) = {
+            get: "/api/v1/avatar/view"
+        };
+    }
+}

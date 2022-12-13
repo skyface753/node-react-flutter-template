@@ -3,6 +3,7 @@ import { Pool, PoolConfig } from 'pg';
 import { isProduction } from '../config';
 
 import { PrismaClient } from '@prisma/client';
+import { Role } from '../proto//grpc-proto/auth_pb';
 export const prismaClient = new PrismaClient();
 
 const dbConf = {
@@ -115,13 +116,14 @@ async function initDb() {
       'CREATE TABLE IF NOT EXISTS testuser.role (id SERIAL PRIMARY KEY, title VARCHAR(255) UNIQUE NOT NULL);',
       []
     );
+
     await queryPrimary(
-      'INSERT INTO testuser.role (title) VALUES ($1) ON CONFLICT DO NOTHING',
-      ['user']
+      'INSERT INTO testuser.role (id, title) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [Role.ADMIN, 'admin']
     );
     await queryPrimary(
-      'INSERT INTO testuser.role (title) VALUES ($1) ON CONFLICT DO NOTHING',
-      ['admin']
+      'INSERT INTO testuser.role (id, title) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [Role.USER, 'user']
     );
     // id, username (unique), password, roleFk
     await queryPrimary(
@@ -132,11 +134,11 @@ async function initDb() {
     const hashedAdminPassword = await bycrypt.hash('Admin123', 10);
     await queryPrimary(
       'INSERT INTO testuser.user (username, password, roleFk) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-      ['user', hashedUserPassword, 1]
+      ['user', hashedUserPassword, Role.USER]
     );
     await queryPrimary(
       'INSERT INTO testuser.user (username, password, roleFk) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-      ['admin', hashedAdminPassword, 2]
+      ['admin', hashedAdminPassword, Role.ADMIN]
     );
     // await queryPrimary(
     //     'CREATE TABLE IF NOT EXISTS testuser.avatar (userFk INTEGER REFERENCES testuser.user(id) ON DELETE CASCADE, originalName VARCHAR(255) NOT NULL, generatedPath VARCHAR(255) NOT NULL, type VARCHAR(255) NOT NULL, CONSTRAINT avatar_pk PRIMARY KEY (userFk, generatedPath));',

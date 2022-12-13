@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { AuthContext } from '../App';
-import { Role } from '../proto/auth_pb';
+import { Role } from '../proto/grpc-proto/auth_pb';
 
 export default function CheckIfAdmin() {
   const { state } = useContext(AuthContext);

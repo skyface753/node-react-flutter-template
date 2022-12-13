@@ -1,4 +1,14 @@
 services:
+  grpc-server-go:
+    image: skyface753/grpc-server-go
+    ports:
+      - 50051:50051
+    depends_on:
+      - primary
+      - redis
+      - minio
+
+
   primary:
     image: postgres
     environment:

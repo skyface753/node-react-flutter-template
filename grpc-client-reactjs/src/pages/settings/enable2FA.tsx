@@ -9,7 +9,7 @@ import {
   EnableTOTPResponse,
   VerifyTOTPRequest,
   VerifyTOTPResponse,
-} from '../../proto/auth_pb';
+} from '../../proto/grpc-proto/auth_pb';
 
 var empty2FAData = {
   url: '',

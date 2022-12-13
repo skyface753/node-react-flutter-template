@@ -1,6 +1,6 @@
 import React from 'react';
 import ProfilePictureComponent from '../components/ProfilePicture';
-import { StatusRequest, StatusResponse, User } from '../proto/auth_pb';
+import { StatusRequest, StatusResponse, User } from '../proto/grpc-proto/auth_pb';
 import { grpcApi } from '../services/grpc-api/grpc-client';
 // import api from '../services/api';
 
