@@ -60,6 +60,28 @@ function deserialize_template_GetAvatarViewResponse(buffer_arg) {
   return grpc$proto_avatar_pb.GetAvatarViewResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_template_UploadImageRequest(arg) {
+  if (!(arg instanceof grpc$proto_avatar_pb.UploadImageRequest)) {
+    throw new Error('Expected argument of type template.UploadImageRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_UploadImageRequest(buffer_arg) {
+  return grpc$proto_avatar_pb.UploadImageRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_template_UploadImageResponse(arg) {
+  if (!(arg instanceof grpc$proto_avatar_pb.UploadImageResponse)) {
+    throw new Error('Expected argument of type template.UploadImageResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_template_UploadImageResponse(buffer_arg) {
+  return grpc$proto_avatar_pb.UploadImageResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_template_UploadUrlRequest(arg) {
   if (!(arg instanceof grpc$proto_avatar_pb.UploadUrlRequest)) {
     throw new Error('Expected argument of type template.UploadUrlRequest');
@@ -94,6 +116,17 @@ var AvatarServiceService = exports.AvatarServiceService = {
     requestDeserialize: deserialize_template_UploadUrlRequest,
     responseSerialize: serialize_template_UploadUrlResponse,
     responseDeserialize: deserialize_template_UploadUrlResponse,
+  },
+  uploadImage: {
+    path: '/template.AvatarService/UploadImage',
+    requestStream: true,
+    responseStream: false,
+    requestType: grpc$proto_avatar_pb.UploadImageRequest,
+    responseType: grpc$proto_avatar_pb.UploadImageResponse,
+    requestSerialize: serialize_template_UploadImageRequest,
+    requestDeserialize: deserialize_template_UploadImageRequest,
+    responseSerialize: serialize_template_UploadImageResponse,
+    responseDeserialize: deserialize_template_UploadImageResponse,
   },
   confirmUpload: {
     path: '/template.AvatarService/ConfirmUpload',

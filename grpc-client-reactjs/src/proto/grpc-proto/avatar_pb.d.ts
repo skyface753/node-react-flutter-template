@@ -149,3 +149,86 @@ export namespace ConfirmUploadResponse {
         url: string,
     }
 }
+
+export class UploadImageRequest extends jspb.Message { 
+
+    hasInfo(): boolean;
+    clearInfo(): void;
+    getInfo(): ImageInfo | undefined;
+    setInfo(value?: ImageInfo): UploadImageRequest;
+
+    hasChunkData(): boolean;
+    clearChunkData(): void;
+    getChunkData(): Uint8Array | string;
+    getChunkData_asU8(): Uint8Array;
+    getChunkData_asB64(): string;
+    setChunkData(value: Uint8Array | string): UploadImageRequest;
+
+    getDataCase(): UploadImageRequest.DataCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UploadImageRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: UploadImageRequest): UploadImageRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UploadImageRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UploadImageRequest;
+    static deserializeBinaryFromReader(message: UploadImageRequest, reader: jspb.BinaryReader): UploadImageRequest;
+}
+
+export namespace UploadImageRequest {
+    export type AsObject = {
+        info?: ImageInfo.AsObject,
+        chunkData: Uint8Array | string,
+    }
+
+    export enum DataCase {
+        DATA_NOT_SET = 0,
+        INFO = 1,
+        CHUNK_DATA = 2,
+    }
+
+}
+
+export class ImageInfo extends jspb.Message { 
+    getType(): string;
+    setType(value: string): ImageInfo;
+    getFilename(): string;
+    setFilename(value: string): ImageInfo;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ImageInfo.AsObject;
+    static toObject(includeInstance: boolean, msg: ImageInfo): ImageInfo.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ImageInfo, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ImageInfo;
+    static deserializeBinaryFromReader(message: ImageInfo, reader: jspb.BinaryReader): ImageInfo;
+}
+
+export namespace ImageInfo {
+    export type AsObject = {
+        type: string,
+        filename: string,
+    }
+}
+
+export class UploadImageResponse extends jspb.Message { 
+    getGeneratedpath(): string;
+    setGeneratedpath(value: string): UploadImageResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UploadImageResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: UploadImageResponse): UploadImageResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UploadImageResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UploadImageResponse;
+    static deserializeBinaryFromReader(message: UploadImageResponse, reader: jspb.BinaryReader): UploadImageResponse;
+}
+
+export namespace UploadImageResponse {
+    export type AsObject = {
+        generatedpath: string,
+    }
+}

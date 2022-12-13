@@ -3,7 +3,6 @@ syntax = "proto3";
 package template;
 
 import "google/protobuf/empty.proto";
-
 option go_package = "pb/template";
 
 message Avatar{
@@ -12,12 +11,30 @@ message Avatar{
     string type = 3;
 }
 
-message UploadUrlRequest{
+message UploadGetUrlRequest{
     string filename = 1;
 }
-message UploadUrlResponse{
-    string url = 1;
+
+message UploadGetUrlResponse{
+    string url = 1; // url to upload to s3
+    string tokenToConfirm = 2;  // token to confirm upload (filename, originalname, type) -> save to db
 }
+
+message UploadConfirmRequest{
+    string token = 1;   // token to confirm upload (filename, originalname, type) -> save to db
+}
+
+message UploadConfirmResponse{
+    string url = 1; // url to get avatar from s3
+}
+
+// message UploadUrlRequest{
+//     string filename = 1;
+// }
+// message UploadUrlResponse{
+//     string url = 1;
+// }
+
 
 message GetAvatarViewRequest{
     int32 userId = 1;
@@ -26,16 +43,34 @@ message GetAvatarViewResponse{
     string url = 1;
 }
 
-message ConfirmUploadRequest{
+// message ConfirmUploadRequest{
     
-}
-message ConfirmUploadResponse{
-    string url = 1;
-}
+// }
+// message ConfirmUploadResponse{
+//     string url = 1;
+// }
+
+message TESTUploadImageRequest {
+    oneof data {
+      TESTImageInfo info = 1;
+      bytes chunk_data = 2;
+    };
+  }
+
+  message TESTImageInfo {
+    string type = 1;
+    string filename = 2;
+  }
+
+  message TESTUploadImageResponse {
+    string generatedPath = 1;  
+  }
 
 service AvatarService{
-    rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
-    rpc ConfirmUpload(ConfirmUploadRequest) returns (ConfirmUploadResponse); // confirm upload and save to db
+    // rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
+    rpc GetUploadURL(UploadGetUrlRequest) returns (UploadGetUrlResponse);
+    rpc ConfirmUpload(UploadConfirmRequest) returns (UploadConfirmResponse);
+    rpc TESTUploadImage(stream TESTUploadImageRequest) returns (TESTUploadImageResponse);
     rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc GetAvatarView(GetAvatarViewRequest) returns (GetAvatarViewResponse);
 }

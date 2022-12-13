@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 	"net"
+	pb "template/server/grpc-proto"
 	db "template/server/helper/db"
-	pb "template/server/pb/template"
+	"template/server/helper/getenv"
 
 	services "template/server/services"
 
@@ -14,22 +15,22 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	// s3Client "template/server/helper/s3"
-	awsS3Client "template/server/helper/s3aws"
+	"template/server/helper/s3"
 )
 
-//	func (s *server) GetBookList(ctx context.Context, in *pb.GetBookListRequest) (*pb.GetBookListResponse, error) {
-//		log.Printf("Received request: %v", in.ProtoReflect().Descriptor().FullName())
-//		return &pb.GetBookListResponse{
-//			Books: getSampleBooks(),
-//		}, nil
-//	}
-const (
+var (
 	port = ":50051"
 )
 
 func main() {
 	godotenv.Load()
+
+	prod := getenv.GetEnv("PROD", "FALSE")
+	if prod == "TRUE" {
+		log.Printf("PROD")
+	}else{
+		port = "localhost" + port
+	}
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
@@ -37,20 +38,10 @@ func main() {
 	}
 	log.Printf("Server listening on port %v", port)
 	
-	// resS3 := awsS3Client.Test()
-	// log.Printf("S3: %v", resS3)
 	db.InitDB()
 	redis.InitRedis()
 	defer db.CloseDB()
-
-	// s3Client.NewClient()
-	awsS3Client.NewClient()
-	// log.Printf("S3: %v", awsS3Client.Test())
-	// url, error := awsS3Client.GetPresignedURL("TWESTFOFIKDFK")
-	// if error != nil {
-	// 	log.Printf("Error: %v", error)
-	// }
-	// log.Printf("URL: %v", url)
+	s3.NewClient()
 
 	
 

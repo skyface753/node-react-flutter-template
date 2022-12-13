@@ -24,6 +24,12 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AvatarServiceClient interface {
 	RequestAUploadURL(ctx context.Context, in *UploadUrlRequest, opts ...grpc.CallOption) (*UploadUrlResponse, error)
+	//	rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse){
+	//	    option (google.api.http) = {
+	//	        post: "/api/v1/avatar/upload"
+	//	        body: "*"
+	//	    };
+	//	}
 	ConfirmUpload(ctx context.Context, in *ConfirmUploadRequest, opts ...grpc.CallOption) (*ConfirmUploadResponse, error)
 	Delete(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAvatarView(ctx context.Context, in *GetAvatarViewRequest, opts ...grpc.CallOption) (*GetAvatarViewResponse, error)
@@ -78,6 +84,12 @@ func (c *avatarServiceClient) GetAvatarView(ctx context.Context, in *GetAvatarVi
 // for forward compatibility
 type AvatarServiceServer interface {
 	RequestAUploadURL(context.Context, *UploadUrlRequest) (*UploadUrlResponse, error)
+	//	rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse){
+	//	    option (google.api.http) = {
+	//	        post: "/api/v1/avatar/upload"
+	//	        body: "*"
+	//	    };
+	//	}
 	ConfirmUpload(context.Context, *ConfirmUploadRequest) (*ConfirmUploadResponse, error)
 	Delete(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	GetAvatarView(context.Context, *GetAvatarViewRequest) (*GetAvatarViewResponse, error)

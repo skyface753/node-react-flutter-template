@@ -3,7 +3,7 @@ package generators
 import (
 	"context"
 	"log"
-	"os"
+	"template/server/helper/getenv"
 	"template/server/helper/redis"
 	"time"
 
@@ -48,11 +48,8 @@ func GenerateJwt(id int) (string, error) {
 		// "exp":  time.Now().Add(time.Second * 30).Unix(),
 	})
 
-
-	var jwtSecret string = os.Getenv("JWT_SECRET")
-	if(jwtSecret == "") {
-		jwtSecret = "secret"
-	}
+	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+	
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
 		log.Printf("Error GEN JWT: %v", err)
@@ -61,11 +58,27 @@ func GenerateJwt(id int) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyJwt(tokenString string) (int, error) {
-	var jwtSecret string = os.Getenv("JWT_SECRET")
-	if(jwtSecret == "") {
-		jwtSecret = "secret"
+func GenerateJwtForS3Upload(filename string, originalName string, fileType string) (string, error){
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"filename": filename,
+		"originalName": originalName,
+		"fileType": fileType,
+		"exp":  time.Now().Add(time.Minute * 5).Unix(),
+	})
+
+	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+
+	tokenString, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		log.Printf("Error GEN JWT: %v", err)
+		return "", err
 	}
+	return tokenString, nil
+
+}
+
+func VerifyJwt(tokenString string) (int, error) {
+	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, status.Error(codes.Unauthenticated, "Invalid token")
@@ -81,4 +94,25 @@ func VerifyJwt(tokenString string) (int, error) {
 		return userId, nil
 	}
 	return 0, status.Error(codes.Unauthenticated, "Invalid token")
+}
+
+func VerifyJwtForS3Upload(tokenString string) (string, string, string, error) {
+	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, status.Error(codes.Unauthenticated, "Invalid token")
+		}
+		return []byte(jwtSecret), nil
+	})
+	if err != nil {
+		return "", "", "", status.Error(codes.Unauthenticated, "Invalid token")
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// interface {} is float64, not int
+		filename := claims["filename"].(string)
+		originalName := claims["originalName"].(string)
+		fileType := claims["fileType"].(string)
+		return filename, originalName, fileType, nil
+	}
+	return "", "", "", status.Error(codes.Unauthenticated, "Invalid token")
 }

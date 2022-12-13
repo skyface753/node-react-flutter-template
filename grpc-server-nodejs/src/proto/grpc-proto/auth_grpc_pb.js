@@ -4,7 +4,6 @@
 var grpc = require('@grpc/grpc-js');
 var grpc$proto_auth_pb = require('../grpc-proto/auth_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
-var grpc$proto_google_api_annotations_pb = require('../grpc-proto/google/api/annotations_pb.js');
 
 function serialize_template_DefaultAuthResponse(arg) {
   if (!(arg instanceof grpc$proto_auth_pb.DefaultAuthResponse)) {

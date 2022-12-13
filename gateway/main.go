@@ -34,7 +34,10 @@ func run() error {
   if err != nil {
     return err
   }
-
+  err = gw.RegisterAvatarServiceHandlerFromEndpoint(ctx, mux,  *grpcServerEndpoint, opts)
+  if err != nil {
+    return err
+  }
   // Start HTTP server (and proxy calls to gRPC server endpoint)
   return http.ListenAndServe("localhost:8081", mux)
   

@@ -10,11 +10,11 @@ import (
 	db "template/server/helper/db"
 	"template/server/helper/generators"
 	"template/server/helper/redis"
-	"template/server/helper/s3aws"
+	"template/server/helper/s3"
 
 	// s3Client "template/server/helper/s3"
+	pb "template/server/grpc-proto"
 	"template/server/helper/validator"
-	pb "template/server/pb/template"
 
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
@@ -49,6 +49,7 @@ func (s *AuthServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 		verified *bool
 		// avatarPath *string
 	)
+
 	
 	err := db.DB.QueryRow("SELECT id, password, secretbase32, verified FROM testuser.user LEFT JOIN testuser.user_2fa ON testuser.user.id = testuser.user_2fa.userfk LEFT JOIN testuser.avatar ON testuser.avatar.userfk = testuser.user.id WHERE LOWER(username) = LOWER($1)", usernameIn).Scan(&id, &password, &secretbase32, &verified)
 	if err != nil {
@@ -111,7 +112,7 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 	}
 	var avatarPathStr string
 	if(avatarPath != nil){
-		resS3, err :=		s3aws.PresignedGet(*avatarPath)
+		resS3, err :=		s3.PresignedGet(*avatarPath)
 		if err != nil {
 			log.Printf("Error getting the avatar from s3: %v", err)
 		}

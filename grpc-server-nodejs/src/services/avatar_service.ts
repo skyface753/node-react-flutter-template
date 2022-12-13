@@ -1,4 +1,11 @@
-import { handleUnaryCall, sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
+import {
+  handleClientStreamingCall,
+  handleUnaryCall,
+  sendUnaryData,
+  ServerReadableStream,
+  ServerUnaryCall,
+  status,
+} from '@grpc/grpc-js';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { IAvatarServiceServer } from '../proto/grpc-proto/avatar_grpc_pb';
 import {
@@ -6,6 +13,8 @@ import {
   ConfirmUploadResponse,
   GetAvatarViewRequest,
   GetAvatarViewResponse,
+  UploadImageRequest,
+  UploadImageResponse,
   UploadUrlRequest,
   UploadUrlResponse,
 } from '../proto/grpc-proto/avatar_pb';
@@ -36,11 +45,27 @@ export class AvatarServer implements IAvatarServiceServer {
     console.log('delete');
     callback(null, new Empty());
   }
+  //uploadImage: grpc.handleClientStreamingCall<grpc_proto_avatar_pb.UploadImageRequest, grpc_proto_avatar_pb.UploadImageResponse>
+  uploadImage(
+    call: ServerReadableStream<UploadImageRequest, UploadImageResponse>,
+    callback: sendUnaryData<UploadImageResponse>
+  ): void {
+    console.log('uploadImage');
+    call.on('data', (data) => {
+      console.log(data);
+    });
+    call.on('end', () => {
+      console.log('end');
+      callback(null, new UploadImageResponse());
+    });
+    throw new Error('Method not implemented.');
+  }
+
   confirmUpload(
     call: ServerUnaryCall<ConfirmUploadRequest, ConfirmUploadResponse>,
     callback: sendUnaryData<ConfirmUploadResponse>
   ): void {
-    console.log('confirmUpload'); 
+    console.log('confirmUpload');
     throw new Error('Method not implemented.');
     // callback(null, new ConfirmUploadResponse());
   }

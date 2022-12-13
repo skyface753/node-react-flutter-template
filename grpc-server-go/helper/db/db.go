@@ -50,7 +50,8 @@ func InitDB() {
 
 	err = DB.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error pinging database: %v", err)
+		// log.Fatal(err)
 	}
 	fmt.Println("Successfully connected to database!")
 }

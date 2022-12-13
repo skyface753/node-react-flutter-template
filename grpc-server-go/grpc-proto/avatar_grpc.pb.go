@@ -23,9 +23,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AvatarServiceClient interface {
-	RequestAUploadURL(ctx context.Context, in *UploadUrlRequest, opts ...grpc.CallOption) (*UploadUrlResponse, error)
-	UploadImage(ctx context.Context, opts ...grpc.CallOption) (AvatarService_UploadImageClient, error)
-	ConfirmUpload(ctx context.Context, in *ConfirmUploadRequest, opts ...grpc.CallOption) (*ConfirmUploadResponse, error)
+	// rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
+	GetUploadURL(ctx context.Context, in *UploadGetUrlRequest, opts ...grpc.CallOption) (*UploadGetUrlResponse, error)
+	ConfirmUpload(ctx context.Context, in *UploadConfirmRequest, opts ...grpc.CallOption) (*UploadConfirmResponse, error)
+	TESTUploadImage(ctx context.Context, opts ...grpc.CallOption) (AvatarService_TESTUploadImageClient, error)
 	Delete(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAvatarView(ctx context.Context, in *GetAvatarViewRequest, opts ...grpc.CallOption) (*GetAvatarViewResponse, error)
 }
@@ -38,56 +39,56 @@ func NewAvatarServiceClient(cc grpc.ClientConnInterface) AvatarServiceClient {
 	return &avatarServiceClient{cc}
 }
 
-func (c *avatarServiceClient) RequestAUploadURL(ctx context.Context, in *UploadUrlRequest, opts ...grpc.CallOption) (*UploadUrlResponse, error) {
-	out := new(UploadUrlResponse)
-	err := c.cc.Invoke(ctx, "/template.AvatarService/RequestAUploadURL", in, out, opts...)
+func (c *avatarServiceClient) GetUploadURL(ctx context.Context, in *UploadGetUrlRequest, opts ...grpc.CallOption) (*UploadGetUrlResponse, error) {
+	out := new(UploadGetUrlResponse)
+	err := c.cc.Invoke(ctx, "/template.AvatarService/GetUploadURL", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *avatarServiceClient) UploadImage(ctx context.Context, opts ...grpc.CallOption) (AvatarService_UploadImageClient, error) {
-	stream, err := c.cc.NewStream(ctx, &AvatarService_ServiceDesc.Streams[0], "/template.AvatarService/UploadImage", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &avatarServiceUploadImageClient{stream}
-	return x, nil
-}
-
-type AvatarService_UploadImageClient interface {
-	Send(*UploadImageRequest) error
-	CloseAndRecv() (*UploadImageResponse, error)
-	grpc.ClientStream
-}
-
-type avatarServiceUploadImageClient struct {
-	grpc.ClientStream
-}
-
-func (x *avatarServiceUploadImageClient) Send(m *UploadImageRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *avatarServiceUploadImageClient) CloseAndRecv() (*UploadImageResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(UploadImageResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *avatarServiceClient) ConfirmUpload(ctx context.Context, in *ConfirmUploadRequest, opts ...grpc.CallOption) (*ConfirmUploadResponse, error) {
-	out := new(ConfirmUploadResponse)
+func (c *avatarServiceClient) ConfirmUpload(ctx context.Context, in *UploadConfirmRequest, opts ...grpc.CallOption) (*UploadConfirmResponse, error) {
+	out := new(UploadConfirmResponse)
 	err := c.cc.Invoke(ctx, "/template.AvatarService/ConfirmUpload", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
+}
+
+func (c *avatarServiceClient) TESTUploadImage(ctx context.Context, opts ...grpc.CallOption) (AvatarService_TESTUploadImageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &AvatarService_ServiceDesc.Streams[0], "/template.AvatarService/TESTUploadImage", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &avatarServiceTESTUploadImageClient{stream}
+	return x, nil
+}
+
+type AvatarService_TESTUploadImageClient interface {
+	Send(*TESTUploadImageRequest) error
+	CloseAndRecv() (*TESTUploadImageResponse, error)
+	grpc.ClientStream
+}
+
+type avatarServiceTESTUploadImageClient struct {
+	grpc.ClientStream
+}
+
+func (x *avatarServiceTESTUploadImageClient) Send(m *TESTUploadImageRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *avatarServiceTESTUploadImageClient) CloseAndRecv() (*TESTUploadImageResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(TESTUploadImageResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *avatarServiceClient) Delete(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -112,9 +113,10 @@ func (c *avatarServiceClient) GetAvatarView(ctx context.Context, in *GetAvatarVi
 // All implementations must embed UnimplementedAvatarServiceServer
 // for forward compatibility
 type AvatarServiceServer interface {
-	RequestAUploadURL(context.Context, *UploadUrlRequest) (*UploadUrlResponse, error)
-	UploadImage(AvatarService_UploadImageServer) error
-	ConfirmUpload(context.Context, *ConfirmUploadRequest) (*ConfirmUploadResponse, error)
+	// rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
+	GetUploadURL(context.Context, *UploadGetUrlRequest) (*UploadGetUrlResponse, error)
+	ConfirmUpload(context.Context, *UploadConfirmRequest) (*UploadConfirmResponse, error)
+	TESTUploadImage(AvatarService_TESTUploadImageServer) error
 	Delete(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	GetAvatarView(context.Context, *GetAvatarViewRequest) (*GetAvatarViewResponse, error)
 	mustEmbedUnimplementedAvatarServiceServer()
@@ -124,14 +126,14 @@ type AvatarServiceServer interface {
 type UnimplementedAvatarServiceServer struct {
 }
 
-func (UnimplementedAvatarServiceServer) RequestAUploadURL(context.Context, *UploadUrlRequest) (*UploadUrlResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RequestAUploadURL not implemented")
+func (UnimplementedAvatarServiceServer) GetUploadURL(context.Context, *UploadGetUrlRequest) (*UploadGetUrlResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUploadURL not implemented")
 }
-func (UnimplementedAvatarServiceServer) UploadImage(AvatarService_UploadImageServer) error {
-	return status.Errorf(codes.Unimplemented, "method UploadImage not implemented")
-}
-func (UnimplementedAvatarServiceServer) ConfirmUpload(context.Context, *ConfirmUploadRequest) (*ConfirmUploadResponse, error) {
+func (UnimplementedAvatarServiceServer) ConfirmUpload(context.Context, *UploadConfirmRequest) (*UploadConfirmResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConfirmUpload not implemented")
+}
+func (UnimplementedAvatarServiceServer) TESTUploadImage(AvatarService_TESTUploadImageServer) error {
+	return status.Errorf(codes.Unimplemented, "method TESTUploadImage not implemented")
 }
 func (UnimplementedAvatarServiceServer) Delete(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -152,52 +154,26 @@ func RegisterAvatarServiceServer(s grpc.ServiceRegistrar, srv AvatarServiceServe
 	s.RegisterService(&AvatarService_ServiceDesc, srv)
 }
 
-func _AvatarService_RequestAUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UploadUrlRequest)
+func _AvatarService_GetUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadGetUrlRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AvatarServiceServer).RequestAUploadURL(ctx, in)
+		return srv.(AvatarServiceServer).GetUploadURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/template.AvatarService/RequestAUploadURL",
+		FullMethod: "/template.AvatarService/GetUploadURL",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AvatarServiceServer).RequestAUploadURL(ctx, req.(*UploadUrlRequest))
+		return srv.(AvatarServiceServer).GetUploadURL(ctx, req.(*UploadGetUrlRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AvatarService_UploadImage_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AvatarServiceServer).UploadImage(&avatarServiceUploadImageServer{stream})
-}
-
-type AvatarService_UploadImageServer interface {
-	SendAndClose(*UploadImageResponse) error
-	Recv() (*UploadImageRequest, error)
-	grpc.ServerStream
-}
-
-type avatarServiceUploadImageServer struct {
-	grpc.ServerStream
-}
-
-func (x *avatarServiceUploadImageServer) SendAndClose(m *UploadImageResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *avatarServiceUploadImageServer) Recv() (*UploadImageRequest, error) {
-	m := new(UploadImageRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func _AvatarService_ConfirmUpload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConfirmUploadRequest)
+	in := new(UploadConfirmRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -209,9 +185,35 @@ func _AvatarService_ConfirmUpload_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/template.AvatarService/ConfirmUpload",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AvatarServiceServer).ConfirmUpload(ctx, req.(*ConfirmUploadRequest))
+		return srv.(AvatarServiceServer).ConfirmUpload(ctx, req.(*UploadConfirmRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _AvatarService_TESTUploadImage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AvatarServiceServer).TESTUploadImage(&avatarServiceTESTUploadImageServer{stream})
+}
+
+type AvatarService_TESTUploadImageServer interface {
+	SendAndClose(*TESTUploadImageResponse) error
+	Recv() (*TESTUploadImageRequest, error)
+	grpc.ServerStream
+}
+
+type avatarServiceTESTUploadImageServer struct {
+	grpc.ServerStream
+}
+
+func (x *avatarServiceTESTUploadImageServer) SendAndClose(m *TESTUploadImageResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *avatarServiceTESTUploadImageServer) Recv() (*TESTUploadImageRequest, error) {
+	m := new(TESTUploadImageRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func _AvatarService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -258,8 +260,8 @@ var AvatarService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AvatarServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RequestAUploadURL",
-			Handler:    _AvatarService_RequestAUploadURL_Handler,
+			MethodName: "GetUploadURL",
+			Handler:    _AvatarService_GetUploadURL_Handler,
 		},
 		{
 			MethodName: "ConfirmUpload",
@@ -276,8 +278,8 @@ var AvatarService_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "UploadImage",
-			Handler:       _AvatarService_UploadImage_Handler,
+			StreamName:    "TESTUploadImage",
+			Handler:       _AvatarService_TESTUploadImage_Handler,
 			ClientStreams: true,
 		},
 	},
