@@ -1,10 +1,10 @@
 import axios from 'axios';
 import React from 'react';
 import {
-  ConfirmUploadRequest,
-  ConfirmUploadResponse,
-  UploadUrlRequest,
-  UploadUrlResponse,
+  UploadConfirmRequest,
+  UploadConfirmResponse,
+  UploadGetUrlRequest,
+  UploadGetUrlResponse,
 } from '../../proto/grpc-proto/avatar_pb';
 import { grpcApi } from '../../services/grpc-api/grpc-client';
 
@@ -62,6 +62,47 @@ export default class AvatarUpload extends React.Component<Props, State> {
       window.alert('Please select a file');
       return;
     }
+
+    grpcApi.avatarService
+      .getUploadURL(new UploadGetUrlRequest().setFilename(currentFile!.name))
+      .then((response: UploadGetUrlResponse) => {
+        console.log(response.toObject());
+        let uploadURL = response.getUrl();
+        let confirmToken = response.getTokentoconfirm();
+        fetch(uploadURL, {
+          method: 'PUT',
+          body: currentFile,
+        })
+          .then((res) => {
+            console.log(res);
+            grpcApi.avatarService
+              .confirmUpload(new UploadConfirmRequest().setToken(confirmToken))
+              .then((response: UploadConfirmResponse) => {
+                console.log('New avatar: path: ' + response.getUrl());
+                this.props.changeAvatarCallback(response.getUrl());
+              });
+            this.setState({
+              message: 'The file was uploaded successfully!',
+              currentFile: undefined,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            this.setState({
+              progress: 0,
+              message: 'Could not upload the file!',
+              // currentFile: undefined,
+            });
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+        this.setState({
+          progress: 0,
+          message: 'Could not upload the file!',
+          // currentFile: undefined,
+        });
+      });
 
     // grpcApi.avatarService
     //   .requestAUploadURL(

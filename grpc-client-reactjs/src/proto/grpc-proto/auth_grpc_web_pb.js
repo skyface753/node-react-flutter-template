@@ -21,8 +21,6 @@ grpc.web = require('grpc-web');
 
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
-
-var grpc$proto_google_api_annotations_pb = require('../grpc-proto/google/api/annotations_pb.js')
 const proto = {};
 proto.template = require('./auth_pb.js');
 

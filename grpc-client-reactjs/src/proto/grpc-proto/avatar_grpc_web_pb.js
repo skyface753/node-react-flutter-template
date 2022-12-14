@@ -79,94 +79,94 @@ proto.template.AvatarServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.template.UploadUrlRequest,
- *   !proto.template.UploadUrlResponse>}
+ *   !proto.template.UploadGetUrlRequest,
+ *   !proto.template.UploadGetUrlResponse>}
  */
-const methodDescriptor_AvatarService_RequestAUploadURL = new grpc.web.MethodDescriptor(
-  '/template.AvatarService/RequestAUploadURL',
+const methodDescriptor_AvatarService_GetUploadURL = new grpc.web.MethodDescriptor(
+  '/template.AvatarService/GetUploadURL',
   grpc.web.MethodType.UNARY,
-  proto.template.UploadUrlRequest,
-  proto.template.UploadUrlResponse,
+  proto.template.UploadGetUrlRequest,
+  proto.template.UploadGetUrlResponse,
   /**
-   * @param {!proto.template.UploadUrlRequest} request
+   * @param {!proto.template.UploadGetUrlRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.template.UploadUrlResponse.deserializeBinary
+  proto.template.UploadGetUrlResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.template.UploadUrlRequest} request The
+ * @param {!proto.template.UploadGetUrlRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.template.UploadUrlResponse)}
+ * @param {function(?grpc.web.RpcError, ?proto.template.UploadGetUrlResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.template.UploadUrlResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.template.UploadGetUrlResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.template.AvatarServiceClient.prototype.requestAUploadURL =
+proto.template.AvatarServiceClient.prototype.getUploadURL =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/template.AvatarService/RequestAUploadURL',
+      '/template.AvatarService/GetUploadURL',
       request,
       metadata || {},
-      methodDescriptor_AvatarService_RequestAUploadURL,
+      methodDescriptor_AvatarService_GetUploadURL,
       callback);
 };
 
 
 /**
- * @param {!proto.template.UploadUrlRequest} request The
+ * @param {!proto.template.UploadGetUrlRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.template.UploadUrlResponse>}
+ * @return {!Promise<!proto.template.UploadGetUrlResponse>}
  *     Promise that resolves to the response
  */
-proto.template.AvatarServicePromiseClient.prototype.requestAUploadURL =
+proto.template.AvatarServicePromiseClient.prototype.getUploadURL =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/template.AvatarService/RequestAUploadURL',
+      '/template.AvatarService/GetUploadURL',
       request,
       metadata || {},
-      methodDescriptor_AvatarService_RequestAUploadURL);
+      methodDescriptor_AvatarService_GetUploadURL);
 };
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.template.ConfirmUploadRequest,
- *   !proto.template.ConfirmUploadResponse>}
+ *   !proto.template.UploadConfirmRequest,
+ *   !proto.template.UploadConfirmResponse>}
  */
 const methodDescriptor_AvatarService_ConfirmUpload = new grpc.web.MethodDescriptor(
   '/template.AvatarService/ConfirmUpload',
   grpc.web.MethodType.UNARY,
-  proto.template.ConfirmUploadRequest,
-  proto.template.ConfirmUploadResponse,
+  proto.template.UploadConfirmRequest,
+  proto.template.UploadConfirmResponse,
   /**
-   * @param {!proto.template.ConfirmUploadRequest} request
+   * @param {!proto.template.UploadConfirmRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.template.ConfirmUploadResponse.deserializeBinary
+  proto.template.UploadConfirmResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.template.ConfirmUploadRequest} request The
+ * @param {!proto.template.UploadConfirmRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.template.ConfirmUploadResponse)}
+ * @param {function(?grpc.web.RpcError, ?proto.template.UploadConfirmResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.template.ConfirmUploadResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.template.UploadConfirmResponse>|undefined}
  *     The XHR Node Readable Stream
  */
 proto.template.AvatarServiceClient.prototype.confirmUpload =
@@ -181,11 +181,11 @@ proto.template.AvatarServiceClient.prototype.confirmUpload =
 
 
 /**
- * @param {!proto.template.ConfirmUploadRequest} request The
+ * @param {!proto.template.UploadConfirmRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.template.ConfirmUploadResponse>}
+ * @return {!Promise<!proto.template.UploadConfirmResponse>}
  *     Promise that resolves to the response
  */
 proto.template.AvatarServicePromiseClient.prototype.confirmUpload =

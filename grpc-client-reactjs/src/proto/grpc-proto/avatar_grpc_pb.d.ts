@@ -9,39 +9,39 @@ import * as grpc_proto_avatar_pb from "../grpc-proto/avatar_pb";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 
 interface IAvatarServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
-    requestAUploadURL: IAvatarServiceService_IRequestAUploadURL;
-    uploadImage: IAvatarServiceService_IUploadImage;
+    getUploadURL: IAvatarServiceService_IGetUploadURL;
     confirmUpload: IAvatarServiceService_IConfirmUpload;
+    tESTUploadImage: IAvatarServiceService_ITESTUploadImage;
     delete: IAvatarServiceService_IDelete;
     getAvatarView: IAvatarServiceService_IGetAvatarView;
 }
 
-interface IAvatarServiceService_IRequestAUploadURL extends grpc.MethodDefinition<grpc_proto_avatar_pb.UploadUrlRequest, grpc_proto_avatar_pb.UploadUrlResponse> {
-    path: "/template.AvatarService/RequestAUploadURL";
+interface IAvatarServiceService_IGetUploadURL extends grpc.MethodDefinition<grpc_proto_avatar_pb.UploadGetUrlRequest, grpc_proto_avatar_pb.UploadGetUrlResponse> {
+    path: "/template.AvatarService/GetUploadURL";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadUrlRequest>;
-    requestDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadUrlRequest>;
-    responseSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadUrlResponse>;
-    responseDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadUrlResponse>;
+    requestSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadGetUrlRequest>;
+    requestDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadGetUrlRequest>;
+    responseSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadGetUrlResponse>;
+    responseDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadGetUrlResponse>;
 }
-interface IAvatarServiceService_IUploadImage extends grpc.MethodDefinition<grpc_proto_avatar_pb.UploadImageRequest, grpc_proto_avatar_pb.UploadImageResponse> {
-    path: "/template.AvatarService/UploadImage";
-    requestStream: true;
-    responseStream: false;
-    requestSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadImageRequest>;
-    requestDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadImageRequest>;
-    responseSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadImageResponse>;
-    responseDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadImageResponse>;
-}
-interface IAvatarServiceService_IConfirmUpload extends grpc.MethodDefinition<grpc_proto_avatar_pb.ConfirmUploadRequest, grpc_proto_avatar_pb.ConfirmUploadResponse> {
+interface IAvatarServiceService_IConfirmUpload extends grpc.MethodDefinition<grpc_proto_avatar_pb.UploadConfirmRequest, grpc_proto_avatar_pb.UploadConfirmResponse> {
     path: "/template.AvatarService/ConfirmUpload";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<grpc_proto_avatar_pb.ConfirmUploadRequest>;
-    requestDeserialize: grpc.deserialize<grpc_proto_avatar_pb.ConfirmUploadRequest>;
-    responseSerialize: grpc.serialize<grpc_proto_avatar_pb.ConfirmUploadResponse>;
-    responseDeserialize: grpc.deserialize<grpc_proto_avatar_pb.ConfirmUploadResponse>;
+    requestSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadConfirmRequest>;
+    requestDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadConfirmRequest>;
+    responseSerialize: grpc.serialize<grpc_proto_avatar_pb.UploadConfirmResponse>;
+    responseDeserialize: grpc.deserialize<grpc_proto_avatar_pb.UploadConfirmResponse>;
+}
+interface IAvatarServiceService_ITESTUploadImage extends grpc.MethodDefinition<grpc_proto_avatar_pb.TESTUploadImageRequest, grpc_proto_avatar_pb.TESTUploadImageResponse> {
+    path: "/template.AvatarService/TESTUploadImage";
+    requestStream: true;
+    responseStream: false;
+    requestSerialize: grpc.serialize<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    requestDeserialize: grpc.deserialize<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    responseSerialize: grpc.serialize<grpc_proto_avatar_pb.TESTUploadImageResponse>;
+    responseDeserialize: grpc.deserialize<grpc_proto_avatar_pb.TESTUploadImageResponse>;
 }
 interface IAvatarServiceService_IDelete extends grpc.MethodDefinition<google_protobuf_empty_pb.Empty, google_protobuf_empty_pb.Empty> {
     path: "/template.AvatarService/Delete";
@@ -65,24 +65,24 @@ interface IAvatarServiceService_IGetAvatarView extends grpc.MethodDefinition<grp
 export const AvatarServiceService: IAvatarServiceService;
 
 export interface IAvatarServiceServer extends grpc.UntypedServiceImplementation {
-    requestAUploadURL: grpc.handleUnaryCall<grpc_proto_avatar_pb.UploadUrlRequest, grpc_proto_avatar_pb.UploadUrlResponse>;
-    uploadImage: grpc.handleClientStreamingCall<grpc_proto_avatar_pb.UploadImageRequest, grpc_proto_avatar_pb.UploadImageResponse>;
-    confirmUpload: grpc.handleUnaryCall<grpc_proto_avatar_pb.ConfirmUploadRequest, grpc_proto_avatar_pb.ConfirmUploadResponse>;
+    getUploadURL: grpc.handleUnaryCall<grpc_proto_avatar_pb.UploadGetUrlRequest, grpc_proto_avatar_pb.UploadGetUrlResponse>;
+    confirmUpload: grpc.handleUnaryCall<grpc_proto_avatar_pb.UploadConfirmRequest, grpc_proto_avatar_pb.UploadConfirmResponse>;
+    tESTUploadImage: grpc.handleClientStreamingCall<grpc_proto_avatar_pb.TESTUploadImageRequest, grpc_proto_avatar_pb.TESTUploadImageResponse>;
     delete: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, google_protobuf_empty_pb.Empty>;
     getAvatarView: grpc.handleUnaryCall<grpc_proto_avatar_pb.GetAvatarViewRequest, grpc_proto_avatar_pb.GetAvatarViewResponse>;
 }
 
 export interface IAvatarServiceClient {
-    requestAUploadURL(request: grpc_proto_avatar_pb.UploadUrlRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadUrlResponse) => void): grpc.ClientUnaryCall;
-    requestAUploadURL(request: grpc_proto_avatar_pb.UploadUrlRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadUrlResponse) => void): grpc.ClientUnaryCall;
-    requestAUploadURL(request: grpc_proto_avatar_pb.UploadUrlRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadUrlResponse) => void): grpc.ClientUnaryCall;
-    uploadImage(callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    uploadImage(metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    uploadImage(options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    uploadImage(metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    confirmUpload(request: grpc_proto_avatar_pb.ConfirmUploadRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.ConfirmUploadResponse) => void): grpc.ClientUnaryCall;
-    confirmUpload(request: grpc_proto_avatar_pb.ConfirmUploadRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.ConfirmUploadResponse) => void): grpc.ClientUnaryCall;
-    confirmUpload(request: grpc_proto_avatar_pb.ConfirmUploadRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.ConfirmUploadResponse) => void): grpc.ClientUnaryCall;
+    getUploadURL(request: grpc_proto_avatar_pb.UploadGetUrlRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadGetUrlResponse) => void): grpc.ClientUnaryCall;
+    getUploadURL(request: grpc_proto_avatar_pb.UploadGetUrlRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadGetUrlResponse) => void): grpc.ClientUnaryCall;
+    getUploadURL(request: grpc_proto_avatar_pb.UploadGetUrlRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadGetUrlResponse) => void): grpc.ClientUnaryCall;
+    confirmUpload(request: grpc_proto_avatar_pb.UploadConfirmRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadConfirmResponse) => void): grpc.ClientUnaryCall;
+    confirmUpload(request: grpc_proto_avatar_pb.UploadConfirmRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadConfirmResponse) => void): grpc.ClientUnaryCall;
+    confirmUpload(request: grpc_proto_avatar_pb.UploadConfirmRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadConfirmResponse) => void): grpc.ClientUnaryCall;
+    tESTUploadImage(callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    tESTUploadImage(metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    tESTUploadImage(options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    tESTUploadImage(metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
     delete(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
@@ -93,16 +93,16 @@ export interface IAvatarServiceClient {
 
 export class AvatarServiceClient extends grpc.Client implements IAvatarServiceClient {
     constructor(address: string, credentials: grpc.ChannelCredentials, options?: Partial<grpc.ClientOptions>);
-    public requestAUploadURL(request: grpc_proto_avatar_pb.UploadUrlRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadUrlResponse) => void): grpc.ClientUnaryCall;
-    public requestAUploadURL(request: grpc_proto_avatar_pb.UploadUrlRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadUrlResponse) => void): grpc.ClientUnaryCall;
-    public requestAUploadURL(request: grpc_proto_avatar_pb.UploadUrlRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadUrlResponse) => void): grpc.ClientUnaryCall;
-    public uploadImage(callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    public uploadImage(metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    public uploadImage(options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    public uploadImage(metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.UploadImageRequest>;
-    public confirmUpload(request: grpc_proto_avatar_pb.ConfirmUploadRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.ConfirmUploadResponse) => void): grpc.ClientUnaryCall;
-    public confirmUpload(request: grpc_proto_avatar_pb.ConfirmUploadRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.ConfirmUploadResponse) => void): grpc.ClientUnaryCall;
-    public confirmUpload(request: grpc_proto_avatar_pb.ConfirmUploadRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.ConfirmUploadResponse) => void): grpc.ClientUnaryCall;
+    public getUploadURL(request: grpc_proto_avatar_pb.UploadGetUrlRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadGetUrlResponse) => void): grpc.ClientUnaryCall;
+    public getUploadURL(request: grpc_proto_avatar_pb.UploadGetUrlRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadGetUrlResponse) => void): grpc.ClientUnaryCall;
+    public getUploadURL(request: grpc_proto_avatar_pb.UploadGetUrlRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadGetUrlResponse) => void): grpc.ClientUnaryCall;
+    public confirmUpload(request: grpc_proto_avatar_pb.UploadConfirmRequest, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadConfirmResponse) => void): grpc.ClientUnaryCall;
+    public confirmUpload(request: grpc_proto_avatar_pb.UploadConfirmRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadConfirmResponse) => void): grpc.ClientUnaryCall;
+    public confirmUpload(request: grpc_proto_avatar_pb.UploadConfirmRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.UploadConfirmResponse) => void): grpc.ClientUnaryCall;
+    public tESTUploadImage(callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    public tESTUploadImage(metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    public tESTUploadImage(options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
+    public tESTUploadImage(metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: grpc_proto_avatar_pb.TESTUploadImageResponse) => void): grpc.ClientWritableStream<grpc_proto_avatar_pb.TESTUploadImageRequest>;
     public delete(request: google_protobuf_empty_pb.Empty, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     public delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;
     public delete(request: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_empty_pb.Empty) => void): grpc.ClientUnaryCall;

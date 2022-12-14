@@ -7,7 +7,6 @@
 import * as grpc from "@grpc/grpc-js";
 import * as grpc_proto_auth_pb from "../grpc-proto/auth_pb";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
-import * as grpc_proto_google_api_annotations_pb from "../grpc-proto/google/api/annotations_pb";
 
 interface IAuthServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     login: IAuthServiceService_ILogin;

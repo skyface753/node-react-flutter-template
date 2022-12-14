@@ -17,8 +17,6 @@ var global = (function() { return this || window || global || self || Function('
 
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
-var grpc$proto_google_api_annotations_pb = require('../grpc-proto/google/api/annotations_pb.js');
-goog.object.extend(proto, grpc$proto_google_api_annotations_pb);
 goog.exportSymbol('proto.template.DefaultAuthResponse', null, global);
 goog.exportSymbol('proto.template.DisableTOTPRequest', null, global);
 goog.exportSymbol('proto.template.DisableTOTPResponse', null, global);
