@@ -22,5 +22,5 @@ jobs:
       #   working-directory: grpc-server-go
 
       - name: Test
-        run: go test -v ./helpers/...
+        run: go test -v ./grpc-server-go/helpers/...
         working-directory: grpc-server-go
