@@ -7,3 +7,4 @@ server-nodejs-http/files/avatars/**
 server-nodejs-http/dist/**
 server-nodejs-http/build/**
 .DS_Store
+grpc-server-go/server
