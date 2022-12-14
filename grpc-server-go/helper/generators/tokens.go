@@ -3,7 +3,7 @@ package generators
 import (
 	"context"
 	"log"
-	"template/server/helper/getenv"
+	"template/server/helper/envget"
 	"template/server/helper/redis"
 	"time"
 
@@ -53,7 +53,7 @@ func GenerateJwt(id int) (string, error) {
 		// "exp":  time.Now().Add(time.Second * 30).Unix(),
 	})
 
-	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+	var jwtSecret = envget.GetEnv("JWT_SECRET", "secret");
 	
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
@@ -71,7 +71,7 @@ func GenerateJwtForS3Upload(filename string, originalName string, fileType strin
 		"exp":  time.Now().Add(time.Minute * 5).Unix(),
 	})
 
-	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+	var jwtSecret = envget.GetEnv("JWT_SECRET", "secret");
 
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
@@ -83,7 +83,7 @@ func GenerateJwtForS3Upload(filename string, originalName string, fileType strin
 }
 
 func VerifyJwt(tokenString string) (int, error) {
-	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+	var jwtSecret = envget.GetEnv("JWT_SECRET", "secret");
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, status.Error(codes.Unauthenticated, "Invalid token")
@@ -102,7 +102,7 @@ func VerifyJwt(tokenString string) (int, error) {
 }
 
 func VerifyJwtForS3Upload(tokenString string) (string, string, string, error) {
-	var jwtSecret = getenv.GetEnv("JWT_SECRET", "secret");
+	var jwtSecret = envget.GetEnv("JWT_SECRET", "secret");
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, status.Error(codes.Unauthenticated, "Invalid token")

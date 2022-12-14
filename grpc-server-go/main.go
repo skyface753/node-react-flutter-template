@@ -5,7 +5,7 @@ import (
 	"net"
 	pb "template/server/grpc-proto"
 	db "template/server/helper/db"
-	"template/server/helper/getenv"
+	"template/server/helper/envget"
 
 	services "template/server/services"
 
@@ -25,7 +25,7 @@ var (
 func main() {
 	godotenv.Load()
 
-	prod := getenv.GetEnv("PROD", "FALSE")
+	prod := envget.GetEnv("PROD", "FALSE")
 	if prod == "TRUE" {
 		log.Printf("PROD")
 	}else{

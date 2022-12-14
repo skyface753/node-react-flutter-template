@@ -3,7 +3,7 @@ package redis
 import (
 	"fmt"
 	"strconv"
-	"template/server/helper/getenv"
+	"template/server/helper/envget"
 
 	"github.com/go-redis/redis/v9"
 )
@@ -15,10 +15,10 @@ var (
 
 // InitRedis initializes the redis client
 func InitRedis() {
-	var host = getenv.GetEnv("REDIS_HOST", "localhost")
-	var port = getenv.GetEnv("REDIS_PORT", "6379")
-	var password = getenv.GetEnv("REDIS_PASSWORD", "")
-	var db, err = strconv.Atoi(getenv.GetEnv("REDIS_DB", "0"))
+	var host = envget.GetEnv("REDIS_HOST", "localhost")
+	var port = envget.GetEnv("REDIS_PORT", "6379")
+	var password = envget.GetEnv("REDIS_PASSWORD", "")
+	var db, err = strconv.Atoi(envget.GetEnv("REDIS_DB", "0"))
 	if err != nil {
 		db = 0
 	}

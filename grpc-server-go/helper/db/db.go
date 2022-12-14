@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"template/server/helper/getenv"
+	"template/server/helper/envget"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -26,12 +26,12 @@ var (
 // InitDB initializes the database connection
 func InitDB()  {
 	var (
-		host     = getenv.GetEnv("POSTGRES_HOST", "localhost") 
-		port, pError  = strconv.Atoi(getenv.GetEnv("POSTGRES_PORT", "5432"))
-		user     = getenv.GetEnv("POSTGRES_USER", "testuser")
-		password = getenv.GetEnv("POSTGRES_PASSWORD", "password")
-		dbname   = getenv.GetEnv("POSTGRES_DB", "testdb")
-		sslm     = getenv.GetEnv("POSTGRES_SSLMODE", "disable")
+		host     = envget.GetEnv("POSTGRES_HOST", "localhost") 
+		port, pError  = strconv.Atoi(envget.GetEnv("POSTGRES_PORT", "5432"))
+		user     = envget.GetEnv("POSTGRES_USER", "testuser")
+		password = envget.GetEnv("POSTGRES_PASSWORD", "password")
+		dbname   = envget.GetEnv("POSTGRES_DB", "testdb")
+		sslm     = envget.GetEnv("POSTGRES_SSLMODE", "disable")
 	)
 	if pError != nil {
 		port = 5432

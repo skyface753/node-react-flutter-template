@@ -3,7 +3,7 @@ package s3
 import (
 	"context"
 	"log"
-	"template/server/helper/getenv"
+	"template/server/helper/envget"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -25,11 +25,11 @@ var (
 
 
 func NewClient() {
-	Bucket = getenv.GetEnv("S3_BUCKET", "bucket")
-	KeyPrefix = getenv.GetEnv("S3_KEY_PREFIX", "avatars/")
-	EndPoint = getenv.GetEnv("S3_ENDPOINT", "http://localhost:9000")
-	Username := getenv.GetEnv("S3_USERNAME", "minio-root-user")
-	Password := getenv.GetEnv("S3_PASSWORD", "minio-root-password")
+	Bucket = envget.GetEnv("S3_BUCKET", "bucket")
+	KeyPrefix = envget.GetEnv("S3_KEY_PREFIX", "avatars/")
+	EndPoint = envget.GetEnv("S3_ENDPOINT", "http://localhost:9000")
+	Username := envget.GetEnv("S3_USERNAME", "minio-root-user")
+	Password := envget.GetEnv("S3_PASSWORD", "minio-root-password")
 	Client = s3.NewFromConfig(aws.Config{
 		Credentials: credentials.NewStaticCredentialsProvider(Username, Password, ""),
 		Region:      "us-east-1",
