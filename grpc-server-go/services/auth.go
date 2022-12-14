@@ -97,9 +97,12 @@ Gets the user data (id, username, role, generatedPath?) from the db
 */
 func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 	accessToken, errJwt := generators.GenerateJwt(id)
-	refreshToken := generators.GetARefreshToken(id)
+	refreshToken, errorRefreshGen := generators.GetARefreshToken(id)
 	if errJwt != nil {
-		return nil, errJwt
+		return nil, status.Error(codes.Internal, "Error generating Token1")
+	}
+	if errorRefreshGen != nil {
+		return nil, status.Error(codes.Internal, "Error generating Token2")
 	}
 	var ( // From the db
 		username string
@@ -131,7 +134,7 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 
 	return &pb.DefaultAuthResponse{
 		AccessToken: accessToken,
-		RefreshToken: refreshToken,
+		RefreshToken: *refreshToken,
 		
 		User: &pb.User{ Id: int32(id), Username: username, Avatar: avatarPathStr, Role: userRole},
 	}, nil

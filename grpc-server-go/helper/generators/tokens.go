@@ -20,11 +20,16 @@ Random string length 32
 
 
 
-func GetARefreshToken(id int) string {
+func GetARefreshToken(id int) (*string, error) {
 	//TODO: REDIS
 	rToken := randStringBytesMaskImpr(64)
-	redis.RedisClient.Set(context.Background(), rToken, id, time.Hour*24*7) // 7 days
-	return rToken
+	rStatusCommand := redis.RedisClient.Set(context.Background(), rToken, id, time.Hour*24*7) // 7 days
+	_, err := rStatusCommand.Result()
+	if err != nil {
+		log.Printf("Error SET REDIS: %v", err)
+		return nil, status.Errorf(codes.Internal, "Error SET REDIS: %v", err)
+	}
+	return &rToken, nil
 }
 
 // func generateRefreshToken() string {

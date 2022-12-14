@@ -21,18 +21,24 @@ const bufSize = 1024 * 1024
 var lis *bufconn.Listener
 
 func init(){
+	log.Println("init")
+
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	db.InitDB()
+	
 	redis.InitRedis()
 	// defer db.CloseDB()
 	s3.NewClient()
+	
+
 	pb.RegisterAuthServiceServer(s, &services.AuthServer{})
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			panic(err)
 		}
 	}()
+    
 }
 
 func bufDialer(context.Context, string) (net.Conn, error) {
@@ -40,6 +46,8 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 }
 
 func TestAuth(t *testing.T) {
+
+
 	ctx := context.Background()
     conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
     if err != nil {
@@ -54,13 +62,12 @@ func TestAuth(t *testing.T) {
     if err != nil {
         t.Fatalf("Login failed: %v", err)
     }
-    log.Printf("Response: %+v", resp)
     
 	// Check the response
 	if resp.GetAccessToken() == "" {
 		t.Fatalf("Token is empty")
 	}
-
+	
 
 }
 

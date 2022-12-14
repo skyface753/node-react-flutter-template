@@ -3,6 +3,7 @@ package db
 // Postgres DB
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -23,7 +24,7 @@ var (
 
 
 // InitDB initializes the database connection
-func InitDB() {
+func InitDB()  {
 	var (
 		host     = getenv.GetEnv("POSTGRES_HOST", "localhost") 
 		port, pError  = strconv.Atoi(getenv.GetEnv("POSTGRES_PORT", "5432"))
@@ -36,7 +37,7 @@ func InitDB() {
 		port = 5432
 	}
 	
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslm)
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=10", host, port, user, password, dbname, sslm)
 	
 	
 	var err error
@@ -48,10 +49,13 @@ func InitDB() {
 	DB.SetMaxIdleConns(25)
 	DB.SetConnMaxLifetime(5 * time.Minute)
 
-	err = DB.Ping()
+	ctxBG := context.Background()
+	ctxPingTimeout, cancel := context.WithTimeout(ctxBG, 1*time.Second)
+	defer cancel()
+
+	err = DB.PingContext(ctxPingTimeout)
 	if err != nil {
 		log.Fatalf("Error pinging database: %v", err)
-		// log.Fatal(err)
 	}
 	fmt.Println("Successfully connected to database!")
 }
