@@ -31,6 +31,8 @@ func main() {
 	}else{
 		port = "localhost" + port
 	}
+	log.Printf("PROD: %v", prod)
+	log.Printf("PORT: %v", port)
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {

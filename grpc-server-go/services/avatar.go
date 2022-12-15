@@ -85,6 +85,15 @@ func (s *AvatarServer) ConfirmUpload(ctx context.Context, in *pb.UploadConfirmRe
 		log.Printf("Error: %v", err)
 		return nil, status.Error(codes.Unauthenticated, "Invalid Confirm token")
 	}
+	// Check if file exists
+	exists, errE := s3.Exists(filename)
+	if errE != nil {
+		log.Printf("Error: %v", err)
+		return nil, status.Error(codes.Internal, "Error checking if file exists")
+	}
+	if !exists {
+		return nil, status.Error(codes.NotFound, "File not found")	
+	}
 	sqlInsert, err := db.DB.Query("INSERT INTO testuser.avatar (userfk, originalname, generatedpath, type) VALUES ($1, $2, $3, $4) ON CONFLICT (userfk) DO UPDATE SET originalname = $2, generatedpath = $3, type = $4", id, originalName, filename, fileType)
 	if err != nil {
 		log.Printf("Error: %v", err)

@@ -1,5 +1,14 @@
+networks:
+  grpc-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.10.10.0/24
+
 services:
   grpc-server-go:
+    build: ./grpc-server-go
     image: skyface753/grpc-server-go
     ports:
       - 50051:50051
@@ -7,6 +16,15 @@ services:
       - primary
       - redis
       - minio
+    environment:
+      - POSTGRES_HOST=primary
+      - REDIS_HOST=redis
+      - S3_ENDPOINT=http://test.skyface.de:9000
+    extra_hosts:
+      - "test.skyface.de:10.10.10.5" # for minio
+    networks:
+      grpc-net:
+        ipv4_address: 10.10.10.2
 
 
   primary:
@@ -19,6 +37,9 @@ services:
       - grpc-pg-vol-debug:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      grpc-net:
+        ipv4_address: 10.10.10.3
 
   pgadmin:
     container_name: pgadmin4_container
@@ -31,12 +52,21 @@ services:
       - '5050:80'
     volumes:
       - grpc-pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - primary
+  
+
   redis:
     image: redis
     ports:
       - 6379:6379
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      grpc-net:
+        ipv4_address: 10.10.10.4
+  
+
   minio:
     image: docker.io/bitnami/minio:2022
     ports:
@@ -47,14 +77,28 @@ services:
       - MINIO_ROOT_PASSWORD=minio-root-password
     volumes:
       - grpc-minio_data:/data
+    networks:
+      grpc-net:
+        ipv4_address: 10.10.10.5
+
+   
+
+
+
   envoy:
     build:
       context: ./grpc-envoy-proxy
       dockerfile: Dockerfile.macos
     ports:
       - 8000:8000
+    depends_on:
+      - grpc-server-go
+   
+
 
 volumes:
   grpc-pg-vol-debug:
   grpc-pgadmin-data:
   grpc-minio_data:
+
+

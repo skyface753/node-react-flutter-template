@@ -2,6 +2,7 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"log"
 	"template/server/helper/envget"
 	"time"
@@ -10,6 +11,7 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 
@@ -79,6 +81,30 @@ func PresignedGet(key string) (*v4.PresignedHTTPRequest, error) {
 	}
 
 	return request, nil
+}
+
+func Get(key string) (*s3.GetObjectOutput, error) {
+	return Client.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(Bucket),
+		Key:    aws.String(key),
+	})
+}
+
+func Exists(key string) (bool, error) {
+	_, err := Client.HeadObject(context.TODO(), &s3.HeadObjectInput{
+		Bucket: aws.String(Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		var nsk *types.NoSuchKey
+		if !errors.As(err, &nsk) {
+			return false, err
+		}
+		return false, nil
+		
+
+	}
+	return true, nil
 }
 
 

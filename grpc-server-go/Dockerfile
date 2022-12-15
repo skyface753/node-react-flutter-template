@@ -7,6 +7,8 @@ RUN go mod download && go mod verify
 
 COPY . .
 
+# Set env
+ENV PROD=TRUE
 
 RUN go build -o /usr/local/bin/app
 EXPOSE 50051
