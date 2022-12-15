@@ -19,8 +19,7 @@ jobs:
       - name: Build
         run: go build -v ./...
         working-directory: grpc-server-go
-      - name: ls
-        run: ls
+
       - name: Test
-        run: go test -v ./grpc-server-go/helpers/...
-        # working-directory: grpc-server-go
+        run: go test -v ./helper/...
+        working-directory: grpc-server-go
