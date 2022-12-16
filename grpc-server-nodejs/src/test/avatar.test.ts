@@ -19,7 +19,6 @@ import {
 import { Metadata, ServiceError, status } from '@grpc/grpc-js';
 import { DefaultAuthResponse, LoginRequest } from '../proto/grpc-proto/auth_pb';
 import fetch from 'node-fetch';
-import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 chai.should();
 import crypto from 'crypto';
 
@@ -57,7 +56,6 @@ describe('AvatarService', () => {
         expect(res.getUrl()).to.be.a('string');
         expect(res.getTokentoconfirm()).to.be.a('string');
         uploadToken = res.getTokentoconfirm();
-        console.log('UPLOAD URL' + res.getUrl());
         fetch(res.getUrl(), {
           method: 'PUT',
           body: fs.readFileSync('./src/test/avatar.png'),
@@ -65,7 +63,6 @@ describe('AvatarService', () => {
             'Content-Type': 'image/png',
           },
         }).then((res) => {
-          console.log('UPLOAD STATUS: ' + res.status);
           expect(res.status).to.equal(200);
           done();
         });
@@ -112,8 +109,6 @@ describe('AvatarService', () => {
         // Download avatar.png from the URL
         fetch(res.getUrl())
           .then((res) => {
-            console.log('DOWNLOAD STATUS: ' + res.status);
-            console.log(res);
             expect(res.status).to.equal(200);
             return res.buffer();
           })

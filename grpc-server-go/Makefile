@@ -18,3 +18,6 @@ test:
 
 test-verbose:
 	go test -v ./...
+
+gen-certs:
+	cd cert; sh ./gen.sh

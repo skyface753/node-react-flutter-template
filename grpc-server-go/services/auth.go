@@ -120,13 +120,6 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 			log.Printf("Error getting the avatar from s3: %v", err)
 		}
 		avatarPathStr = resS3.URL
-		// TODO: Get the avatar from the s3 bucket
-		// url, errS := s3Client.SignedGetURL(*avatarPath)
-		// if errS == nil {
-		// 	avatarPathStr = url.String()
-		// }
-		
-		
 	}
 	var userRole = pb.Role(rolefk)
 	
@@ -405,13 +398,22 @@ func (s *AuthServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 			return nil, status.Error(codes.Internal, "Something went wrong")
 		}
 	}
+	// Avatar
+	var avatarPathStr string
+	if(avatar.Valid){
+		resS3, err :=		s3.PresignedGet(avatar.String)
+		if err != nil {
+			log.Printf("Error getting the avatar from s3: %v", err)
+		}
+		avatarPathStr = resS3.URL
+	}
 	// userIdInt := int32(userId)
 	return &pb.StatusResponse{
 		User: &pb.User{
 			Id: int32(*userId),
 			Username: username,
 			Role: pb.Role(rolefk),
-			Avatar: avatar.String,
+			Avatar: avatarPathStr,
 		},
 		TotpEnabled: totpEnabled.Bool,
 

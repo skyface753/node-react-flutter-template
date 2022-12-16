@@ -34,3 +34,10 @@ build-backend:
 
 # Build all Docker
 build: build-frontend build-backend
+
+docker-backup:
+	mkdir -p ./db-backup
+	docker-compose -f docker-compose-grpc-debug.yaml exec -T primary pg_dumpall -c -U testuser > ./db-data/backup/dump_`date +%d-%m-%Y"_"%H_%M_%S`.sql
+
+docker-restore:
+	cat ./db-data/cleanInit.sql | docker-compose -f docker-compose-grpc-debug.yaml exec -T primary psql -U testuser -d testdb

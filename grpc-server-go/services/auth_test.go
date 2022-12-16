@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 
 	pb "template/server/grpc-proto"
@@ -49,7 +50,7 @@ func TestAuth(t *testing.T) {
 
 
 	ctx := context.Background()
-    conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+    conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
     if err != nil {
         t.Fatalf("Failed to dial bufnet: %v", err)
     }
@@ -71,17 +72,5 @@ func TestAuth(t *testing.T) {
 
 }
 
-// func TestAuth(t *testing.T) {
-// 	// TODO: Write tests in go
-// 	authServer := services.AuthServer{}
-// 	resp, err := authServer.Login(context.Background(), &pb.LoginRequest{
-// 		Username: "user",
-// 		Password: "pass",
-// 	})
 
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	t.Log(resp)
-// }
 

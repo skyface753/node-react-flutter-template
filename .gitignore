@@ -8,3 +8,8 @@ server-nodejs-http/dist/**
 server-nodejs-http/build/**
 .DS_Store
 grpc-server-go/server
+db-data/backup
+grpc-envoy-proxy/cert
+grpc-server-go/cert/*.pem
+grpc-server-go/cert/*.srl
+grpc-server-nodejs/src/cert
