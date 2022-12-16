@@ -1,6 +1,7 @@
 package generators_test
 
 import (
+	"strings"
 	"template/server/helper/generators"
 	"testing"
 )
@@ -21,8 +22,12 @@ func TestJwt(t *testing.T) {
 	if userId != 10 {
 		t.Errorf("Expected 10, got %d", userId)
 	}
-	// Manipulate token
-	s = s[:len(s)-1] + "a"
+	splitted := strings.Split(s, ".")
+	for i, v := range splitted {
+		splitted[i] = v + "a"
+	}
+	s = strings.Join(splitted, ".")
+	t.Logf("Token (manipulated): %v", s)
 	userId, err = generators.VerifyJwt(s)
 	if err == nil {
 		t.Errorf("Expected error, got %d", userId)
@@ -58,7 +63,13 @@ func TestS3Jwt(t *testing.T) {
 		t.Errorf("Expected image/png, got %s", fileType)
 	}
 	// Manipulate token
-	s = s[:len(s)-1] + "a"
+	// add a to each block
+	splitted := strings.Split(s, ".")
+	for i, v := range splitted {
+		splitted[i] = v + "a"
+	}
+	s = strings.Join(splitted, ".")
+	t.Logf("Token (manipulated): %v", s)	
 	filename, _, _, err = generators.VerifyJwtForS3Upload(s)
 	if err == nil {
 		t.Errorf("Expected error, got %s", filename)
