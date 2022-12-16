@@ -9,14 +9,8 @@ import {
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { IAvatarServiceServer } from '../proto/grpc-proto/avatar_grpc_pb';
 import {
-  ConfirmUploadRequest,
-  ConfirmUploadResponse,
   GetAvatarViewRequest,
   GetAvatarViewResponse,
-  UploadImageRequest,
-  UploadImageResponse,
-  UploadUrlRequest,
-  UploadUrlResponse,
 } from '../proto/grpc-proto/avatar_pb';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './s3-storage/base-client';

@@ -13,19 +13,19 @@ services:
     ports:
       - 50051:50051
     depends_on:
-      - primary
-      - redis
-      - minio
+      primary:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - POSTGRES_HOST=primary
       - REDIS_HOST=redis
       - S3_ENDPOINT=http://test.skyface.de:9000
     extra_hosts:
-      - "test.skyface.de:10.10.10.5" # for minio
+      - 'test.skyface.de:10.10.10.5' # for minio
     networks:
       grpc-net:
         ipv4_address: 10.10.10.2
-
 
   primary:
     image: postgres
@@ -40,6 +40,11 @@ services:
     networks:
       grpc-net:
         ipv4_address: 10.10.10.3
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     container_name: pgadmin4_container
@@ -54,7 +59,6 @@ services:
       - grpc-pgadmin-data:/var/lib/pgadmin
     depends_on:
       - primary
-  
 
   redis:
     image: redis
@@ -65,7 +69,6 @@ services:
     networks:
       grpc-net:
         ipv4_address: 10.10.10.4
-  
 
   minio:
     image: docker.io/bitnami/minio:2022
@@ -81,10 +84,6 @@ services:
       grpc-net:
         ipv4_address: 10.10.10.5
 
-   
-
-
-
   envoy:
     build:
       context: ./grpc-envoy-proxy
@@ -93,12 +92,8 @@ services:
       - 8000:8000
     depends_on:
       - grpc-server-go
-   
-
 
 volumes:
   grpc-pg-vol-debug:
   grpc-pgadmin-data:
   grpc-minio_data:
-
-
