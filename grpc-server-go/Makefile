@@ -1,11 +1,4 @@
 
-# gen-proto:
-# 	protoc -I ../ \
-# 	--proto_path=../grpc-proto \
-# 	--go_out=. \
-# 	--go-grpc_out=. \
-# 	../grpc-proto/*.proto \
-
 gen-proto:
 	protoc -I ../ \
 	--go_out ./ --go_opt paths=source_relative \
@@ -13,8 +6,22 @@ gen-proto:
 	../grpc-proto/auth.proto \
 	../grpc-proto/avatar.proto \
 
-test:
-	go test ./...
+test-unit:
+	go test -short ./... -count=1
+
+test-integration:
+	go test -tags=integration ./... -count=1
+
+test-bench:
+	go test -bench=. ./...
+
+test: test-unit test-integration
+# 	go test -tags=unit_tests ./...
+
+# test-integration:
+# 	go test -tags=integration ./...
+
+# test: test-unit test-integration
 
 test-verbose:
 	go test -v ./...

@@ -7,6 +7,7 @@ import (
 
 // *Only alphanumeric characters, underscore and hyphen no spaces (min 3, max 20)
 func TestValidateUsername(t *testing.T) {
+	t.Parallel()
 	// Test for empty username
 	err := validator.ValidateUsername("")
 	if err == nil {
@@ -36,6 +37,7 @@ func TestValidateUsername(t *testing.T) {
 
 // *   Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character:
 func TestValidatePassword(t *testing.T) {
+	t.Parallel()
 	// Test for empty password
 	err := validator.ValidatePassword("")
 	if err == nil {

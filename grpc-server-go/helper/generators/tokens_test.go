@@ -7,6 +7,7 @@ import (
 )
 
 func TestJwt(t *testing.T) {
+	t.Parallel()
 	// Test for length
 	s, err := generators.GenerateJwt(10)
 	if err != nil {
@@ -36,6 +37,7 @@ func TestJwt(t *testing.T) {
 }
 
 func TestS3Jwt(t *testing.T) {
+	t.Parallel()
 	filename  := "test.png"
 	originalName := "test.png"
 	fileType := "image/png"
