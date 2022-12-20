@@ -41,3 +41,9 @@ docker-backup:
 
 docker-restore:
 	cat ./db-data/cleanInit.sql | docker-compose -f docker-compose-grpc-debug.yaml exec -T primary psql -U testuser -d testdb
+
+gen-docs:
+	docker run --rm \
+	-v $(pwd)/docs:/out \
+	-v $(pwd)/grpc-proto:/protos \
+	pseudomuto/protoc-gen-doc --doc_opt=markdown,docs.md

@@ -5,6 +5,8 @@ gen-proto:
 	--go-grpc_out ./ --go-grpc_opt paths=source_relative \
 	../grpc-proto/auth.proto \
 	../grpc-proto/avatar.proto \
+	../grpc-proto/annotations.proto \
+	../grpc-proto/http.proto
 
 test-unit:
 	go test -short ./... -count=1
@@ -28,3 +30,4 @@ test-verbose:
 
 gen-certs:
 	cd cert; sh ./gen.sh
+

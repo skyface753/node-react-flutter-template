@@ -3,9 +3,9 @@ syntax = "proto3";
 package template;
 
 import "google/protobuf/timestamp.proto";
+import "grpc-proto/annotations.proto";
 
 option go_package = "pb/template";
-
 
 enum Role{
     USER = 0;

@@ -17,10 +17,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    volumes:
+      - ./grpc-server-go/cert/:/usr/src/app/cert/:ro
     environment:
       - POSTGRES_HOST=primary
       - REDIS_HOST=redis
       - S3_ENDPOINT=http://test.skyface.de:9000 # for minio (Same host as extra_hosts)
+      - TLS=TRUE
     extra_hosts:
       - 'test.skyface.de:10.10.10.5' # for minio (Same host as S3_ENDPOINT)
     networks:

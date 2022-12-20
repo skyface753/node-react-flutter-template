@@ -44,18 +44,20 @@ func main() {
 	s3.NewClient()
 
 	
+	var s *grpc.Server
 
+	if envget.GetEnv("TLS", "FALSE") == "TRUE" || envget.GetEnv("TLS", "FALSE") == "true" {
+		tlsCredentials, err := loadTLSCredentials()
+		if err != nil {
+		    log.Fatal("cannot load TLS credentials: ", err)
+		}
+		s = grpc.NewServer(
+		    grpc.Creds(tlsCredentials),
+		)
+	} else {
+		s = grpc.NewServer()
+	}
 	
-	s := grpc.NewServer() // Insecure
-
-	// TLS
-	// tlsCredentials, err := loadTLSCredentials()
-    // if err != nil {
-    //     log.Fatal("cannot load TLS credentials: ", err)
-    // }
-    // s := grpc.NewServer(
-    //     grpc.Creds(tlsCredentials),
-    // )
 
 	reflection.Register(s)
 	pb.RegisterAuthServiceServer(s, &services.AuthServer{})
