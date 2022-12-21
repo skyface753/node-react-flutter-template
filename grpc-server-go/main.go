@@ -48,6 +48,7 @@ func main() {
 
 	if envget.GetEnv("TLS", "FALSE") == "TRUE" || envget.GetEnv("TLS", "FALSE") == "true" {
 		tlsCredentials, err := loadTLSCredentials()
+		log.Println("TLS enabled")
 		if err != nil {
 		    log.Fatal("cannot load TLS credentials: ", err)
 		}

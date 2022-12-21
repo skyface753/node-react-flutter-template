@@ -13,3 +13,5 @@ grpc-envoy-proxy/cert
 grpc-server-go/cert/*.pem
 grpc-server-go/cert/*.srl
 grpc-server-nodejs/src/cert
+.env
+traefik/certs/

@@ -94,8 +94,6 @@ services:
       # dockerfile: Dockerfile-tls.macos  # for tls
     ports:
       - 8000:8000
-    # depends_on:
-    #   - grpc-server-go
     networks:
       grpc-net:
         ipv4_address: 10.10.10.7
