@@ -42,8 +42,19 @@ docker-backup:
 docker-restore:
 	cat ./db-data/cleanInit.sql | docker-compose -f docker-compose-grpc-debug.yaml exec -T primary psql -U testuser -d testdb
 
-gen-docs:
-	docker run --rm \
-	-v $(pwd)/docs:/out \
-	-v $(pwd)/grpc-proto:/protos \
-	pseudomuto/protoc-gen-doc --doc_opt=markdown,docs.md
+# gen-docs:
+# 	protoc -I ./ \
+# 	--doc_out=./docs \
+#  	--doc_opt=markdown,docs.md \
+#  	./grpc-proto/auth.proto \
+# 	./grpc-proto/avatar.proto \
+# 	./grpc-proto/annotations.proto \
+# 	./grpc-proto/http.proto
+
+build-docs-docker:
+	docker build -t skyface753/grpc-docs -f ./docs/Dockerfile ./docs
+
+run-docs-docker:
+	docker run -v $(shell pwd)/grpc-proto:/grpc-proto -v $(shell pwd)/docs:/out skyface753/grpc-docs
+
+gen-docs: build-docs-docker run-docs-docker
