@@ -60,7 +60,7 @@ const options = {
   // transport,
 };
 
-const host: string = 'http://mooncar.docker.localhost:80';
+const host: string = 'https://grpc.docker.localhost:80';
 const grpcAuthService = new AuthServicePromiseClient(host, null, options);
 
 // export const grpcAvatarService = new AvatarServiceClient(host, null, options);

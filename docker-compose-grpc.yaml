@@ -47,11 +47,13 @@ services:
       - traefik.http.routers.grpc_server.rule=Host(`grpc.docker.localhost`)
       - traefik.http.routers.grpc_server.entrypoints=grpc
       - traefik.http.routers.grpc_server.service=grpc-svc
+      - traefik.http.routers.grpc_server.tls=true
       - traefik.http.services.grpc-svc.loadbalancer.server.scheme=h2c
       - traefik.http.services.grpc-svc.loadbalancer.server.port=50051
       # GRPC-WEB
       - 'traefik.http.routers.mooncar.rule=Host(`grpc.docker.localhost`)'
-      - 'traefik.http.routers.mooncar.entrypoints=web'
+      - 'traefik.http.routers.mooncar.entrypoints=websecure'
+      - 'traefik.http.routers.mooncar.tls=true'
       - 'traefik.http.routers.mooncar.service=mooncar'
       - 'traefik.http.services.mooncar.loadbalancer.server.scheme=h2c'
       - 'traefik.http.middlewares.mooncar-grpc.grpcWeb.allowOrigins=*'
