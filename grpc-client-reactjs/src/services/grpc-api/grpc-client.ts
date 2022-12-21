@@ -1,6 +1,5 @@
 import { RpcError, UnaryResponse } from 'grpc-web';
 import {
-  AuthServiceClient,
   AuthServicePromiseClient,
   DefaultAuthResponse,
   RefreshTokenRequest,
@@ -60,7 +59,7 @@ const options = {
   // transport,
 };
 
-const host: string = 'https://grpc.docker.localhost:80';
+const host: string = 'https://grpc.skyface.de:4433';
 const grpcAuthService = new AuthServicePromiseClient(host, null, options);
 
 // export const grpcAvatarService = new AvatarServiceClient(host, null, options);
