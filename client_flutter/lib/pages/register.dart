@@ -14,14 +14,12 @@ class _RegisterPageState extends State<RegisterPage> {
     print("Register");
 
     BlocProvider.of<AuthBloc>(context).add(
-      SignUpRequested(_emailController.text, _passwordController.text,
-          _usernameController.text),
+      SignUpRequested(_passwordController.text, _usernameController.text),
     );
   }
 
   final RoundedLoadingButtonController _btnController =
       RoundedLoadingButtonController();
-  TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _confirmPasswordController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
@@ -69,18 +67,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       return null;
                     },
                   ),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter some text';
-                      }
-                      return null;
-                    },
-                  ),
+                  // TextFormField(
+                  //   controller: _emailController,
+                  //   decoration: InputDecoration(
+                  //     hintText: 'Email',
+                  //   ),
+                  //   validator: (value) {
+                  //     if (value == null || value.isEmpty) {
+                  //       return 'Please enter some text';
+                  //     }
+                  //     return null;
+                  //   },
+                  // ),
                   TextFormField(
                     controller: _passwordController,
                     decoration: InputDecoration(

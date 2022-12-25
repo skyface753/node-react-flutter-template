@@ -1,6 +1,7 @@
 import 'package:client_flutter/bloc/auth_bloc.dart';
 import 'package:client_flutter/pages/twofactor_settings.dart';
 import 'package:client_flutter/services/dio_service.dart';
+import 'package:client_flutter/services/grpc-client.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -9,11 +10,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SettingsData {
   String username;
-  String email;
   String? avatar;
   bool twoFactorEnabled;
 
-  SettingsData(this.username, this.email, this.avatar, this.twoFactorEnabled);
+  SettingsData(this.username, this.avatar, this.twoFactorEnabled);
 }
 
 class SettingsPage extends StatefulWidget {
@@ -31,18 +31,24 @@ class _SettingsPageState extends State<SettingsPage> {
   SettingsData? settingsData;
 
   _loadSettings() async {
-    await DioService().getApi().get('user/settings').then((value) {
-      final Map responseMap = value.data;
-      if (responseMap['success']) {
-        setState(() {
-          settingsData = SettingsData(
-              responseMap['data']['username'],
-              responseMap['data']['email'],
-              responseMap['data']['avatar'],
-              responseMap['data']['twoFactorEnabled']);
-        });
-      }
+    await GrpcClient.status().then((value) {
+      setState(() {
+        settingsData = SettingsData(
+            value.user.username, value.user.avatar, value.totpEnabled);
+      });
     });
+    // await DioService().getApi().get('user/settings').then((value) {
+    //   final Map responseMap = value.data;
+    //   if (responseMap['success']) {
+    //     setState(() {
+    //       settingsData = SettingsData(
+    //           responseMap['data']['username'],
+    //           responseMap['data']['email'],
+    //           responseMap['data']['avatar'],
+    //           responseMap['data']['twoFactorEnabled']);
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -59,10 +65,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: Text('Username'),
                   subtitle: Text(settingsData!.username),
                 ),
-                ListTile(
-                  title: Text('Email'),
-                  subtitle: Text(settingsData!.email),
-                ),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
                     if (state is Authenticated) {
@@ -76,31 +78,31 @@ class _SettingsPageState extends State<SettingsPage> {
                           if (result != null) {
                             if (kIsWeb) {
                               // html.File file = html.File(result.files.single.bytes!, result.files.single.name);
-                              FormData formData = FormData.fromMap({
-                                'avatar': await MultipartFile.fromBytes(
-                                    result.files.single.bytes!,
-                                    filename: result.files.single.name)
-                              });
+                              // FormData formData = FormData.fromMap({
+                              //   'avatar': await MultipartFile.fromBytes(
+                              //       result.files.single.bytes!,
+                              //       filename: result.files.single.name)
+                              // });
 
-                              await DioService()
-                                  .getApi()
-                                  .put('avatar/upload', data: formData)
-                                  .then((value) {
-                                final Map responseMap = value.data;
-                                print("UPLOAD");
-                                if (responseMap['success']) {
-                                  print("UPLOAD SUCCESS");
-                                  setState(() {
-                                    settingsData!.avatar = responseMap['data']
-                                        ['avatar']['generatedPath'];
-                                    //TODO: update avatar in auth bloc
-                                    // BlocProvider.of<AuthBloc>(context).add(
-                                    //     ChangeAvatarRequested(
-                                    //         settingsData!.avatar!));
-                                    state.changeAvatar(settingsData!.avatar!);
-                                  });
-                                }
-                              });
+                              // await DioService()
+                              //     .getApi()
+                              //     .put('avatar/upload', data: formData)
+                              //     .then((value) {
+                              //   final Map responseMap = value.data;
+                              //   print("UPLOAD");
+                              //   if (responseMap['success']) {
+                              //     print("UPLOAD SUCCESS");
+                              //     setState(() {
+                              //       settingsData!.avatar = responseMap['data']
+                              //           ['avatar']['generatedPath'];
+                              //       //TODO: update avatar in auth bloc
+                              //       // BlocProvider.of<AuthBloc>(context).add(
+                              //       //     ChangeAvatarRequested(
+                              //       //         settingsData!.avatar!));
+                              //       state.changeAvatar(settingsData!.avatar!);
+                              //     });
+                              //   }
+                              // });
                             }
                           } else {
                             // User canceled the picker

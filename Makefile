@@ -55,6 +55,6 @@ build-docs-docker:
 	docker build -t skyface753/grpc-docs -f ./docs/Dockerfile ./docs
 
 run-docs-docker:
-	docker run -v $(shell pwd)/grpc-proto:/grpc-proto -v $(shell pwd)/docs:/out skyface753/grpc-docs
+	docker run --rm -v $(shell pwd)/grpc-proto:/grpc-proto -v $(shell pwd)/docs:/out skyface753/grpc-docs
 
 gen-docs: build-docs-docker run-docs-docker

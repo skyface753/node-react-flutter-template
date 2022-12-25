@@ -54,13 +54,14 @@ services:
       - 'traefik.http.routers.grpc_server.tls.certresolver=myresolver'
       # GRPC-WEB
       - 'traefik.http.routers.grpc-web.rule=Host(`grpc.skyface.de`)'
-      - 'traefik.http.routers.grpc-web.entrypoints=websecure'
-      - 'traefik.http.routers.grpc-web.tls=true'
+      # - 'traefik.http.routers.grpc-web.entrypoints=websecure' # for production
+      # - 'traefik.http.routers.grpc-web.tls=true'  # for production
+      - 'traefik.http.routers.grpc-web.entrypoints=web' # for testing
       - 'traefik.http.routers.grpc-web.service=grpc-web'
       - 'traefik.http.services.grpc-web.loadbalancer.server.scheme=h2c'
       - 'traefik.http.middlewares.grpc-web-middle.grpcWeb.allowOrigins=*'
       - 'traefik.http.routers.grpc-web.middlewares=grpc-web-middle'
-      - 'traefik.http.routers.grpc-web.tls.certresolver=myresolver'
+      # - 'traefik.http.routers.grpc-web.tls.certresolver=myresolver' # for production
 
   primary:
     image: postgres
@@ -112,32 +113,3 @@ services:
 volumes:
   grpc-pg-vol-prod:
   grpc-minio-vol-prod:
-  # minio:
-  #   image: docker.io/bitnami/minio:2022
-  #   # hostname: test.skyface.de
-  #   environment:
-  #     - MINIO_ROOT_USER=minio-root-user
-  #     - MINIO_ROOT_PASSWORD=minio-root-password
-  #   volumes:
-  #     - grpc-minio-vol-prod:/data
-  #   ports:
-  #     # - '9000:9000'
-  #     - '9001:9001'
-  #   networks:
-  #     grpc-net:
-  #       ipv4_address: 10.10.10.5
-  #   labels:
-  #     - 'traefik.enable=true'
-  #     - 'traefik.http.middlewares.minio-redirect.redirectscheme.scheme=https'
-  #     - 'traefik.http.routers.minio.entrypoints=web'
-  #     - 'traefik.http.routers.minio.rule=Host(`test.skyface.de`)'
-  #     - 'traefik.http.routers.minio.middlewares=minio-redirect'
-  #     - 'traefik.http.routers.minio_https.rule=Host(`test.skyface.de`)'
-  #     - 'traefik.http.routers.minio_https.tls=true'
-  #     - 'traefik.http.routers.minio_https.entrypoints=websecure'
-  #     - 'traefik.http.services.minio.loadbalancer.server.port=9000'
-
-  # - 'traefik.http.routers.minio.rule=Host(`test.skyface.de`)'
-  # - 'traefik.http.routers.minio.entrypoints=web'
-  # - 'traefik.http.services.minio.loadbalancer.server.scheme=http'
-  # - 'traefik.http.services.minio.loadbalancer.server.port=9000'

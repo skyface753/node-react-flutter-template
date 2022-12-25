@@ -2,9 +2,7 @@
 
 protoc -I / \
 	--doc_out=./out \
- 	--doc_opt=markdown,docs.md \
+ 	--doc_opt=html,index.html \
  	/grpc-proto/auth.proto \
 	/grpc-proto/avatar.proto \
-	/grpc-proto/annotations.proto \
-	/grpc-proto/http.proto \
 	--experimental_allow_proto3_optional
