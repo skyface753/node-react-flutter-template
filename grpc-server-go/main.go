@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"log"
 	"net"
+	"runtime"
 	pb "template/server/grpc-proto"
 	db "template/server/helper/db"
 	"template/server/helper/envget"
@@ -17,8 +18,11 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
+	"net/http"
+	_ "net/http/pprof"
 	"template/server/helper/s3"
 )
+
 
 var (
 	port = ":50051"
@@ -28,9 +32,16 @@ func main() {
 	godotenv.Load()
 
 	prod := envget.GetEnv("PROD", "FALSE")
-	if prod != "TRUE" {
-		port = "localhost" + port
+	var prodBool bool = false
+	if prod == "TRUE" {
+		prodBool = true
 	}
+	if !prodBool {
+		port = "localhost" + port
+		runtime.SetBlockProfileRate(1)
+	}
+	
+
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
@@ -63,6 +74,11 @@ func main() {
 	reflection.Register(s)
 	pb.RegisterAuthServiceServer(s, &services.AuthServer{})
 	pb.RegisterAvatarServiceServer(s, &services.AvatarServer{})
+	if(!prodBool) {
+	go func() {
+		http.ListenAndServe("localhost:8024", nil)
+	 }()
+	}
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

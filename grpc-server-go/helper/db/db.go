@@ -57,7 +57,7 @@ func InitDB()  {
 	if err != nil {
 		log.Fatalf("Error pinging database: %v", err)
 	}
-	fmt.Println("Successfully connected to database!")
+	//fmt.Println("Successfully connected to database!")
 }
 
 // CloseDB closes the database connection

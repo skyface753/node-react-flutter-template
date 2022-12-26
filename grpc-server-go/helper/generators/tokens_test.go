@@ -78,4 +78,3 @@ func TestS3Jwt(t *testing.T) {
 	}
 	t.Logf("Error: %v", err)
 }
-	

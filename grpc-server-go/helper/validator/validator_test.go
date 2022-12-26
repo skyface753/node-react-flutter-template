@@ -73,9 +73,25 @@ func TestValidatePassword(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error, got nil - password with no special character")
 	}
+	// Test for password with space
+	err = validator.ValidatePassword("abc123!@# ")
+	if err == nil {
+		t.Errorf("Expected error, got nil - password with space")
+	}
+	// Test for at least one number
+	err = validator.ValidatePassword("abcAbC!@#")
+	if err == nil {
+		t.Errorf("Expected error, got nil - password with no number")
+	}
+	// Test for at least one special character
+	err = validator.ValidatePassword("abc123abC")
+	if err == nil {
+		t.Errorf("Expected error, got nil - password with no special character")
+	}
 	// Test for valid password
 	err = validator.ValidatePassword("Abc123!@#")
 	if err != nil {
 		t.Errorf("Expected nil, got error")
 	}
+
 }

@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-func server(ctx context.Context) (pb.AuthServiceClient, func()) {
+func authServer(ctx context.Context) (pb.AuthServiceClient, func()) {
 	buffer := 101024 * 1024
 	lis := bufconn.Listen(buffer)
 
@@ -67,7 +67,7 @@ func TestAuthServer(t *testing.T) {
     }
 	ctx := context.Background()
 
-	client, closer := server(ctx)
+	client, closer := authServer(ctx)
 	defer closer()
 
 	// Clear user_2fa
@@ -95,7 +95,7 @@ func TestAuthServer(t *testing.T) {
 	}()
 	go func() {
 		defer wg.Done()
-		status(t, ctx, client)
+		statusTest(t, ctx, client)
 	}()
 	go func() {
 		defer wg.Done()
@@ -107,6 +107,25 @@ func TestAuthServer(t *testing.T) {
 
 }
 
+func BenchmarkLogin(b *testing.B) {
+	ctx := context.Background()
+
+	client, closer := authServer(ctx)
+	defer closer()
+
+	for i := 0; i < b.N; i++ {
+		out, err := client.Login(ctx, &pb.LoginRequest{
+			Username: "admin",
+			Password: "Admin123",
+		})
+		if err != nil {
+			b.Error(err)
+		}
+		if out.User.Username != "admin" {
+			b.Error("username not match")
+		}
+	}
+}
 
 func login(t *testing.T, ctx context.Context, client pb.AuthServiceClient) {
 	type expectation struct {
@@ -135,7 +154,7 @@ func login(t *testing.T, ctx context.Context, client pb.AuthServiceClient) {
 		},
 		"Not_Found_Username": {
 			in: &pb.LoginRequest{
-				Username: "test",
+				Username: "test1",
 				Password: "Admin123",
 			},
 			expected: expectation{
@@ -463,7 +482,7 @@ func logout(t *testing.T, ctx context.Context, client pb.AuthServiceClient){
 	}
 }
 
-func status(t *testing.T, ctx context.Context, client pb.AuthServiceClient){
+func statusTest(t *testing.T, ctx context.Context, client pb.AuthServiceClient){
 	type expectation struct {
 		out *pb.StatusResponse
 		err error

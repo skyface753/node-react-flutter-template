@@ -242,14 +242,15 @@ func (s *AuthServer) RefreshToken (ctx context.Context, in *pb.RefreshTokenReque
 		////log.Printf("Error creating default auth response: %v", err)
 		return nil, err
 	}
-	// Delete the old refresh token from redis after 1 Minute
-	redis.RedisClient.Del(context.Background(), refreshTokenIn)
-
-	_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
-	if err != nil {
-		log.Fatalf("Error deleting refresh token: %v", err)
-		return nil, status.Error(codes.Internal, "Something went wrong")
-	}
+	// Delete the old refresh token from redis after 10 seconds (For react strict mode)
+	go func() {
+		time.Sleep(time.Second * 10)
+		_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
+		if err != nil {
+			log.Fatalf("Error deleting refresh token: %v", err)
+		}
+	}()
+	
 	return defaultAuthResponse, nil
 }
 

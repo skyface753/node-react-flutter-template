@@ -51,7 +51,7 @@ func NewClient() {
 }
 
 func createBucketIfNotExists() error {
-	res, err := Client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+	_, err := Client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
 		Bucket: aws.String(Bucket),
 		// CreateBucketConfiguration: &types.CreateBucketConfiguration{
 		// 	LocationConstraint: types.BucketLocationConstraint("us-east-1"),
@@ -59,13 +59,13 @@ func createBucketIfNotExists() error {
 	})
 	if err != nil {
 		if errors.Is(err, &types.BucketAlreadyExists{}) || errors.Is(err, &types.BucketAlreadyOwnedByYou{}) {
-			log.Printf("Bucket %v already exists. Continuing.\n", Bucket)
+			// log.Printf("Bucket %v already exists. Continuing.\n", Bucket)
 			return nil
 		}
-		log.Printf("Couldn't create bucket %v. Here's why: %v\n", Bucket, err)
+		// log.Printf("Couldn't create bucket %v. Here's why: %v\n", Bucket, err)
 		return err
 	}
-	log.Printf("Created bucket %v. Here's the response: %v\n", Bucket, res)
+	// log.Printf("Created bucket %v. Here's the response: %v\n", Bucket, res)
 	return nil
 
 

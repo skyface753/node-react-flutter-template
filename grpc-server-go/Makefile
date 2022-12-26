@@ -17,17 +17,24 @@ test-integration:
 test-bench:
 	go test -bench=. ./...
 
-test: test-unit test-integration
-# 	go test -tags=unit_tests ./...
-
-# test-integration:
-# 	go test -tags=integration ./...
-
-# test: test-unit test-integration
-
 test-verbose:
 	go test -v ./...
+
+test: test-unit test-integration test-bench
+
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
 
 gen-certs:
 	cd cert; sh ./gen.sh
 
+test-load:
+	ghz --insecure --total=200 --call template.AuthService.Login -d '{"username":"user","password":"User123"}' localhost:50051
+
+
+pprof:
+	go tool pprof http://localhost:8024/debug/pprof/profile\?seconds\=10
+
+pprof-visual:
+	pprof -http=localhost:8025 {server_binary} {file_path}.pb.gz
