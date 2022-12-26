@@ -32,52 +32,84 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-var (
-	filter_AvatarService_RequestAUploadURL_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_AvatarService_RequestAUploadURL_0(ctx context.Context, marshaler runtime.Marshaler, client AvatarServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UploadUrlRequest
+func request_AvatarService_GetUploadURL_0(ctx context.Context, marshaler runtime.Marshaler, client AvatarServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UploadGetUrlRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AvatarService_RequestAUploadURL_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.RequestAUploadURL(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetUploadURL(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_AvatarService_RequestAUploadURL_0(ctx context.Context, marshaler runtime.Marshaler, server AvatarServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UploadUrlRequest
+func local_request_AvatarService_GetUploadURL_0(ctx context.Context, marshaler runtime.Marshaler, server AvatarServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UploadGetUrlRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AvatarService_RequestAUploadURL_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.RequestAUploadURL(ctx, &protoReq)
+	msg, err := server.GetUploadURL(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_AvatarService_UploadImage_0(ctx context.Context, marshaler runtime.Marshaler, client AvatarServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_AvatarService_ConfirmUpload_0(ctx context.Context, marshaler runtime.Marshaler, client AvatarServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UploadConfirmRequest
 	var metadata runtime.ServerMetadata
-	stream, err := client.UploadImage(ctx)
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.ConfirmUpload(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_AvatarService_ConfirmUpload_0(ctx context.Context, marshaler runtime.Marshaler, server AvatarServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UploadConfirmRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.ConfirmUpload(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_AvatarService_TESTUploadImage_0(ctx context.Context, marshaler runtime.Marshaler, client AvatarServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var metadata runtime.ServerMetadata
+	stream, err := client.TESTUploadImage(ctx)
 	if err != nil {
 		grpclog.Infof("Failed to start streaming: %v", err)
 		return nil, metadata, err
 	}
 	dec := marshaler.NewDecoder(req.Body)
 	for {
-		var protoReq UploadImageRequest
+		var protoReq TESTUploadImageRequest
 		err = dec.Decode(&protoReq)
 		if err == io.EOF {
 			break
@@ -108,40 +140,6 @@ func request_AvatarService_UploadImage_0(ctx context.Context, marshaler runtime.
 
 	msg, err := stream.CloseAndRecv()
 	metadata.TrailerMD = stream.Trailer()
-	return msg, metadata, err
-
-}
-
-func request_AvatarService_ConfirmUpload_0(ctx context.Context, marshaler runtime.Marshaler, client AvatarServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ConfirmUploadRequest
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.ConfirmUpload(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_AvatarService_ConfirmUpload_0(ctx context.Context, marshaler runtime.Marshaler, server AvatarServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ConfirmUploadRequest
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.ConfirmUpload(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -206,7 +204,7 @@ func local_request_AvatarService_GetAvatarView_0(ctx context.Context, marshaler 
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterAvatarServiceHandlerFromEndpoint instead.
 func RegisterAvatarServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AvatarServiceServer) error {
 
-	mux.Handle("GET", pattern_AvatarService_RequestAUploadURL_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AvatarService_GetUploadURL_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -214,12 +212,12 @@ func RegisterAvatarServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/template.AvatarService/RequestAUploadURL", runtime.WithHTTPPathPattern("/api/v1/avatar/upload/url"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/template.AvatarService/GetUploadURL", runtime.WithHTTPPathPattern("/api/v1/avatar/upload"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_AvatarService_RequestAUploadURL_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_AvatarService_GetUploadURL_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -227,15 +225,8 @@ func RegisterAvatarServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 			return
 		}
 
-		forward_AvatarService_RequestAUploadURL_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AvatarService_GetUploadURL_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
-	})
-
-	mux.Handle("POST", pattern_AvatarService_UploadImage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
-		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
 	})
 
 	mux.Handle("POST", pattern_AvatarService_ConfirmUpload_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -261,6 +252,13 @@ func RegisterAvatarServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 
 		forward_AvatarService_ConfirmUpload_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
+	})
+
+	mux.Handle("POST", pattern_AvatarService_TESTUploadImage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
+		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+		return
 	})
 
 	mux.Handle("DELETE", pattern_AvatarService_Delete_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -354,47 +352,25 @@ func RegisterAvatarServiceHandler(ctx context.Context, mux *runtime.ServeMux, co
 // "AvatarServiceClient" to call the correct interceptors.
 func RegisterAvatarServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AvatarServiceClient) error {
 
-	mux.Handle("GET", pattern_AvatarService_RequestAUploadURL_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AvatarService_GetUploadURL_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/template.AvatarService/RequestAUploadURL", runtime.WithHTTPPathPattern("/api/v1/avatar/upload/url"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/template.AvatarService/GetUploadURL", runtime.WithHTTPPathPattern("/api/v1/avatar/upload"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_AvatarService_RequestAUploadURL_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AvatarService_GetUploadURL_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_AvatarService_RequestAUploadURL_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("POST", pattern_AvatarService_UploadImage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/template.AvatarService/UploadImage", runtime.WithHTTPPathPattern("/api/v1/avatar/upload"))
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_AvatarService_UploadImage_0(annotatedContext, inboundMarshaler, client, req, pathParams)
-		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
-		if err != nil {
-			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_AvatarService_UploadImage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AvatarService_GetUploadURL_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -417,6 +393,28 @@ func RegisterAvatarServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 		}
 
 		forward_AvatarService_ConfirmUpload_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_AvatarService_TESTUploadImage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/template.AvatarService/TESTUploadImage", runtime.WithHTTPPathPattern("/api/v1/avatar/testupload"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AvatarService_TESTUploadImage_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AvatarService_TESTUploadImage_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -468,11 +466,11 @@ func RegisterAvatarServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 }
 
 var (
-	pattern_AvatarService_RequestAUploadURL_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "avatar", "upload", "url"}, ""))
-
-	pattern_AvatarService_UploadImage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "avatar", "upload"}, ""))
+	pattern_AvatarService_GetUploadURL_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "avatar", "upload"}, ""))
 
 	pattern_AvatarService_ConfirmUpload_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "avatar", "confirm"}, ""))
+
+	pattern_AvatarService_TESTUploadImage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "avatar", "testupload"}, ""))
 
 	pattern_AvatarService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "avatar"}, ""))
 
@@ -480,11 +478,11 @@ var (
 )
 
 var (
-	forward_AvatarService_RequestAUploadURL_0 = runtime.ForwardResponseMessage
-
-	forward_AvatarService_UploadImage_0 = runtime.ForwardResponseMessage
+	forward_AvatarService_GetUploadURL_0 = runtime.ForwardResponseMessage
 
 	forward_AvatarService_ConfirmUpload_0 = runtime.ForwardResponseMessage
+
+	forward_AvatarService_TESTUploadImage_0 = runtime.ForwardResponseMessage
 
 	forward_AvatarService_Delete_0 = runtime.ForwardResponseMessage
 

@@ -1,6 +1,7 @@
 import 'package:client_flutter/bloc/auth_bloc.dart';
 import 'package:client_flutter/pages/home.dart';
 import 'package:client_flutter/pages/register.dart';
+import 'package:client_flutter/services/grpc-client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,6 +21,11 @@ class _LoginPageState extends State<LoginPage> {
   final RoundedLoadingButtonController _btnController =
       RoundedLoadingButtonController();
   _login() {
+    // try {
+    //   GrpcClient.login();
+    // } catch (e) {
+    //   print(e);
+    // }
     try {
       BlocProvider.of<AuthBloc>(context).add(
         SignInRequested(_emailController.text, _passwordController.text),

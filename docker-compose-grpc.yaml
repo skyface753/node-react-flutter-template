@@ -1,0 +1,115 @@
+services:
+  reverse-proxy:
+    image: traefik:v3.0.0-beta2
+    command:
+      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.myresolver.acme.email=sjoerz@skyface.de'
+      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
+      - '--providers.file.directory=/etc/traefik/dynamic_conf'
+      - '--entrypoints.websecure.address=:443'
+      - '--api.insecure=true'
+      - '--providers.docker'
+      - '--log.level=DEBUG'
+      - '--entrypoints.grpc.address=:8090'
+      - '--entrypoints.web.address=:80'
+      - '--accesslog=true'
+      - '--accesslog.format=json'
+      - '--accesslog.filePath=/access.log'
+    ports:
+      - '80:80' # The HTTP port
+      - '8080:8080' # The Web UI (enabled by --api.insecure=true)
+      - '8090:8090' # The gRPC entrypoint of Traefik
+      - '443:443' # The HTTPS port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/config.yml:/etc/traefik/dynamic_conf/conf.yml:ro
+      - ./traefik/certs:/tools/certs
+      - ./letsencrypt:/letsencrypt
+
+  grpc-server-go:
+    build: ./grpc-server-go
+    image: skyface753/grpc-server-go
+    depends_on:
+      primary:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - POSTGRES_HOST=primary
+      - REDIS_HOST=redis
+      - S3_ENDPOINT=${S3_ENDPOINT:-http://localhost:9000}
+      - S3_BUCKET=${S3_BUCKET:-template}
+      - S3_USERNAME=${S3_USERNAME:-minio-root-user}
+      - S3_PASSWORD=${S3_PASSWORD:-minio-root-password}
+      # - TLS=TRUE
+    labels:
+      # GRPC
+      - 'traefik.enable=true'
+      - traefik.http.routers.grpc_server.rule=Host(`grpc.skyface.de`)
+      - traefik.http.routers.grpc_server.entrypoints=grpc
+      - traefik.http.routers.grpc_server.service=grpc-svc
+      - traefik.http.routers.grpc_server.tls=true
+      - traefik.http.services.grpc-svc.loadbalancer.server.scheme=h2c
+      - traefik.http.services.grpc-svc.loadbalancer.server.port=50051
+      - 'traefik.http.routers.grpc_server.tls.certresolver=myresolver'
+      # GRPC-WEB
+      - 'traefik.http.routers.grpc-web.rule=Host(`grpc.skyface.de`)'
+      # - 'traefik.http.routers.grpc-web.entrypoints=websecure' # for production
+      # - 'traefik.http.routers.grpc-web.tls=true'  # for production
+      - 'traefik.http.routers.grpc-web.entrypoints=web' # for testing
+      - 'traefik.http.routers.grpc-web.service=grpc-web'
+      - 'traefik.http.services.grpc-web.loadbalancer.server.scheme=h2c'
+      - 'traefik.http.middlewares.grpc-web-middle.grpcWeb.allowOrigins=*'
+      - 'traefik.http.routers.grpc-web.middlewares=grpc-web-middle'
+      # - 'traefik.http.routers.grpc-web.tls.certresolver=myresolver' # for production
+
+  primary:
+    image: postgres
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=testdb
+    volumes:
+      - grpc-pg-vol-prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  gateway:
+    image: skyface753/template/gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    depends_on:
+      grpc-server-go:
+        condition: service_started
+    environment:
+      - SERVER_ENDPOINT=grpc-server-go:50051
+    # ports:
+    #   - '8081:8081'
+    labels:
+      - 'traefik.enable=true'
+      - traefik.http.routers.gateway_http.rule=Host(`gateway.skyface.de`)
+      - traefik.http.routers.gateway_http.entrypoints=web
+      - traefik.http.routers.gateway_http.service=gateway-svc
+      - traefik.http.services.gateway-svc.loadbalancer.server.port=8081
+      - traefik.http.routers.gateway_https.rule=Host(`gateway.skyface.de`)
+      - traefik.http.routers.gateway_https.entrypoints=websecure
+      - traefik.http.routers.gateway_https.tls=true
+      - traefik.http.routers.gateway_https.service=gateway-svc
+      - traefik.http.routers.gateway_https.tls.certresolver=myresolver
+      # Redirect HTTP to HTTPS
+      - traefik.http.routers.gateway_http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
+
+volumes:
+  grpc-pg-vol-prod:
+  grpc-minio-vol-prod:

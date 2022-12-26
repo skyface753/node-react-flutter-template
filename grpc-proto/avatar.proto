@@ -3,6 +3,7 @@ syntax = "proto3";
 package template;
 
 import "google/protobuf/empty.proto";
+import "grpc-proto/annotations.proto";
 option go_package = "pb/template";
 
 message Avatar{
@@ -68,9 +69,32 @@ message TESTUploadImageRequest {
 
 service AvatarService{
     // rpc RequestAUploadURL(UploadUrlRequest) returns (UploadUrlResponse);
-    rpc GetUploadURL(UploadGetUrlRequest) returns (UploadGetUrlResponse);
-    rpc ConfirmUpload(UploadConfirmRequest) returns (UploadConfirmResponse);
-    rpc TESTUploadImage(stream TESTUploadImageRequest) returns (TESTUploadImageResponse);
-    rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty);
-    rpc GetAvatarView(GetAvatarViewRequest) returns (GetAvatarViewResponse);
+    rpc GetUploadURL(UploadGetUrlRequest) returns (UploadGetUrlResponse){
+        option (google.api.http) = {
+            post: "/api/v1/avatar/upload"
+            body: "*"
+        };
+    }
+    rpc ConfirmUpload(UploadConfirmRequest) returns (UploadConfirmResponse){
+        option (google.api.http) = {
+            post: "/api/v1/avatar/confirm"
+            body: "*"
+        };
+    }
+    rpc TESTUploadImage(stream TESTUploadImageRequest) returns (TESTUploadImageResponse){
+        option (google.api.http) = {
+            post: "/api/v1/avatar/testupload"
+            body: "*"
+        };
+    }
+    rpc Delete(google.protobuf.Empty) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            delete: "/api/v1/avatar"
+        };
+    }
+    rpc GetAvatarView(GetAvatarViewRequest) returns (GetAvatarViewResponse){
+        option (google.api.http) = {
+            get: "/api/v1/avatar/view"
+        };
+    }
 }

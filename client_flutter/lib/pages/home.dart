@@ -14,19 +14,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   _testApi() async {
-    print("Test api auth status");
-    Response response = await dio.get('auth/status');
-    print(response.data);
-    final Map responseMap = response.data;
-    if (responseMap['success']) {
-      authStatus = "Authenticated";
-    } else {
-      authStatus = "Not Authenticated";
-    }
+    // print("Test api auth status");
+    // Response response = await dio.get('auth/status');
+    // print(response.data);
+    // final Map responseMap = response.data;
+    // if (responseMap['success']) {
+    //   authStatus = "Authenticated";
+    // } else {
+    //   authStatus = "Not Authenticated";
+    // }
     setState(() {});
   }
 
-  Dio dio = DioService().getApi();
+  // Dio dio = DioService().getApi();
   String authStatus = "Loading";
   @override
   void initState() {
@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text("Authenticated"),
-                Text("User: ${state.authenticatedUser.email}"),
+                Text("User: ${state.authenticatedUser.username}"),
                 Text("AuthState: $authStatus"),
               ],
             ));

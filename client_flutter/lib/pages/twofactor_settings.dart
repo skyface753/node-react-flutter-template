@@ -1,4 +1,5 @@
 import 'package:client_flutter/services/dio_service.dart';
+import 'package:client_flutter/services/grpc-client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -60,13 +61,8 @@ class _TwoFactorSettingsPageState extends State<TwoFactorSettingsPage> {
             },
             //runs when every textfield is filled
             onSubmit: (String verificationCode) {
-              DioService().getApi().post('auth/2fa/verify', data: {
-                'password': _passwordEnableController.text,
-                'currentCode': verificationCode,
-              }).then((value) {
-                print("Verfiy Return");
-                print(value.data);
-                if (value.data['success']) {
+              GrpcClient.verifyTOTP(verificationCode).then((value) {
+                if (value.success) {
                   Navigator.pop(context);
                 } else {
                   setState(() {
@@ -78,6 +74,24 @@ class _TwoFactorSettingsPageState extends State<TwoFactorSettingsPage> {
                   totpError = true;
                 });
               });
+              // DioService().getApi().post('auth/2fa/verify', data: {
+              //   'password': _passwordEnableController.text,
+              //   'currentCode': verificationCode,
+              // }).then((value) {
+              //   print("Verfiy Return");
+              //   print(value.data);
+              //   if (value.data['success']) {
+              //     Navigator.pop(context);
+              //   } else {
+              //     setState(() {
+              //       totpError = true;
+              //     });
+              //   }
+              // }).catchError((error) {
+              //   setState(() {
+              //     totpError = true;
+              //   });
+              // });
             }, // end onSubmit
           ),
           totpError
@@ -103,15 +117,13 @@ class _TwoFactorSettingsPageState extends State<TwoFactorSettingsPage> {
           ),
           ElevatedButton(
             onPressed: () async {
-              DioService().getApi().post('auth/2fa/enable', data: {
-                'password': _passwordEnableController.text,
-              }).then((value) {
+              GrpcClient.enableTOTP(_passwordEnableController.text)
+                  .then((value) {
                 setState(() {
-                  print(value.data);
-                  final Map responseMap = value.data;
-                  if (responseMap['success']) {
-                    twoFactorUrl = responseMap['data']['url'];
-                    twoFactorSecretBase32 = responseMap['data']['secretBase32'];
+                  print(value);
+                  if (value.url != "" && value.secret != "") {
+                    twoFactorUrl = value.url;
+                    twoFactorSecretBase32 = value.secret;
                   } else {
                     passwordError = true;
                   }
@@ -121,6 +133,24 @@ class _TwoFactorSettingsPageState extends State<TwoFactorSettingsPage> {
                   passwordError = true;
                 });
               });
+              // DioService().getApi().post('auth/2fa/enable', data: {
+              //   'password': _passwordEnableController.text,
+              // }).then((value) {
+              //   setState(() {
+              //     print(value.data);
+              //     final Map responseMap = value.data;
+              //     if (responseMap['success']) {
+              //       twoFactorUrl = responseMap['data']['url'];
+              //       twoFactorSecretBase32 = responseMap['data']['secretBase32'];
+              //     } else {
+              //       passwordError = true;
+              //     }
+              //   });
+              // }).catchError((error) {
+              //   setState(() {
+              //     passwordError = true;
+              //   });
+              // });
             },
             child: Text('Enable'),
           ),
@@ -183,13 +213,8 @@ class _TwoFactorSettingsPageState extends State<TwoFactorSettingsPage> {
   }
 
   _disableTotp(String password, String totp) {
-    DioService().getApi().post('auth/2fa/disable', data: {
-      'password': password,
-      'totpCode': totp,
-    }).then((value) {
-      print("Disable Return");
-      print(value.data);
-      if (value.data['success']) {
+    GrpcClient.disableTOTP(password, totp).then((value) {
+      if (value.success) {
         Navigator.pop(context);
       } else {
         setState(() {
@@ -201,5 +226,23 @@ class _TwoFactorSettingsPageState extends State<TwoFactorSettingsPage> {
         disableError = true;
       });
     });
+    // DioService().getApi().post('auth/2fa/disable', data: {
+    //   'password': password,
+    //   'totpCode': totp,
+    // }).then((value) {
+    //   print("Disable Return");
+    //   print(value.data);
+    //   if (value.data['success']) {
+    //     Navigator.pop(context);
+    //   } else {
+    //     setState(() {
+    //       disableError = true;
+    //     });
+    //   }
+    // }).catchError((error) {
+    //   setState(() {
+    //     disableError = true;
+    //   });
+    // });
   }
 }

@@ -47,10 +47,16 @@ class AuthInterceptor {
   }
 }
 
+// const transport = new GrpcWebFetchTransport({
+//   baseUrl: 'http://mooncar.docker.localhost:80',
+//   timeout: 100,
+// });
+
 const authInterceptor = new AuthInterceptor();
 const options = {
   unaryInterceptors: [authInterceptor],
   streamInterceptors: [authInterceptor],
+  // transport,
 };
 
 const host: string = 'http://localhost:8000';
@@ -63,6 +69,8 @@ export const grpcApi = {
   authService: grpcAuthService,
   avatarService: grpcAvatarService,
 };
+
+// const clientTest = new AuthServiceClient()
 
 export const grpcBaseAuthService = new AuthServicePromiseClient(
   host,

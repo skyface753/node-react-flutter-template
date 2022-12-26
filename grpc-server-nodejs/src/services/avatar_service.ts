@@ -2,7 +2,6 @@ import {
   handleClientStreamingCall,
   handleUnaryCall,
   sendUnaryData,
-  ServerReadableStream,
   ServerUnaryCall,
   status,
 } from '@grpc/grpc-js';
@@ -11,23 +10,24 @@ import { IAvatarServiceServer } from '../proto/grpc-proto/avatar_grpc_pb';
 import {
   GetAvatarViewRequest,
   GetAvatarViewResponse,
+  TESTUploadImageRequest,
+  TESTUploadImageResponse,
+  UploadGetUrlRequest,
+  UploadGetUrlResponse,
 } from '../proto/grpc-proto/avatar_pb';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './s3-storage/base-client';
-import {
-  PutObjectCommand,
-  PutObjectCommandInput,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3';
-import { AuthServer } from './auth_service';
-import { User } from '../proto/grpc-proto/auth_pb';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 
 import { prismaClient } from './db';
-import { S3Config, ttl } from '../config';
-import { getAvatarKey } from '../helpers/s3-helper';
-import { Prisma } from '@prisma/client';
+import { S3Config } from '../config';
 
 export class AvatarServer implements IAvatarServiceServer {
+  getUploadURL: handleUnaryCall<UploadGetUrlRequest, UploadGetUrlResponse>;
+  tESTUploadImage: handleClientStreamingCall<
+    TESTUploadImageRequest,
+    TESTUploadImageResponse
+  >;
   // confirmUpload: handleUnaryCall<ConfirmUploadRequest, ConfirmUploadResponse>;
   [name: string]: import('@grpc/grpc-js').UntypedHandleCall;
 
@@ -40,92 +40,91 @@ export class AvatarServer implements IAvatarServiceServer {
     callback(null, new Empty());
   }
   //uploadImage: grpc.handleClientStreamingCall<grpc_proto_avatar_pb.UploadImageRequest, grpc_proto_avatar_pb.UploadImageResponse>
-  uploadImage(
-    call: ServerReadableStream<UploadImageRequest, UploadImageResponse>,
-    callback: sendUnaryData<UploadImageResponse>
-  ): void {
-    console.log('uploadImage');
-    call.on('data', (data) => {
-      console.log(data);
-    });
-    call.on('end', () => {
-      console.log('end');
-      callback(null, new UploadImageResponse());
-    });
+  uploadImage(): // call: ServerReadableStream<UploadImageRequest, UploadImageResponse>,
+  // callback: sendUnaryData<UploadImageResponse>
+  void {
     throw new Error('Method not implemented.');
+    // console.log('uploadImage');
+    // call.on('data', (data) => {
+    //   console.log(data);
+    // });
+    // call.on('end', () => {
+    //   console.log('end');
+    //   callback(null, new UploadImageResponse());
+    // });
+    // throw new Error('Method not implemented.');
   }
 
-  confirmUpload(
-    call: ServerUnaryCall<ConfirmUploadRequest, ConfirmUploadResponse>,
-    callback: sendUnaryData<ConfirmUploadResponse>
-  ): void {
+  confirmUpload(): // call: ServerUnaryCall<ConfirmUploadRequest, ConfirmUploadResponse>,
+  // callback: sendUnaryData<ConfirmUploadResponse>
+  void {
     console.log('confirmUpload');
     throw new Error('Method not implemented.');
     // callback(null, new ConfirmUploadResponse());
   }
-  async requestAUploadURL(
-    call: ServerUnaryCall<UploadUrlRequest, UploadUrlResponse>,
-    callback: sendUnaryData<UploadUrlResponse>
-  ): Promise<void> {
-    console.log('requestAUploadURL');
-    const filename = call.request.getFilename();
-    const fileExtension = filename.split('.').pop();
-    if (!fileExtension || !['png', 'jpg', 'jpeg'].includes(fileExtension)) {
-      return callback(
-        {
-          code: status.INVALID_ARGUMENT,
-          message: 'Invalid file extension',
-        },
-        null
-      );
-    }
-    // Auth Middleware
-    AuthServer.checkToken(call.metadata, false, callback).then(
-      async (user: User | null) => {
-        if (!user) return;
-        const res = new UploadUrlResponse();
-        const params: PutObjectCommandInput = {
-          Bucket: S3Config.bucket,
+  async requestAUploadURL(): // call: ServerUnaryCall<UploadUrlRequest, UploadUrlResponse>,
+  // callback: sendUnaryData<UploadUrlResponse>
+  Promise<void> {
+    throw new Error('Method not implemented.');
+    // console.log('requestAUploadURL');
+    // const filename = call.request.getFilename();
+    // const fileExtension = filename.split('.').pop();
+    // if (!fileExtension || !['png', 'jpg', 'jpeg'].includes(fileExtension)) {
+    //   return callback(
+    //     {
+    //       code: status.INVALID_ARGUMENT,
+    //       message: 'Invalid file extension',
+    //     },
+    //     null
+    //   );
+    // }
+    // // Auth Middleware
+    // AuthServer.checkToken(call.metadata, false, callback).then(
+    //   async (user: User | null) => {
+    //     if (!user) return;
+    //     const res = new UploadUrlResponse();
+    //     const params: PutObjectCommandInput = {
+    //       Bucket: S3Config.bucket,
 
-          // Key: 'avatars/' + user.getId() + '.' + fileExtension,
-          Key: getAvatarKey(user.getId(), fileExtension),
-          ContentType: 'image/' + fileExtension,
-        };
-        const url = await getSignedUrl(s3Client, new PutObjectCommand(params), {
-          expiresIn: ttl,
-        });
-        res.setUrl(url);
-        // testuser.avatar (originalname, generatedpath, type, userfk)
-        await prismaClient.avatar
-          .create({
-            data: {
-              originalname: filename,
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              generatedpath: params.Key!,
-              type: 'image/' + fileExtension,
-              userfk: user.getId(),
-            },
-          })
-          .catch(async (err) => {
-            if (err instanceof Prisma.PrismaClientKnownRequestError) {
-              if (err.code === 'P2002') {
-                await prismaClient.avatar.update({
-                  where: {
-                    userfk: user.getId(),
-                  },
-                  data: {
-                    originalname: filename,
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    generatedpath: params.Key!,
-                    type: 'image/' + fileExtension,
-                  },
-                });
-              }
-            }
-          });
-        callback(null, res);
-      }
-    );
+    //       // Key: 'avatars/' + user.getId() + '.' + fileExtension,
+    //       Key: getAvatarKey(user.getId(), fileExtension),
+    //       ContentType: 'image/' + fileExtension,
+    //     };
+    //     const url = await getSignedUrl(s3Client, new PutObjectCommand(params), {
+    //       expiresIn: ttl,
+    //     });
+    //     res.setUrl(url);
+    //     // testuser.avatar (originalname, generatedpath, type, userfk)
+    //     await prismaClient.avatar
+    //       .create({
+    //         data: {
+    //           originalname: filename,
+    //           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //           generatedpath: params.Key!,
+    //           type: 'image/' + fileExtension,
+    //           userfk: user.getId(),
+    //         },
+    //       })
+    //       .catch(async (err) => {
+    //         if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    //           if (err.code === 'P2002') {
+    //             await prismaClient.avatar.update({
+    //               where: {
+    //                 userfk: user.getId(),
+    //               },
+    //               data: {
+    //                 originalname: filename,
+    //                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //                 generatedpath: params.Key!,
+    //                 type: 'image/' + fileExtension,
+    //               },
+    //             });
+    //           }
+    //         }
+    //       });
+    //     callback(null, res);
+    // }
+    // );
   }
   //  getAvatarView: handleUnaryCall<GetAvatarViewRequest, GetAvatarViewResponse>;
   async getAvatarView(

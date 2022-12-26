@@ -7,6 +7,7 @@ import (
 
 // *Only alphanumeric characters, underscore and hyphen no spaces (min 3, max 20)
 func TestValidateUsername(t *testing.T) {
+	t.Parallel()
 	// Test for empty username
 	err := validator.ValidateUsername("")
 	if err == nil {
@@ -36,6 +37,7 @@ func TestValidateUsername(t *testing.T) {
 
 // *   Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character:
 func TestValidatePassword(t *testing.T) {
+	t.Parallel()
 	// Test for empty password
 	err := validator.ValidatePassword("")
 	if err == nil {
@@ -71,9 +73,25 @@ func TestValidatePassword(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error, got nil - password with no special character")
 	}
+	// Test for password with space
+	err = validator.ValidatePassword("abc123!@# ")
+	if err == nil {
+		t.Errorf("Expected error, got nil - password with space")
+	}
+	// Test for at least one number
+	err = validator.ValidatePassword("abcAbC!@#")
+	if err == nil {
+		t.Errorf("Expected error, got nil - password with no number")
+	}
+	// Test for at least one special character
+	err = validator.ValidatePassword("abc123abC")
+	if err == nil {
+		t.Errorf("Expected error, got nil - password with no special character")
+	}
 	// Test for valid password
 	err = validator.ValidatePassword("Abc123!@#")
 	if err != nil {
 		t.Errorf("Expected nil, got error")
 	}
+
 }

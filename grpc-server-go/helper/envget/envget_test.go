@@ -7,6 +7,7 @@ import (
 )
 
 func TestGetEnv(t *testing.T) {
+	t.Parallel()
 	// Test for fallback
 	s := envget.GetEnv("TEST", "fallback")
 	if s != "fallback" {

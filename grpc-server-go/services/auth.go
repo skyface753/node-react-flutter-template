@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+	"time"
 
 	"strings"
 	db "template/server/helper/db"
@@ -20,6 +21,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 )
 
@@ -27,12 +29,54 @@ type AuthServer struct {
 	pb.UnimplementedAuthServiceServer
 } 
 
+type Failures struct {
+	ipAdr string
+	tries int
+	nextTry time.Time
+}
 
+const maxTries = 5
+
+var failures map[string]Failures = make(map[string]Failures)
+
+func loginFailure(ipAdr string) {
+	// Check if the IP is in the map
+	if entry, ok := failures[ipAdr]; ok {
+		entry.tries++
+		tries := entry.tries
+		if tries >= maxTries {
+			entry.nextTry = time.Now().Add(time.Minute * time.Duration(tries - maxTries + 1))
+
+		}
+		failures[ipAdr] = entry
+	} else {
+		failures[ipAdr] = Failures{ipAdr: ipAdr, tries: 1}
+	}
+}
+
+func checkIfBlocked(ipAdr string) (bool, *time.Time) {
+	// Check if the IP is in the map
+	if entry, ok := failures[ipAdr]; ok {
+		if entry.nextTry.After(time.Now()) {
+			return true, &entry.nextTry
+		}
+	}
+	return false, nil
+}
+
+func loginSuccess(ipAdr string) {
+		delete(failures, ipAdr)
+}
 
 func (s *AuthServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.DefaultAuthResponse, error) {
 	
+	p, _ := peer.FromContext(ctx)
+	ipAdr := p.Addr.String()
 
-	////log.Printf("Received: %v", in)
+	// Check if the IP is blocked
+	if blocked, nextTry := checkIfBlocked(ipAdr); blocked {
+		return nil, status.Error(codes.Unauthenticated, "Too many login attempts. Try again in " + time.Until(*nextTry).String())
+	}
 
 	var ( // Incoming 
 		usernameIn string = in.Username
@@ -60,34 +104,34 @@ func (s *AuthServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.Defaul
 	// Compare the stored hashed password, with the hashed version of the password that was received
 	err = bcrypt.CompareHashAndPassword([]byte(password), []byte(passwordIn))
 	if err != nil {
+		loginFailure(ipAdr)
 		return nil, status.Error(codes.Unauthenticated, "Wrong password")
 	}
 	if(verified != nil && *verified) {
 		if(totpIn == nil){
+			loginFailure(ipAdr)
 			return nil, status.Error(codes.Unauthenticated, "TOTP code required")
 		}
 		if (*totpIn == ""){
+			loginFailure(ipAdr)
 			return nil, status.Error(codes.Unauthenticated, "TOTP code required")
 		}
 		// Verify the TOTP code
 		valid := totp.Validate(*totpIn, *secretbase32)
 		
 		if(!valid){
+			loginFailure(ipAdr)
 			return nil, status.Error(codes.Unauthenticated, "TOTP code invalid")
 		}
 		
 
 	}
-	// accessToken, errJwt := generators.GenerateJwt(id)
-	// refreshToken := generators.GetARefreshToken(id)
-	// if errJwt != nil {
-	// 	return nil, errJwt
-	// }
 	
 	defaultAuthResponse, err := createDefaultAuthResponse(id)
 	if err != nil {
 		return nil, err
 	}	
+	loginSuccess(ipAdr)
 	return defaultAuthResponse, nil
 }
 
@@ -120,13 +164,6 @@ func createDefaultAuthResponse(id int) (*pb.DefaultAuthResponse, error) {
 			log.Printf("Error getting the avatar from s3: %v", err)
 		}
 		avatarPathStr = resS3.URL
-		// TODO: Get the avatar from the s3 bucket
-		// url, errS := s3Client.SignedGetURL(*avatarPath)
-		// if errS == nil {
-		// 	avatarPathStr = url.String()
-		// }
-		
-		
 	}
 	var userRole = pb.Role(rolefk)
 	
@@ -205,14 +242,15 @@ func (s *AuthServer) RefreshToken (ctx context.Context, in *pb.RefreshTokenReque
 		////log.Printf("Error creating default auth response: %v", err)
 		return nil, err
 	}
-	// Delete the old refresh token from redis after 1 Minute
-	redis.RedisClient.Del(context.Background(), refreshTokenIn)
-
-	_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
-	if err != nil {
-		log.Fatalf("Error deleting refresh token: %v", err)
-		return nil, status.Error(codes.Internal, "Something went wrong")
-	}
+	// Delete the old refresh token from redis after 10 seconds (For react strict mode)
+	go func() {
+		time.Sleep(time.Second * 10)
+		_, err = redis.RedisClient.Del(context.Background(), refreshTokenIn).Result()
+		if err != nil {
+			log.Fatalf("Error deleting refresh token: %v", err)
+		}
+	}()
+	
 	return defaultAuthResponse, nil
 }
 
@@ -268,7 +306,9 @@ func (s *AuthServer) EnableTOTP(ctx context.Context, in *pb.EnableTOTPRequest) (
 	}
 	if totpEnabled.Valid {
 		//log.Printf("User already has TOTP enabled")
-		return nil, status.Error(codes.AlreadyExists, "TOTP already enabled")
+		if totpEnabled.Bool {
+			return nil, status.Error(codes.AlreadyExists, "TOTP already enabled")
+		}
 	}
 
 	// Generate a secret
@@ -405,13 +445,22 @@ func (s *AuthServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 			return nil, status.Error(codes.Internal, "Something went wrong")
 		}
 	}
+	// Avatar
+	var avatarPathStr string
+	if(avatar.Valid){
+		resS3, err :=		s3.PresignedGet(avatar.String)
+		if err != nil {
+			log.Printf("Error getting the avatar from s3: %v", err)
+		}
+		avatarPathStr = resS3.URL
+	}
 	// userIdInt := int32(userId)
 	return &pb.StatusResponse{
 		User: &pb.User{
 			Id: int32(*userId),
 			Username: username,
 			Role: pb.Role(rolefk),
-			Avatar: avatar.String,
+			Avatar: avatarPathStr,
 		},
 		TotpEnabled: totpEnabled.Bool,
 
@@ -423,6 +472,7 @@ func (s *AuthServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 // verifyInMetadataAuthToken verifies the auth token in the metadata and returns the user id, username, role OR error
 func verifyInMetadataAuthToken(ctx context.Context) (*int, *string, *pb.Role, error){
 	md, ok := metadata.FromIncomingContext(ctx)
+	
 	if !ok {
 		return nil, nil,nil, status.Error(codes.Unauthenticated, "No metadata found")
 	}
@@ -451,3 +501,4 @@ func verifyInMetadataAuthToken(ctx context.Context) (*int, *string, *pb.Role, er
 	var role = pb.Role(roleInt)
 	return &userId, &username, &role, nil
 }
+

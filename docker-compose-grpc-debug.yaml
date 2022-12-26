@@ -7,25 +7,25 @@ networks:
         - subnet: 10.10.10.0/24
 
 services:
-  grpc-server-go:
-    build: ./grpc-server-go
-    image: skyface753/grpc-server-go
-    ports:
-      - 50051:50051
-    depends_on:
-      primary:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    environment:
-      - POSTGRES_HOST=primary
-      - REDIS_HOST=redis
-      - S3_ENDPOINT=http://test.skyface.de:9000
-    extra_hosts:
-      - 'test.skyface.de:10.10.10.5' # for minio
-    networks:
-      grpc-net:
-        ipv4_address: 10.10.10.2
+  # grpc-server-go:
+  #   build: ./grpc-server-go
+  #   image: skyface753/grpc-server-go
+  #   ports:
+  #     - 50051:50051
+  #   depends_on:
+  #     primary:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_started
+  #   environment:
+  #     - POSTGRES_HOST=primary
+  #     - REDIS_HOST=redis
+  #     - S3_ENDPOINT=http://test.skyface.de:9000
+  #   extra_hosts:
+  #     - 'test.skyface.de:10.10.10.5' # for minio
+  #   networks:
+  #     grpc-net:
+  #       ipv4_address: 10.10.10.2
 
   primary:
     image: postgres
@@ -59,6 +59,9 @@ services:
       - grpc-pgadmin-data:/var/lib/pgadmin
     depends_on:
       - primary
+    networks:
+      grpc-net:
+        ipv4_address: 10.10.10.6
 
   redis:
     image: redis
@@ -88,10 +91,12 @@ services:
     build:
       context: ./grpc-envoy-proxy
       dockerfile: Dockerfile.macos
+      # dockerfile: Dockerfile-tls.macos  # for tls
     ports:
       - 8000:8000
-    depends_on:
-      - grpc-server-go
+    networks:
+      grpc-net:
+        ipv4_address: 10.10.10.7
 
 volumes:
   grpc-pg-vol-debug:

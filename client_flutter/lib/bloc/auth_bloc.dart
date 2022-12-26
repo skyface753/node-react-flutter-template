@@ -18,7 +18,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         await authRepository
             .signIn(
-                email: event.email,
+                username: event.username,
                 password: event.password,
                 totpCode: event.totpCode)
             .then((value) => {
@@ -39,10 +39,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(Loading());
       try {
         await authRepository
-            .signUp(
-                email: event.email,
-                password: event.password,
-                username: event.username)
+            .signUp(password: event.password, username: event.username)
             .then((value) => {
                   print("Emitted Register Authenticated"),
                   print(value),

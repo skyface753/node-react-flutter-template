@@ -7,6 +7,7 @@ import (
 )
 
 func TestGetRandomString(t *testing.T) {
+	t.Parallel()
 	// Test for length
 	s := generators.GetRandomString(10)
 		if len(s) != 10 {
@@ -35,6 +36,10 @@ func TestGetRandomString(t *testing.T) {
 	}
 }
 
-func GetRandomString(i int) {
-	panic("unimplemented")
+var result []string
+func BenchmarkGetRandomString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		result = append(result, generators.GetRandomString(100))
+		// hi := generators.GetRandomString(100)
+	}
 }

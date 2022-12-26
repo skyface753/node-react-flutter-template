@@ -1,0 +1,7 @@
+FROM envoyproxy/envoy:v1.22.0
+
+COPY envoy-macos-tls.yaml /etc/envoy/envoy.yaml
+COPY cert/server-cert.pem /etc/server-cert.pem
+COPY cert/server-key.pem /etc/server-key.pem
+RUN chmod go+r /etc/envoy/envoy.yaml
+CMD ["envoy", "-c", "/etc/envoy/envoy.yaml"]

@@ -35,20 +35,46 @@ func NewClient() {
 	Client = s3.NewFromConfig(aws.Config{
 		Credentials: credentials.NewStaticCredentialsProvider(Username, Password, ""),
 		Region:      "us-east-1",
-		EndpointResolver: aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-			return aws.Endpoint{
-				PartitionID:       "aws",
-				URL: 			 EndPoint,
-				SigningRegion:     "us-east-1",
-				HostnameImmutable: true,
-			}, nil
-		}),
+			EndpointResolverWithOptions: aws.EndpointResolverWithOptionsFunc(aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+				return aws.Endpoint{
+					PartitionID:       "aws",
+					URL: 			 EndPoint,
+					SigningRegion:     "us-east-1",
+					HostnameImmutable: true,
+					}, nil
+				})),
 	})
+	
+	
+	createBucketIfNotExists()
 	preSignClient = s3.NewPresignClient(Client)
 }
 
+func createBucketIfNotExists() error {
+	_, err := Client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
+		Bucket: aws.String(Bucket),
+		// CreateBucketConfiguration: &types.CreateBucketConfiguration{
+		// 	LocationConstraint: types.BucketLocationConstraint("us-east-1"),
+		// },
+	})
+	if err != nil {
+		if errors.Is(err, &types.BucketAlreadyExists{}) || errors.Is(err, &types.BucketAlreadyOwnedByYou{}) {
+			// log.Printf("Bucket %v already exists. Continuing.\n", Bucket)
+			return nil
+		}
+		// log.Printf("Couldn't create bucket %v. Here's why: %v\n", Bucket, err)
+		return err
+	}
+	// log.Printf("Created bucket %v. Here's the response: %v\n", Bucket, res)
+	return nil
+
+
+}
+
+
 func  PresignedPut(key string) (*string, *string, error) {
 	fullKey := aws.String(KeyPrefix + key)
+	
 	request, err := preSignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(Bucket),
 		Key:    fullKey,
@@ -56,13 +82,12 @@ func  PresignedPut(key string) (*string, *string, error) {
 	}, func(opts *s3.PresignOptions) {
 		opts.Expires = time.Duration(24 * time.Hour)
 	})
+
 	if err != nil {
 		log.Printf("Couldn't get a presigned request to put %v:%v. Here's why: %v\n",
 			Bucket, *fullKey, err)
 		return nil, nil, err
 	}
-	// TODO: HOST
-
 	return &request.URL, fullKey, nil
 
 }

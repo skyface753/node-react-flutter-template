@@ -34,3 +34,27 @@ build-backend:
 
 # Build all Docker
 build: build-frontend build-backend
+
+docker-backup:
+	mkdir -p ./db-backup
+	docker-compose -f docker-compose-grpc-debug.yaml exec -T primary pg_dumpall -c -U testuser > ./db-data/backup/dump_`date +%d-%m-%Y"_"%H_%M_%S`.sql
+
+docker-restore:
+	cat ./db-data/cleanInit.sql | docker-compose -f docker-compose-grpc-debug.yaml exec -T primary psql -U testuser -d testdb
+
+# gen-docs:
+# 	protoc -I ./ \
+# 	--doc_out=./docs \
+#  	--doc_opt=markdown,docs.md \
+#  	./grpc-proto/auth.proto \
+# 	./grpc-proto/avatar.proto \
+# 	./grpc-proto/annotations.proto \
+# 	./grpc-proto/http.proto
+
+build-docs-docker:
+	docker build -t skyface753/grpc-docs -f ./docs/Dockerfile ./docs
+
+run-docs-docker:
+	docker run --rm -v $(shell pwd)/grpc-proto:/grpc-proto -v $(shell pwd)/docs:/out skyface753/grpc-docs
+
+gen-docs: build-docs-docker run-docs-docker
