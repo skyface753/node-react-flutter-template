@@ -16,3 +16,4 @@ grpc-server-nodejs/src/cert
 .env
 traefik/certs/
 letsencrypt/acme.json
+grpc-server-go/testsWithNode/node_modules

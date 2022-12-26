@@ -59,7 +59,7 @@ const options = {
   // transport,
 };
 
-const host: string = 'http://localhost:8000';
+const host: string = 'http://grpc.skyface.de:80';
 const grpcAuthService = new AuthServicePromiseClient(host, null, options);
 
 // export const grpcAvatarService = new AvatarServiceClient(host, null, options);
