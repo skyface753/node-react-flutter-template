@@ -58,3 +58,11 @@ run-docs-docker:
 	docker run --rm -v $(shell pwd)/grpc-proto:/grpc-proto -v $(shell pwd)/docs:/out skyface753/grpc-docs
 
 gen-docs: build-docs-docker run-docs-docker
+
+clean:
+	@echo "Cleaning..."
+	@cd client_flutter && flutter clean
+	@rm -rf ./db-data/backup/*
+	@rm -rf ./${grpcClientDir}/node_modules
+	@rm -rf ./${httpClientDir}/node_modules
+	@rm -rf ./${httpServerDir}/node_modules
