@@ -6,21 +6,27 @@
 
 - [x] NodeJs (server) with Express, Typescript and plain SQL
 - [x] ReactJs (client) with Typescript and Axios
-- [x] Flutter (client)
 - [x] Database (PostgreSQL Cluster)
 
 ### GRPC (gRPC API)
 
-- [x] NodeJs (server) with Typescript, gRPC and prisma (ORM)
+- [x] Go (server) with gRPC and plain SQL
+- [x] gRPC Gateway (proxy) translates REST API to gRPC
 - [x] ReactJs (client) with Typescript and gRPC
-- [] Flutter (client) (not yet)
+- [x] Flutter (client)
+- [x] Traefik (reverse proxy) -> gRPC-Web
+
+## Architecture
+
+### gRPC
+
+<img src="./docs/assets/images/Template-Arch.drawio.png" alt="Template-Arch.drawio" style="zoom:50%;" />
 
 ## First steps
 
 ### GRPC
 
 - server and client uses the .proto files from grpc-proto (`npm run proto` in both directories)
-- server uses prisma to generate the ORM (`npm run prisma`)
 - - .env file is used to configure the database connection (see .env.example)
 
 1. Use this repository as template
@@ -30,6 +36,8 @@
 5. Follow the steps in the README of the [server](http-server-nodejs/README.md) and [client-reactjs](http-client-reactjs/README.md) and [client-flutter](client-flutter/README.md)
 
 ## Environment variables
+
+See the .env.example files and READMEs for more information in the subdirectories.
 
 # Server (Server-Nodejs)
 
@@ -51,12 +59,6 @@
 
 ## Volumes
 
-### Server
+### Server (HTTP)
 
 /app/files/avatars/
-
-## TODO
-
-- [] Flutter - rewrite to postgres -> lowercase
-- [x] React
-- [] NodeJs - rewrite to postgres (avatar)

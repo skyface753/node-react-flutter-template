@@ -27,3 +27,5 @@
 cert/server-cert.pem
 
 cert/server-key.pem
+
+Not tested. Just use TLS over the Traefik reverse proxy.
